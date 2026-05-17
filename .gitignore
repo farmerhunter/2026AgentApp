@@ -1,0 +1,40 @@
+.DS_Store
+
+# Private planning and raw reference material
+private_notes/
+
+# Runtime-generated student data and app outputs
+runtime/*
+!runtime/README.md
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Logs and generated media
+*.log
+*.mp4
+*.mov
+
+# Raw source documents that may not be redistributable
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.next/
+.vite/
+
+# Test and cache output
+.pytest_cache/
+.coverage
+coverage/
