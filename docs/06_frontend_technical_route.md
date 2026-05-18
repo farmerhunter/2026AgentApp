@@ -65,7 +65,7 @@ Vite + React 适合 Hermes Web 的原因：
 5. 第二阶段可以平滑切换到 REST API。
 6. 后续可以加入趋势图、筛选器、权限、移动端适配等功能。
 
-页面数量、页面关系、组件草图和布局设想不在本文档维护，统一记录在 `docs/website_design_note.md`。
+页面数量、页面关系、组件草图和布局设想不在本文档维护，统一记录在 `docs/07_website_design_note.md`。
 
 ## 4. Vite 的基本使用方式
 
@@ -238,7 +238,7 @@ const report = await fetch(`/data/week_reports/${selectedFile}`)
 页面数量、页面功能、页面关系、布局草图、组件草图和给 Codex 的页面生成指令模板，统一记录在：
 
 ```text
-docs/website_design_note.md
+docs/07_website_design_note.md
 ```
 
 开发者应先在该文件中用文字描述网站草图，再让 Codex 生成或修改前端页面。
@@ -275,7 +275,7 @@ Nginx 反向代理
 2. 演示阶段继续采用静态 JSON 文件。
 3. 周报 JSON 文件固定放在 `/var/www/html/data/week_reports/`。
 4. 前端项目放在 `src/web_ui/`。
-5. 页面草图、功能关系和布局想法不放在本文档，改由 `docs/website_design_note.md` 维护。
+5. 页面草图、功能关系和布局想法不放在本文档，改由 `docs/07_website_design_note.md` 维护。
 6. 第一版加入 Tailwind CSS。
 7. 第一版暂不引入 shadcn/ui 和 Recharts。
 8. VPS 部署采用 `scripts/deploy_web_ui.sh` 脚本化流程。

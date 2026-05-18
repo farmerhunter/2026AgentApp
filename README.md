@@ -28,19 +28,19 @@
 
 ## 文档入口
 
-- `docs/product_brief.md`：产品目标、用户和核心能力
-- `docs/architecture.md`：系统架构
-- `docs/frontend_technical_route.md`：前端技术路线，包含 Vite/React/Tailwind 和部署决策
-- `docs/website_design_note.md`：Hermes Web 页面草图、视图关系和页面生成指令模板
-- `docs/hermes_web_integration.md`：Hermes 周报 JSON 与 Web 前端集成方案
-- `docs/question_capture_workflow.md`：试卷/错题本上传、切题、重点题确认流程
-- `docs/storage_design.md`：VPS 本地存储、公开目录、COS 和数据库演进方案
-- `docs/deployment.md`：部署说明
-- `docs/competition_rules.md`：比赛规则和报名方向整理
-- `docs/decisions.md`：项目决策记录
-- `docs/demo_script.md`：演示脚本
-- `docs/design_brief.md`：设计简报
-- `docs/reference_links.md`：参考链接
+- `docs/01_competition_rules.md`：比赛规则和报名方向整理
+- `docs/02_product_brief.md`：产品目标、用户和核心能力
+- `docs/03_design_brief.md`：设计简报
+- `docs/04_technical_decisions.md`：技术决策记录
+- `docs/05_architecture.md`：系统架构
+- `docs/06_frontend_technical_route.md`：前端技术路线，包含 Vite/React/Tailwind 和部署决策
+- `docs/07_website_design_note.md`：Hermes Web 页面草图、视图关系和页面生成指令模板
+- `docs/08_hermes_web_integration.md`：Hermes 周报 JSON 与 Web 前端集成方案
+- `docs/09_question_capture_workflow.md`：试卷/错题本上传、切题、重点题确认流程
+- `docs/10_storage_design.md`：VPS 本地存储、公开目录、COS 和数据库演进方案
+- `docs/11_deployment.md`：部署说明
+- `docs/12_demo_script.md`：演示脚本
+- `docs/13_reference_links.md`：参考链接
 
 ## 仓库结构
 
