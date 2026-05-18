@@ -1,0 +1,21 @@
+{
+  "contract": "text_note",
+  "contract_version": "1.0",
+  "note_id": "note_20260518_001",
+  "student_id": "student_demo",
+  "created_at": "2026-05-18T20:15:00+08:00",
+  "subject": "math",
+  "note_type": "student_question",
+  "related_textbook_id": "textbook_math_grade8_demo",
+  "related_chapter_id": "chapter_inverse_function",
+  "related_knowledge_point_ids": [
+    "kp_inverse_function_quadrant"
+  ],
+  "content": "我总是分不清 k 大于 0 和小于 0 时图像在哪些象限。",
+  "student_confidence": "low",
+  "tags": [
+    "课堂疑问",
+    "需要复习"
+  ],
+  "visibility": "demo_public"
+}

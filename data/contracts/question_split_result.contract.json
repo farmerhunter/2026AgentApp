@@ -1,0 +1,40 @@
+{
+  "contract": "question_split_result",
+  "contract_version": "1.0",
+  "upload_id": "upload_20260518_001",
+  "student_id": "student_demo",
+  "ocr_provider": "tencent_question_split_ocr",
+  "ocr_status": "completed",
+  "processed_at": "2026-05-18T20:21:00+08:00",
+  "source_image_url": "/data/question_sessions/upload_20260518_001/original/page_1.jpg",
+  "image_size": {
+    "width": 1200,
+    "height": 1600
+  },
+  "questions": [
+    {
+      "question_id": "q_001",
+      "question_index": 1,
+      "page": 1,
+      "bbox": {
+        "x": 120,
+        "y": 360,
+        "width": 860,
+        "height": 240
+      },
+      "question_text": "若函数 y = k / x 的图像经过点 A(2, 3)，求 k 的值并判断图像所在象限。",
+      "question_image_url": "/data/question_sessions/upload_20260518_001/crops/q_001.jpg",
+      "ocr_confidence": null,
+      "related_knowledge_point_ids": [
+        "kp_inverse_function_expression",
+        "kp_inverse_function_quadrant"
+      ],
+      "raw_ocr_ref": {
+        "provider": "tencent_question_split_ocr",
+        "raw_response_url": "/data/question_sessions/upload_20260518_001/raw/tencent_raw_response.json",
+        "raw_question_index": 1
+      }
+    }
+  ],
+  "errors": []
+}

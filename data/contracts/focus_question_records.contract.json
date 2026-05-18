@@ -1,0 +1,42 @@
+{
+  "contract": "focus_question_records",
+  "contract_version": "1.0",
+  "student_id": "student_demo",
+  "generated_at": "2026-05-18T20:40:00+08:00",
+  "source_upload_ids": [
+    "upload_20260518_001"
+  ],
+  "source_note_ids": [
+    "note_20260518_001"
+  ],
+  "records": [
+    {
+      "focus_question_id": "focus_q_20260518_001",
+      "question_id": "q_001",
+      "upload_id": "upload_20260518_001",
+      "student_id": "student_demo",
+      "subject": "math",
+      "related_textbook_id": "textbook_math_grade8_demo",
+      "related_chapter_id": "chapter_inverse_function",
+      "knowledge_point_ids": [
+        "kp_inverse_function_quadrant"
+      ],
+      "knowledge_point": "反比例函数图像所在象限",
+      "mistake_summary": "学生在判断反比例函数图像所在象限时出错，主要原因是没有把 k 的正负和象限关系建立稳定对应。",
+      "recommended_action": "复习 k 的正负与图像象限关系，并完成 3 道同类题。",
+      "review_priority": "high",
+      "review_status": "needs_review",
+      "weekly_report_id": "week_20260518_20260524",
+      "evidence_refs": [
+        {
+          "type": "question_confirmation",
+          "id": "q_001"
+        },
+        {
+          "type": "text_note",
+          "id": "note_20260518_001"
+        }
+      ]
+    }
+  ]
+}
