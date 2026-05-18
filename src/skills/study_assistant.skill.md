@@ -14,7 +14,7 @@ Define the strategy rules for the AI Study Agent.
 
 - Identify student progress, weak points, and likely causes.
 - Prefer concrete observations over broad comments.
-- Return concise Markdown or JSON that can be displayed in the dashboard.
+- Return concise Markdown or JSON that can be displayed in the Web UI.
 
 ## Study Plan Rules
 

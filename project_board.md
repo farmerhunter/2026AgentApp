@@ -8,7 +8,7 @@
 - Implement planner module skeleton in `src/agent/planner/`
 - Implement reminder/event module skeleton in `src/agent/reminders/`
 - Implement Markdown/JSON storage helpers in `src/agent/storage/`
-- Build dashboard prototype in `src/dashboard/`
+- Build web UI prototype in `src/web_ui/`
 - Create reusable prompts in `src/prompts/`
 - Add test/demo scripts in `src/tests/`
 - Add sanitized sample inputs and outputs under `data/`

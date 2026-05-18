@@ -13,7 +13,7 @@ This is a small two-person competition project. Keep changes simple, easy to rev
 ## Code Organization
 
 - Agent behavior belongs in `src/agent/`.
-- Dashboard code belongs in `src/dashboard/`.
+- Web UI code belongs in `src/web_ui/`.
 - Prompt templates belong in `src/prompts/`.
 - Strategy rules belong in `src/skills/`.
 - Tests belong in `src/tests/`.
