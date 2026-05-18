@@ -1,27 +1,27 @@
-# Product Brief
+# 产品简报
 
-## Name
+## 名称
 
-AI Study Agent for Middle School Learning
+面向初中学习的 AI 学习智能体
 
-## Purpose
+## 目的
 
-The project demonstrates an active AI assistant that helps a middle school student understand learning progress, identify weak points, create a study plan, and receive timely reminders.
+本项目演示一个主动式 AI 助手，帮助初中学生理解学习进展、识别薄弱点、制定学习计划，并及时收到提醒。
 
-## Users
+## 用户
 
-- Student: uploads homework, exam papers, notes, and questions.
-- Parent or teacher: reviews progress, weak points, and suggested study plans.
-- Competition judges: review the demo workflow, dashboard, and final report.
+- 学生：上传作业、试卷、笔记和问题。
+- 家长或老师：查看学习进展、薄弱点和建议的学习计划。
+- 比赛评委：查看演示工作流、Web 前端和最终报告。
 
-## Core Capabilities
+## 核心能力
 
-- Data ingest from text, image, PDF, or upload events
-- LLM-based analysis and insight generation
-- Interactive daily and weekly study plan generation
-- Reminder and follow-up event generation
-- Dashboard display of history, insights, plans, and events
+- 从文本、图片、PDF 或上传事件摄取数据
+- 基于 LLM 进行分析并生成洞察
+- 交互式生成每日和每周学习计划
+- 生成提醒和后续跟进事件
+- 在 Web 前端中展示历史记录、洞察、计划和事件
 
-## First Demo Scope
+## 第一版演示范围
 
-The first version should emphasize active analysis, study planning, reminders, and conversation. Long-term tracking should appear in the dashboard as supporting evidence.
+第一版应重点展示主动分析、学习规划、提醒和对话能力。长期跟踪应在 Web 前端中作为支撑证据呈现。

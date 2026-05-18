@@ -1,34 +1,34 @@
-# Architecture
+# 架构
 
-The first demo is a file-backed active study agent. Hermes or a similar agent runtime triggers analysis jobs, calls an LLM, writes Markdown/JSON outputs, and exposes those outputs to a dashboard.
+第一版演示是一个基于文件存储的主动学习智能体。Hermes 或类似的智能体运行时触发分析任务，调用 LLM，写入 Markdown/JSON 输出，并将这些输出暴露给 Web 前端。
 
-## Main Flow
+## 主流程
 
-1. A student uploads a file or submits text.
-2. The ingest module extracts usable text and metadata.
-3. The analysis module asks an LLM to identify progress, weak points, and suggestions.
-4. The planner module creates a daily or weekly study plan from the latest insight.
-5. The reminders module records active reminders and follow-up events.
-6. The storage module saves Markdown/JSON files.
-7. The dashboard reads stored files and renders the latest history, insight, plan, and reminders.
+1. 学生上传文件或提交文本。
+2. 摄取模块提取可用文本和元数据。
+3. 分析模块请求 LLM 识别学习进展、薄弱点和建议。
+4. 规划模块基于最新洞察生成每日或每周学习计划。
+5. 提醒模块记录主动提醒和后续跟进事件。
+6. 存储模块保存 Markdown/JSON 文件。
+7. Web 前端读取已存储文件，并渲染最新历史、洞察、计划和提醒。
 
-## Source Modules
+## 源码模块
 
-- `src/agent/ingest/`: text, image, PDF, and upload parsing
-- `src/agent/analysis/`: LLM calls and insight generation
-- `src/agent/planner/`: study plan generation and adjustment rules
-- `src/agent/reminders/`: reminders, scheduled summaries, and event triggers
-- `src/agent/storage/`: Markdown/JSON read and write helpers
-- `src/dashboard/`: web dashboard for reviewing generated outputs
-- `src/prompts/`: prompt templates used by analysis and planning
-- `src/skills/`: skill strategy files such as `study_assistant.skill.md`
-- `src/tests/`: validation and demo tests
+- `src/agent/ingest/`：文本、图片、PDF 和上传内容解析
+- `src/agent/analysis/`：LLM 调用和学习洞察生成
+- `src/agent/planner/`：学习计划生成和调整规则
+- `src/agent/reminders/`：提醒、定期摘要和事件触发
+- `src/agent/storage/`：Markdown/JSON 读写辅助工具
+- `src/web_ui/`：用于查看生成结果的 Web 前端
+- `src/prompts/`：分析和规划使用的提示词模板
+- `src/skills/`：技能策略文件，例如 `study_assistant.skill.md`
+- `src/tests/`：验证和演示测试
 
-## Storage Model
+## 存储模型
 
-The runtime app writes generated records under `runtime/`, which is ignored by Git. Public examples live in `data/sample_outputs/`.
+运行时应用会将生成记录写入 `runtime/`，该目录已被 Git 忽略。公开示例保存在 `data/sample_outputs/`。
 
-Expected runtime records:
+预期的运行时记录包括：
 
 - `student_profile.md`
 - `history.md`
@@ -37,8 +37,8 @@ Expected runtime records:
 - `chat_history.md`
 - `events.log`
 
-This keeps the first version simple while leaving a path to migrate to a database later.
+这种方式让第一版保持简单，同时保留后续迁移到数据库的路径。
 
-## Deployment Target
+## 部署目标
 
-The planned deployment target is a lightweight Tencent Cloud server or Docker container running the agent runtime, webhook service, dashboard, and LLM integration.
+计划部署目标是轻量级腾讯云服务器或 Docker 容器，运行智能体运行时、Webhook 服务、Web 前端和 LLM 集成。

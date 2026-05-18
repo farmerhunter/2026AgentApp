@@ -1,15 +1,15 @@
-# Architecture Decisions
+# 架构决策
 
-## ADR-001: Use File-Backed Storage for the First Demo
+## ADR-001：第一版演示使用基于文件的存储
 
-Decision: store generated insights, plans, chat history, and reminder events as Markdown/JSON files.
+决策：将生成的洞察、计划、聊天历史和提醒事件保存为 Markdown/JSON 文件。
 
-Reason: this keeps the demo easy to inspect, easy to export, and simple to connect to a dashboard.
+原因：这种方式便于检查、导出，也便于连接到 Web 前端。
 
-Future option: migrate to a database if the project grows to support multiple students or heavier history queries.
+未来选项：如果项目发展到支持多个学生或更复杂的历史查询，可以迁移到数据库。
 
-## ADR-002: Keep Raw Planning Material Private
+## ADR-002：保留原始规划材料为私有内容
 
-Decision: raw ChatGPT/Codex logs, source PDFs, and private planning notes belong in `private_notes/`.
+决策：原始 ChatGPT/Codex 日志、源 PDF 和私人规划笔记应放在 `private_notes/` 中。
 
-Reason: the public repository should be clean, understandable, and safe to share.
+原因：公开仓库应保持干净、易理解，并且适合共享。

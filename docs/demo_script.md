@@ -1,18 +1,18 @@
-# Demo Script
+# 演示脚本
 
-## Demo Story
+## 演示故事
 
-A student uploads a recent homework or exam page. The agent analyzes the material, identifies weak points, creates a study plan, and logs a reminder. The dashboard shows the latest insight, plan, and event history.
+学生上传最近的一页作业或试卷。智能体分析材料，识别薄弱点，生成学习计划，并记录提醒。Web 前端展示最新洞察、计划和事件历史。
 
-## Demo Steps
+## 演示步骤
 
-1. Show the student input or uploaded sample file.
-2. Trigger the agent analysis workflow.
-3. Display generated learning insight.
-4. Display generated daily or weekly study plan.
-5. Display reminder or follow-up event.
-6. Open the dashboard and show the stored history.
+1. 展示学生输入或上传的示例文件。
+2. 触发智能体分析工作流。
+3. 展示生成的学习洞察。
+4. 展示生成的每日或每周学习计划。
+5. 展示提醒或后续跟进事件。
+6. 打开 Web 前端，展示已存储的历史记录。
 
-## Key Message
+## 核心信息
 
-This is not only a question-answering assistant. It is an active learning agent that keeps records, analyzes progress, and suggests next actions.
+这不只是一个问答助手，而是一个主动学习智能体：它会保留记录、分析学习进展，并建议下一步行动。

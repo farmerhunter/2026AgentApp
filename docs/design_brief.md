@@ -1,27 +1,27 @@
-# Design Brief
+# 设计简报
 
-Project: AI Study Agent for Middle School Learning
+项目：面向初中学习的 AI 学习智能体
 
-Goal: build a competition-ready demo of an active learning assistant for middle school students.
+目标：构建一个可用于比赛演示的主动学习助手演示版本，服务对象是初中学生。
 
-## Core Idea
+## 核心想法
 
-The agent helps a student turn learning materials into useful next actions. It can ingest homework, exam papers, notes, images, PDFs, or text questions; analyze weak points and progress; generate a study plan; trigger reminders; and show accumulated learning history in a dashboard.
+该智能体帮助学生把学习材料转化为有用的下一步行动。它可以摄取作业、试卷、笔记、图片、PDF 或文本问题；分析薄弱点和学习进展；生成学习计划；触发提醒；并在 Web 前端中展示累积的学习历史。
 
-## Demo Focus
+## 演示重点
 
-- Active analysis after a new upload or scheduled trigger
-- Learning insight generation from text, image, or PDF materials
-- Daily and weekly study plan generation
-- Reminder and follow-up message generation
-- Dashboard view of history, insights, plans, and events
+- 在新上传或定时触发后进行主动分析
+- 从文本、图片或 PDF 材料生成学习洞察
+- 生成每日和每周学习计划
+- 生成提醒和后续跟进消息
+- 在 Web 前端中展示历史记录、洞察、计划和事件
 
-Long-term tracking is important, but the first demo should present it as supporting evidence for active analysis rather than as the main product surface.
+长期跟踪很重要，但第一版演示应将它作为主动分析的支撑证据，而不是主要产品界面。
 
-## Intended Outputs
+## 预期输出
 
-- Markdown or JSON analysis records
-- Markdown or JSON study plans
-- Reminder event logs
-- Dashboard cards or tables for recent insights and plans
-- Final competition report and demo video
+- Markdown 或 JSON 格式的分析记录
+- Markdown 或 JSON 格式的学习计划
+- 提醒事件日志
+- 用于展示近期洞察和计划的 Web 前端卡片或表格
+- 最终比赛报告和演示视频

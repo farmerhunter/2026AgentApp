@@ -1,5 +1,5 @@
-# Reference Links
+# 参考链接
 
-Use this file to collect public competition references, AI documentation, useful examples, and learning resources.
+使用本文件收集公开的比赛参考资料、AI 文档、有用示例和学习资源。
 
-Do not add private files, paid resources, raw PDFs, account-specific URLs, or secret dashboard links.
+不要添加私人文件、付费资源、原始 PDF、特定账号 URL 或包含秘密信息的仪表盘链接。
