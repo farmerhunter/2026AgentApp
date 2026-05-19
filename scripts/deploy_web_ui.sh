@@ -38,6 +38,13 @@ mkdir -p "$DEPLOY_DIR"
 rm -rf "$DEPLOY_DIR"/*
 cp -R dist/* "$DEPLOY_DIR"/
 
+# Sync demo data from build output to Nginx data directory
+if [ -d dist/data ]; then
+  echo "Syncing demo data to /var/www/html/data/ ..."
+  mkdir -p /var/www/html/data
+  cp -R dist/data/* /var/www/html/data/
+fi
+
 sudo systemctl reload nginx
 
 echo "Deployed Hermes Web UI to $DEPLOY_DIR"
