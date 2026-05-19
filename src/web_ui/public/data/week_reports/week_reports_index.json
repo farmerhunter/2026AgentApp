@@ -2,8 +2,18 @@
   "contract": "week_reports_index",
   "contract_version": "1.0",
   "student_id": "小明",
-  "generated_at": "2026-05-18T20:45:00+08:00",
+  "generated_at": "2026-05-25T20:40:00+08:00",
   "reports": [
+    {
+      "weekly_report_id": "week_20260525_20260531",
+      "week_start": "2026-05-25",
+      "week_end": "2026-05-31",
+      "title": "2026-05-25 至 2026-05-31 学习周报",
+      "summary": "本周反比例函数代入验证更稳定，仍需加强图像与实际情境题。",
+      "report_url": "/data/week_reports/week_20260525_20260531.json",
+      "status": "已发布",
+      "published_at": "2026-05-25T20:40:00+08:00"
+    },
     {
       "weekly_report_id": "week_20260518_20260524",
       "week_start": "2026-05-18",
