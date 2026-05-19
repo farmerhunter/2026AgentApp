@@ -2,14 +2,14 @@
   "contract": "textbook_content_summary",
   "contract_version": "1.0",
   "textbook_id": "textbook_math_grade8_demo",
-  "student_id": "student_demo",
-  "subject": "math",
-  "grade": "grade_8",
-  "source_type": "textbook_pdf",
+  "student_id": "小明",
+  "subject": "数学",
+  "grade": "八年级",
+  "source_type": "课本 PDF",
   "source_title": "八年级数学下册示例教材",
   "source_file_url": "/data/textbooks/textbook_math_grade8_demo/source/textbook_summary.pdf",
   "processed_at": "2026-05-18T20:00:00+08:00",
-  "processing_status": "completed",
+  "processing_status": "已完成",
   "chapters": [
     {
       "chapter_id": "chapter_inverse_function",
@@ -32,7 +32,7 @@
             }
           ],
           "expected_progress": {
-            "status": "in_progress",
+            "status": "进行中",
             "planned_week": "2026-05-18/2026-05-24"
           }
         }

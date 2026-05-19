@@ -2,14 +2,14 @@
   "contract": "question_confirmation_result",
   "contract_version": "1.0",
   "upload_id": "upload_20260518_001",
-  "student_id": "student_demo",
+  "student_id": "小明",
   "confirmed_at": "2026-05-18T20:30:00+08:00",
   "confirmed_by": "student",
   "confirmations": [
     {
       "question_id": "q_001",
       "selected": true,
-      "student_mark": "wrong",
+      "student_mark": "做错了",
       "teacher_score": "0",
       "full_score": "3",
       "knowledge_point": "反比例函数图像所在象限",
@@ -17,8 +17,8 @@
         "kp_inverse_function_quadrant"
       ],
       "mistake_reason": "没有根据 k 的正负判断象限。",
-      "review_priority": "high",
-      "review_status": "needs_review",
+      "review_priority": "高",
+      "review_status": "需要复习",
       "tags": [
         "错题",
         "老师讲过"

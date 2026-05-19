@@ -2,14 +2,14 @@
   "contract": "question_confirmation_result",
   "contract_version": "1.0",
   "upload_id": "upload_20260518_001",
-  "student_id": "student_demo",
+  "student_id": "小明",
   "confirmed_at": "2026-05-18T20:30:00+08:00",
   "confirmed_by": "student",
   "confirmations": [
     {
       "question_id": "q_001",
       "selected": true,
-      "student_mark": "wrong",
+      "student_mark": "做错了",
       "teacher_score": "0",
       "full_score": "3",
       "knowledge_point": "反比例函数图像所在象限",
@@ -17,8 +17,8 @@
         "kp_inverse_function_quadrant"
       ],
       "mistake_reason": "没有根据 k 的正负判断象限。",
-      "review_priority": "high",
-      "review_status": "needs_review",
+      "review_priority": "高",
+      "review_status": "需要复习",
       "tags": [
         "错题",
         "老师讲过"
@@ -28,7 +28,7 @@
     {
       "question_id": "q_002",
       "selected": true,
-      "student_mark": "uncertain",
+      "student_mark": "不确定",
       "teacher_score": "2",
       "full_score": "3",
       "knowledge_point": "反比例函数表达式代入验证",
@@ -36,8 +36,8 @@
         "kp_inverse_function_expression"
       ],
       "mistake_reason": "代入验证步骤不完整。",
-      "review_priority": "medium",
-      "review_status": "needs_review",
+      "review_priority": "中",
+      "review_status": "需要复习",
       "tags": [
         "不确定",
         "需要复盘"
@@ -47,7 +47,7 @@
     {
       "question_id": "q_003",
       "selected": false,
-      "student_mark": "mastered",
+      "student_mark": "已掌握",
       "teacher_score": "4",
       "full_score": "4",
       "knowledge_point": "反比例函数关系判断",
@@ -55,8 +55,8 @@
         "kp_inverse_function_expression"
       ],
       "mistake_reason": "",
-      "review_priority": "low",
-      "review_status": "mastered",
+      "review_priority": "低",
+      "review_status": "已掌握",
       "tags": [
         "已掌握"
       ],

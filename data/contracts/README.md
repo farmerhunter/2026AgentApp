@@ -23,7 +23,7 @@ The files are example-shaped contracts rather than strict JSON Schema files. The
 
 ## ID Conventions
 
-- `student_id`: stable student identifier, demo value is `student_demo`.
+- `student_id`: stable student identifier, demo value is `小明`.
 - `textbook_id`: stable textbook or material identifier.
 - `upload_id`: upload session identifier, for example `upload_20260518_001`.
 - `question_id`: question identifier scoped to an upload.

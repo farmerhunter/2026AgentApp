@@ -2,9 +2,9 @@
   "contract": "question_split_result",
   "contract_version": "1.0",
   "upload_id": "upload_20260518_001",
-  "student_id": "student_demo",
+  "student_id": "小明",
   "ocr_provider": "tencent_question_split_ocr",
-  "ocr_status": "completed",
+  "ocr_status": "已完成",
   "processed_at": "2026-05-18T20:21:00+08:00",
   "source_image_url": "/data/question_sessions/upload_20260518_001/original/page_1.jpg",
   "image_size": {

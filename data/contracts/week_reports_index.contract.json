@@ -1,7 +1,7 @@
 {
   "contract": "week_reports_index",
   "contract_version": "1.0",
-  "student_id": "student_demo",
+  "student_id": "小明",
   "generated_at": "2026-05-18T20:45:00+08:00",
   "reports": [
     {
@@ -11,7 +11,7 @@
       "title": "2026-05-18 至 2026-05-24 学习周报",
       "summary": "本周重点关注反比例函数图像与象限判断。",
       "report_url": "/data/week_reports/week_20260518_20260524.json",
-      "status": "published",
+      "status": "已发布",
       "published_at": "2026-05-18T20:45:00+08:00"
     }
   ]
