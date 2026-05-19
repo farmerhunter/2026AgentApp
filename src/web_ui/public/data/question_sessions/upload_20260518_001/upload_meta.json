@@ -1,0 +1,29 @@
+{
+  "contract": "upload_meta",
+  "contract_version": "1.0",
+  "upload_id": "upload_20260518_001",
+  "student_id": "student_demo",
+  "subject": "math",
+  "source_type": "exam_page",
+  "source_title": "反比例函数课堂练习示例页",
+  "captured_at": "2026-05-18",
+  "uploaded_at": "2026-05-18T20:20:00+08:00",
+  "storage_provider": "local_demo",
+  "original_files": [
+    {
+      "file_id": "file_page_1",
+      "page": 1,
+      "content_type": "image/jpeg",
+      "public_url": "/data/question_sessions/upload_20260518_001/original/page_1.jpg",
+      "width": 1200,
+      "height": 1600
+    }
+  ],
+  "ocr_provider": "tencent_question_split_ocr",
+  "ocr_status": "completed",
+  "related_textbook_id": "textbook_math_grade8_demo",
+  "related_chapter_ids": [
+    "chapter_inverse_function"
+  ],
+  "notes": "脱敏示例上传记录，用于第一版 Web UI demo。"
+}

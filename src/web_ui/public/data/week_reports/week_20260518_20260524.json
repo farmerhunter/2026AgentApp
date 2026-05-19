@@ -1,0 +1,128 @@
+{
+  "contract": "weekly_report",
+  "contract_version": "1.0",
+  "weekly_report_id": "week_20260518_20260524",
+  "student": {
+    "student_id": "student_demo",
+    "display_name": "Demo Student",
+    "grade": "grade_8"
+  },
+  "week": {
+    "start": "2026-05-18",
+    "end": "2026-05-24",
+    "title": "2026-05-18 至 2026-05-24 学习周报"
+  },
+  "generated_at": "2026-05-18T20:45:00+08:00",
+  "learning_context": {
+    "textbook_refs": [
+      {
+        "textbook_id": "textbook_math_grade8_demo",
+        "chapter_id": "chapter_inverse_function",
+        "chapter_title": "反比例函数"
+      }
+    ],
+    "progress_summary": "本周学习内容集中在反比例函数表达式和图像象限判断。"
+  },
+  "uploaded_materials": [
+    {
+      "upload_id": "upload_20260518_001",
+      "subject": "math",
+      "source_type": "exam_page",
+      "source_title": "反比例函数课堂练习示例页",
+      "captured_at": "2026-05-18",
+      "public_url": "/data/question_sessions/upload_20260518_001/upload_meta.json"
+    }
+  ],
+  "text_notes": [
+    {
+      "note_id": "note_20260518_001",
+      "subject": "math",
+      "note_type": "student_question",
+      "content": "我总是分不清 k 大于 0 和小于 0 时图像在哪些象限。",
+      "related_knowledge_point_ids": [
+        "kp_inverse_function_quadrant"
+      ]
+    }
+  ],
+  "focus_questions": [
+    {
+      "focus_question_id": "focus_q_20260518_001",
+      "question_id": "q_001",
+      "upload_id": "upload_20260518_001",
+      "subject": "math",
+      "knowledge_point": "反比例函数图像所在象限",
+      "mistake_summary": "学生在判断反比例函数图像所在象限时出错。",
+      "recommended_action": "复习 k 的正负与图像象限关系，并完成 3 道同类题。",
+      "review_priority": "high",
+      "review_status": "needs_review"
+    },
+    {
+      "focus_question_id": "focus_q_20260518_002",
+      "question_id": "q_002",
+      "upload_id": "upload_20260518_001",
+      "subject": "math",
+      "knowledge_point": "反比例函数表达式代入验证",
+      "mistake_summary": "学生在表达代入验证步骤时不完整。",
+      "recommended_action": "练习用点坐标代入反比例函数，并写清判断依据。",
+      "review_priority": "medium",
+      "review_status": "needs_review"
+    }
+  ],
+  "analysis": {
+    "overall_summary": "学生已经接触反比例函数的核心内容，但在图像象限判断和过程表达上仍不稳定。",
+    "main_strengths": [
+      "能够识别题目中给出的点坐标和函数表达式关系。",
+      "能完成部分代入计算。"
+    ],
+    "main_risks": [
+      "k 的正负与图像所在象限之间的对应关系还没有形成稳定记忆。",
+      "解题过程表达不完整，可能造成过程分丢失。"
+    ],
+    "knowledge_gaps": [
+      {
+        "knowledge_point_id": "kp_inverse_function_quadrant",
+        "name": "反比例函数图像所在象限",
+        "severity": "high"
+      },
+      {
+        "knowledge_point_id": "kp_inverse_function_expression",
+        "name": "反比例函数表达式代入验证",
+        "severity": "medium"
+      }
+    ]
+  },
+  "suggestions": [
+    {
+      "suggestion_id": "suggestion_001",
+      "type": "review",
+      "content": "先复习 k 大于 0 和 k 小于 0 时图像所在象限，再做 3 道同类题巩固。",
+      "related_focus_question_ids": [
+        "focus_q_20260518_001"
+      ]
+    },
+    {
+      "suggestion_id": "suggestion_002",
+      "type": "writing",
+      "content": "每道代入验证题都写出“代入、计算、判断”三步，避免只写答案。",
+      "related_focus_question_ids": [
+        "focus_q_20260518_002"
+      ]
+    }
+  ],
+  "next_actions": [
+    {
+      "action_id": "action_001",
+      "title": "完成反比例函数象限判断专项练习",
+      "due_date": "2026-05-21",
+      "priority": "high",
+      "status": "planned"
+    },
+    {
+      "action_id": "action_002",
+      "title": "整理一张 k 的正负与象限关系卡片",
+      "due_date": "2026-05-22",
+      "priority": "medium",
+      "status": "planned"
+    }
+  ]
+}

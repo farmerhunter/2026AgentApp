@@ -1,0 +1,43 @@
+{
+  "contract": "textbook_content_summary",
+  "contract_version": "1.0",
+  "textbook_id": "textbook_math_grade8_demo",
+  "student_id": "student_demo",
+  "subject": "math",
+  "grade": "grade_8",
+  "source_type": "textbook_pdf",
+  "source_title": "八年级数学下册示例教材",
+  "source_file_url": "/data/textbooks/textbook_math_grade8_demo/source/textbook_summary.pdf",
+  "processed_at": "2026-05-18T20:00:00+08:00",
+  "processing_status": "completed",
+  "chapters": [
+    {
+      "chapter_id": "chapter_inverse_function",
+      "chapter_title": "反比例函数",
+      "page_range": "42-58",
+      "learning_units": [
+        {
+          "unit_id": "unit_inverse_function_graph",
+          "title": "反比例函数图像与性质",
+          "knowledge_points": [
+            {
+              "knowledge_point_id": "kp_inverse_function_quadrant",
+              "name": "反比例函数图像所在象限",
+              "description": "根据 k 的正负判断反比例函数图像所在象限。"
+            },
+            {
+              "knowledge_point_id": "kp_inverse_function_expression",
+              "name": "反比例函数表达式",
+              "description": "根据点坐标求反比例函数表达式。"
+            }
+          ],
+          "expected_progress": {
+            "status": "in_progress",
+            "planned_week": "2026-05-18/2026-05-24"
+          }
+        }
+      ]
+    }
+  ],
+  "hermes_summary": "本周示例学习内容集中在反比例函数图像、表达式和象限判断。"
+}
