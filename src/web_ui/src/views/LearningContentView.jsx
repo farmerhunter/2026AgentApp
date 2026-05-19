@@ -1,6 +1,15 @@
-import { contentCards } from "../lib/demoData.js";
+import { EmptyState, ErrorState, LoadingState } from "../components/DataState.jsx";
+import { fetchTextbookSummary } from "../lib/api.js";
+import useAsyncData from "../lib/useAsyncData.js";
+
+const DEMO_TEXTBOOK_ID = "textbook_math_grade8_demo";
 
 export default function LearningContentView() {
+  const { data, error, isLoading } = useAsyncData(() =>
+    fetchTextbookSummary(DEMO_TEXTBOOK_ID),
+  );
+  const chapters = data?.chapters ?? [];
+
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
@@ -11,21 +20,30 @@ export default function LearningContentView() {
         </p>
       </section>
 
+      {isLoading && <LoadingState label="正在读取教材理解数据..." />}
+      {error && <ErrorState error={error} label="教材理解数据读取失败" />}
+      {!isLoading && !error && chapters.length === 0 && (
+        <EmptyState label="暂无教材理解数据" />
+      )}
       <section className="grid gap-4 lg:grid-cols-3">
-        {contentCards.map((card) => (
-          <article
-            key={card.title}
-            className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-              {card.kicker}
-            </p>
-            <h3 className="mt-3 text-lg font-semibold text-ink">{card.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              {card.description}
-            </p>
-          </article>
-        ))}
+        {chapters.flatMap((chapter) =>
+          chapter.learning_units.map((unit) => (
+            <article
+              key={unit.unit_id}
+              className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                {chapter.chapter_title}
+              </p>
+              <h3 className="mt-3 text-lg font-semibold text-ink">
+                {unit.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {unit.knowledge_points.map((point) => point.name).join(" / ")}
+              </p>
+            </article>
+          )),
+        )}
       </section>
     </div>
   );

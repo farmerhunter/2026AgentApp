@@ -1,6 +1,6 @@
 const DATA_BASE_URL = "/data";
 
-async function fetchJson(path) {
+export async function fetchJson(path) {
   const response = await fetch(`${DATA_BASE_URL}${path}`);
 
   if (!response.ok) {
@@ -20,4 +20,12 @@ export function fetchWeeklyReport(fileName) {
 
 export function fetchQuestionSession(uploadId, fileName) {
   return fetchJson(`/question_sessions/${uploadId}/${fileName}`);
+}
+
+export function fetchTextbookSummary(textbookId) {
+  return fetchJson(`/textbooks/${textbookId}/textbook_content_summary.json`);
+}
+
+export function fetchTextNote(noteId) {
+  return fetchJson(`/notes/${noteId}.json`);
 }

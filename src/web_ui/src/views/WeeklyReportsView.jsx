@@ -1,6 +1,23 @@
-import { weeklyReportPreview } from "../lib/demoData.js";
+import { useMemo, useState } from "react";
+import { EmptyState, ErrorState, LoadingState } from "../components/DataState.jsx";
+import { fetchWeekReportsIndex, fetchWeeklyReport } from "../lib/api.js";
+import useAsyncData from "../lib/useAsyncData.js";
 
 export default function WeeklyReportsView() {
+  const [selectedReportUrl, setSelectedReportUrl] = useState(null);
+  const indexState = useAsyncData(fetchWeekReportsIndex);
+  const reports = indexState.data?.reports ?? [];
+  const activeReportUrl = selectedReportUrl ?? reports[0]?.report_url ?? null;
+  const activeFileName = useMemo(
+    () => activeReportUrl?.split("/").pop() ?? null,
+    [activeReportUrl],
+  );
+  const reportState = useAsyncData(
+    () => (activeFileName ? fetchWeeklyReport(activeFileName) : Promise.resolve(null)),
+    [activeFileName],
+  );
+  const report = reportState.data;
+
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
@@ -14,30 +31,85 @@ export default function WeeklyReportsView() {
       <section className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-white/80 bg-white/86 p-4 shadow-sm">
           <p className="text-sm font-semibold text-ink">周报周期</p>
-          <button className="mt-3 w-full rounded-xl border border-aurora/30 bg-aurora/10 px-3 py-3 text-left text-sm font-semibold text-aurora">
-            {weeklyReportPreview.week}
-          </button>
-        </aside>
-        <article className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-ink">
-            {weeklyReportPreview.title}
-          </h3>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
-            {weeklyReportPreview.summary}
-          </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {weeklyReportPreview.metrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-xl border border-slate-200 bg-slate-50/80 p-4"
+          <div className="mt-3 space-y-2">
+            {indexState.isLoading && <LoadingState label="正在读取周报索引..." />}
+            {indexState.error && (
+              <ErrorState error={indexState.error} label="周报索引读取失败" />
+            )}
+            {!indexState.isLoading && !indexState.error && reports.length === 0 && (
+              <EmptyState label="暂无周报" />
+            )}
+            {reports.map((item) => (
+              <button
+                key={item.weekly_report_id}
+                type="button"
+                onClick={() => setSelectedReportUrl(item.report_url)}
+                className={[
+                  "w-full rounded-xl border px-3 py-3 text-left text-sm font-semibold transition",
+                  item.report_url === activeReportUrl
+                    ? "border-aurora/30 bg-aurora/10 text-aurora"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-aurora/30",
+                ].join(" ")}
               >
-                <p className="text-2xl font-bold text-ink">{metric.value}</p>
-                <p className="mt-1 text-sm text-slate-500">{metric.label}</p>
-              </div>
+                {item.title}
+              </button>
             ))}
           </div>
+        </aside>
+        <article className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
+          {reportState.isLoading && <LoadingState label="正在读取周报详情..." />}
+          {reportState.error && (
+            <ErrorState error={reportState.error} label="周报详情读取失败" />
+          )}
+          {!reportState.isLoading && !reportState.error && !report && (
+            <EmptyState label="请选择周报" />
+          )}
+          {report && (
+            <>
+              <h3 className="text-lg font-semibold text-ink">
+                {report.week.title}
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                {report.analysis.overall_summary}
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <Metric label="上传材料" value={report.uploaded_materials.length} />
+                <Metric label="重点题" value={report.focus_questions.length} />
+                <Metric label="下周行动" value={report.next_actions.length} />
+              </div>
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <ReportList title="主要风险" items={report.analysis.main_risks} />
+                <ReportList
+                  title="学习建议"
+                  items={report.suggestions.map((item) => item.content)}
+                />
+              </div>
+            </>
+          )}
         </article>
       </section>
+    </div>
+  );
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+      <p className="text-2xl font-bold text-ink">{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+function ReportList({ title, items }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+      <p className="text-sm font-semibold text-ink">{title}</p>
+      <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
     </div>
   );
 }
