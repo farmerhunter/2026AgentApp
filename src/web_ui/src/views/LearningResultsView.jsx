@@ -1,0 +1,42 @@
+import QuestionReviewView from "./QuestionReviewView.jsx";
+import UploadView from "./UploadView.jsx";
+import { learningResultSteps } from "../lib/demoData.js";
+
+export default function LearningResultsView() {
+  return (
+    <div className="space-y-5">
+      <section className="aurora-panel rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
+        <div className="relative">
+          <p className="text-sm font-semibold text-aurora">用例 2</p>
+          <h2 className="mt-2 text-2xl font-bold leading-tight text-ink">
+            学习成果整理
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+            上传试卷、作业或练习册页面后，学途智伴会先展示切题结果，再进入重点题确认。第一版用
+            placeholder 数据展示顺序流程。
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        {learningResultSteps.map((step) => (
+          <article
+            key={step.title}
+            className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm"
+          >
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-aurora/10 text-sm font-bold text-aurora">
+              {step.step}
+            </div>
+            <h3 className="text-base font-semibold text-ink">{step.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {step.description}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <UploadView />
+      <QuestionReviewView />
+    </div>
+  );
+}
