@@ -41,6 +41,7 @@
 - `docs/11_deployment.md`：部署说明
 - `docs/12_demo_script.md`：演示脚本
 - `docs/13_reference_links.md`：参考链接
+- `docs/14_hermes_agent_runtime.md`：Hermes 智能体运行时、skill、job runner 和 Web 触发设计
 
 ## 仓库结构
 
