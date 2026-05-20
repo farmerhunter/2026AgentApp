@@ -176,6 +176,7 @@ function QuestionImageViewer({ splitResult, activeQuestionId, onSelectQuestion }
   const questions = splitResult?.questions ?? [];
   const imgW = splitResult?.image_size?.width ?? 1200;
   const imgH = splitResult?.image_size?.height ?? 1600;
+  const sourceImageUrl = splitResult?.source_image_url;
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -187,10 +188,16 @@ function QuestionImageViewer({ splitResult, activeQuestionId, onSelectQuestion }
         className="relative mt-3 overflow-hidden rounded-lg border border-dashed border-aurora/30 bg-slate-100"
         style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: 360 }}
       >
-        {/* Placeholder image area */}
         <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
           demo 试卷图片区域
         </div>
+        {sourceImageUrl && (
+          <img
+            src={sourceImageUrl}
+            alt="上传材料原图"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         {/* Bbox overlays */}
         {questions.map((q) => {
           const left = ((q.bbox?.x ?? 0) / imgW) * 100;
@@ -207,7 +214,7 @@ function QuestionImageViewer({ splitResult, activeQuestionId, onSelectQuestion }
                 "absolute rounded border-2 transition hover:opacity-90",
                 isActive
                   ? "border-aurora bg-aurora/15 z-10"
-                  : "border-amber-400/60 bg-amber-50/30",
+                  : "border-amber-400/80 bg-amber-50/20 z-10",
               ].join(" ")}
               style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
               title={`题目 ${q.question_index}: ${q.question_text}`}
