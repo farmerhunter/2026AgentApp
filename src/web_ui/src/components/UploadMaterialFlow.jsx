@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
 import QuestionReviewWorkspace from "./questionReview/QuestionReviewWorkspace.jsx";
+import JobTrigger from "./JobTrigger.jsx";
 import { fetchQuestionSession } from "../lib/api.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
@@ -281,12 +282,21 @@ export default function UploadMaterialFlow({ onCancel }) {
 
       {/* Saved state */}
       {saved && (
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-emerald-700">保存成功 ✓</h3>
-          <p className="mt-1 text-sm text-emerald-600">
-            上传材料流程已完成（demo 状态，未写入服务器）。
-          </p>
-        </section>
+        <div className="space-y-3">
+          <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+            <h3 className="text-lg font-semibold text-emerald-700">保存成功 ✓</h3>
+            <p className="mt-1 text-sm text-emerald-600">
+              上传材料流程已完成（demo 状态，未写入服务器）。
+            </p>
+          </section>
+          <JobTrigger
+            jobType="learning_insight_update"
+            payload={{ source_ids: [selectedDemoSession] }}
+            label="触发 Hermes 学习洞察更新"
+            variant="primary"
+            onComplete={(job) => console.log("learning_insight_update completed:", job.result_path)}
+          />
+        </div>
       )}
 
       {/* Navigation buttons */}

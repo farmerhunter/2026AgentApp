@@ -3,6 +3,7 @@ import { EmptyState, ErrorState, LoadingState } from "../components/DataState.js
 import SubjectFilter, {
   matchesSubject,
 } from "../components/SubjectFilter.jsx";
+import JobTrigger from "../components/JobTrigger.jsx";
 import { fetchTextbookSummary } from "../lib/api.js";
 import { defaultSubjects, demoTextbookIds } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
@@ -185,11 +186,19 @@ export default function LearningContentView() {
         )}
 
         {analysisState === "completed" && (
-          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-            <p className="font-semibold">分析完成 ✓</p>
-            <p className="mt-1 text-emerald-600">
-              教材摘要已生成。下方展示 {formSubject === "chinese" ? "语文" : formSubject === "math" ? "数学" : "英语"} 学科的现有 demo 教材摘要。第一版使用已脱敏的样例数据，未调用真实 LLM。
-            </p>
+          <div className="mt-4 space-y-3">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+              <p className="font-semibold">分析完成 ✓</p>
+              <p className="mt-1 text-emerald-600">
+                教材摘要已生成。下方展示 {formSubject === "chinese" ? "语文" : formSubject === "math" ? "数学" : "英语"} 学科的现有 demo 教材摘要。第一版使用已脱敏的样例数据，未调用真实 LLM。
+              </p>
+            </div>
+            <JobTrigger
+              jobType="textbook_summary"
+              payload={{ textbook_id: formSubject === "chinese" ? "textbook_chinese_grade8_demo" : "textbook_math_grade8_demo" }}
+              label="触发 Hermes 教材分析"
+              onComplete={(job) => console.log("textbook_summary completed:", job.result_path)}
+            />
           </div>
         )}
 

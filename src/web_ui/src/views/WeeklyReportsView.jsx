@@ -3,6 +3,7 @@ import { EmptyState, ErrorState, LoadingState } from "../components/DataState.js
 import SubjectFilter, {
   matchesSubject,
 } from "../components/SubjectFilter.jsx";
+import JobTrigger from "../components/JobTrigger.jsx";
 import { fetchWeekReportsIndex, fetchWeeklyReport } from "../lib/api.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
@@ -47,6 +48,14 @@ export default function WeeklyReportsView() {
         <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
           这里会读取 `/data/week_reports/week_reports_index.json`，再按选择加载对应周报详情。
         </p>
+        <div className="mt-3">
+          <JobTrigger
+            jobType="weekly_report"
+            payload={{ week_start: "2026-05-18", week_end: "2026-05-24" }}
+            label="生成最新周报"
+            onComplete={(job) => console.log("weekly_report completed:", job.result_path)}
+          />
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
