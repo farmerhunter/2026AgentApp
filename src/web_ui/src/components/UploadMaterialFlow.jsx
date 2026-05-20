@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
-import QuestionReviewView from "../views/QuestionReviewView.jsx";
+import QuestionReviewWorkspace from "./questionReview/QuestionReviewWorkspace.jsx";
 import { fetchQuestionSession } from "../lib/api.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
@@ -237,18 +237,18 @@ export default function UploadMaterialFlow({ onCancel }) {
         </section>
       )}
 
-      {/* Step 3: Question Confirmation (shell, delegates to QuestionReviewView) */}
+      {/* Step 3: Question Confirmation (editable workspace) */}
       {stepIndex === 2 && !saved && (
         <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
           <h3 className="text-lg font-semibold text-ink">重点题确认</h3>
           <p className="mt-1 text-sm text-slate-500">
-            选择需要记录的重点题。完整编辑能力（得分、错因、知识点等）由后续 issue #7 实现。
+            选择需要记录的重点题，填写掌握状态、得分、错因、知识点和复习优先级。切换题目时已填内容不会丢失。
           </p>
           <div className="mt-4">
-            {splitData && confirmData ? (
-              <QuestionReviewView
+            {splitData ? (
+              <QuestionReviewWorkspace
                 splitResult={splitData}
-                confirmationResult={confirmData}
+                existingConfirmation={confirmData}
               />
             ) : (
               <LoadingState label="正在加载确认数据..." />
