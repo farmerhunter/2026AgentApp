@@ -1,9 +1,10 @@
 {
   "contract": "upload_meta",
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "upload_id": "upload_20260518_001",
   "student_id": "小明",
-  "subject": "数学",
+  "subject": "math",
+  "subject_label": "数学",
   "source_type": "试卷页",
   "source_title": "反比例函数课堂练习示例页",
   "captured_at": "2026-05-18",
