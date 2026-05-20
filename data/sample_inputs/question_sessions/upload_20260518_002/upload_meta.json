@@ -1,0 +1,30 @@
+{
+  "contract": "upload_meta",
+  "contract_version": "1.1",
+  "upload_id": "upload_20260518_002",
+  "student_id": "小明",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "source_type": "练习页",
+  "source_title": "议论文阅读与片段作文修改示例页",
+  "captured_at": "2026-05-18",
+  "uploaded_at": "2026-05-18T20:24:00+08:00",
+  "storage_provider": "本地演示",
+  "original_files": [
+    {
+      "file_id": "file_page_1",
+      "page": 1,
+      "content_type": "image/jpeg",
+      "public_url": "/data/question_sessions/upload_20260518_002/original/page_1.jpg",
+      "width": 1200,
+      "height": 1600
+    }
+  ],
+  "ocr_provider": "tencent_question_split_ocr",
+  "ocr_status": "已完成",
+  "related_textbook_id": "textbook_chinese_grade8_demo",
+  "related_chapter_ids": [
+    "chapter_argumentative_reading"
+  ],
+  "notes": "脱敏语文示例上传记录，用于第一版 Web UI demo。"
+}

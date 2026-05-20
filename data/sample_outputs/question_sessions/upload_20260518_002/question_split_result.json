@@ -1,0 +1,65 @@
+{
+  "contract": "question_split_result",
+  "contract_version": "1.1",
+  "upload_id": "upload_20260518_002",
+  "student_id": "小明",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "ocr_provider": "tencent_question_split_ocr",
+  "ocr_status": "已完成",
+  "processed_at": "2026-05-18T20:25:00+08:00",
+  "source_image_url": "/data/question_sessions/upload_20260518_002/original/page_1.jpg",
+  "image_size": {
+    "width": 1200,
+    "height": 1600
+  },
+  "questions": [
+    {
+      "question_id": "q_chinese_001",
+      "question_index": 1,
+      "page": 1,
+      "bbox": {
+        "x": 100,
+        "y": 260,
+        "width": 900,
+        "height": 360
+      },
+      "question_text": "阅读短文《把时间用在重要的事上》，概括本文的中心论点，并说明第 3 段举例的作用。",
+      "question_image_url": "/data/question_sessions/upload_20260518_002/crops/q_chinese_001.jpg",
+      "ocr_confidence": null,
+      "related_knowledge_point_ids": [
+        "kp_argument_central_claim",
+        "kp_argument_evidence_analysis"
+      ],
+      "raw_ocr_ref": {
+        "provider": "tencent_question_split_ocr",
+        "raw_response_url": "/data/question_sessions/upload_20260518_002/raw/tencent_raw_response.json",
+        "raw_question_index": 1
+      }
+    },
+    {
+      "question_id": "q_chinese_002",
+      "question_index": 2,
+      "page": 1,
+      "bbox": {
+        "x": 100,
+        "y": 680,
+        "width": 900,
+        "height": 420
+      },
+      "question_text": "修改下面的片段作文，使段落观点更明确，并补充一个能支撑观点的具体细节。",
+      "question_image_url": "/data/question_sessions/upload_20260518_002/crops/q_chinese_002.jpg",
+      "ocr_confidence": null,
+      "related_knowledge_point_ids": [
+        "kp_composition_topic_sentence",
+        "kp_composition_detail_support"
+      ],
+      "raw_ocr_ref": {
+        "provider": "tencent_question_split_ocr",
+        "raw_response_url": "/data/question_sessions/upload_20260518_002/raw/tencent_raw_response.json",
+        "raw_question_index": 2
+      }
+    }
+  ],
+  "errors": []
+}

@@ -17,8 +17,8 @@
     {
       "subject": "chinese",
       "subject_label": "语文",
-      "status": "no_data",
-      "summary": "本周暂无语文学习材料。"
+      "status": "active",
+      "summary": "本周语文继续围绕议论文答题结构和片段作文细节支撑做复习。"
     },
     {
       "subject": "math",
@@ -43,9 +43,18 @@
         "chapter_title": "反比例函数"
       }
     ],
-    "progress_summary": "本周继续围绕反比例函数展开，重点从表达式代入验证推进到图像理解和实际情境题。"
+    "progress_summary": "本周数学继续围绕反比例函数展开，重点从表达式代入验证推进到图像理解和实际情境题；语文继续复习议论文答题结构和片段作文修改。"
   },
   "uploaded_materials": [
+    {
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "source_type": "练习页",
+      "source_title": "议论文阅读与片段作文修改示例页",
+      "captured_at": "2026-05-18",
+      "public_url": "/data/question_sessions/upload_20260518_002/upload_meta.json"
+    },
     {
       "upload_id": "upload_20260518_001",
       "subject": "math",
@@ -58,6 +67,17 @@
   ],
   "text_notes": [
     {
+      "note_id": "note_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "note_type": "课堂提醒",
+      "content": "老师提醒我阅读题不能只摘原文，要先判断中心论点；作文段落要先写清楚自己的观点，再举例说明。",
+      "related_knowledge_point_ids": [
+        "kp_argument_central_claim",
+        "kp_composition_topic_sentence"
+      ]
+    },
+    {
       "note_id": "note_20260518_001",
       "subject": "math",
       "subject_label": "数学",
@@ -69,6 +89,30 @@
     }
   ],
   "focus_questions": [
+    {
+      "focus_question_id": "focus_q_20260525_003",
+      "question_id": "q_chinese_001",
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "knowledge_point": "议论文论据作用分析",
+      "mistake_summary": "学生已经能先找中心论点，但说明论据作用时仍需要更明确地写出支撑关系。",
+      "recommended_action": "用固定句式练习“这个例子证明了……所以能支撑……”的表达。",
+      "review_priority": "中",
+      "review_status": "需要复习"
+    },
+    {
+      "focus_question_id": "focus_q_20260525_004",
+      "question_id": "q_chinese_002",
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "knowledge_point": "作文细节支撑观点",
+      "mistake_summary": "学生能补中心句，但具体例子仍偏概括，需要补动作、场景或语言细节。",
+      "recommended_action": "选一段作文，补充一个具体场景并检查是否支撑中心句。",
+      "review_priority": "中",
+      "review_status": "需要复习"
+    },
     {
       "focus_question_id": "focus_q_20260525_001",
       "question_id": "q_001",
@@ -95,17 +139,33 @@
     }
   ],
   "analysis": {
-    "overall_summary": "小明本周对反比例函数表达式代入验证明显更稳定，能够主动检查点坐标是否满足函数关系。下一步重点是把规则迁移到图像题、表格题和实际情境题中。",
+    "overall_summary": "小明本周数学对反比例函数表达式代入验证明显更稳定，语文能更主动地先找中心论点。下一步重点是数学规则迁移到图像题和情境题，语文把阅读答题和作文修改写得更结构化。",
     "main_strengths": [
       "能够较稳定地完成点坐标代入验证。",
       "开始主动用 k 的正负判断图像所在象限。",
-      "对错题中的关键步骤有更清楚的复述。"
+      "对错题中的关键步骤有更清楚的复述。",
+      "语文阅读题开始先找中心论点。"
     ],
     "main_risks": [
       "图像判断速度还不稳定，遇到坐标轴和象限信息混合时容易犹豫。",
-      "表格题和实际情境题中，文字说明仍偏短，可能影响过程分。"
+      "表格题和实际情境题中，文字说明仍偏短，可能影响过程分。",
+      "语文论据作用和作文细节支撑仍需模板化训练。"
     ],
     "knowledge_gaps": [
+      {
+        "knowledge_point_id": "kp_argument_evidence_analysis",
+        "subject": "chinese",
+        "subject_label": "语文",
+        "name": "论据作用分析",
+        "severity": "中"
+      },
+      {
+        "knowledge_point_id": "kp_composition_detail_support",
+        "subject": "chinese",
+        "subject_label": "语文",
+        "name": "细节支撑观点",
+        "severity": "中"
+      },
       {
         "knowledge_point_id": "kp_inverse_function_quadrant",
         "subject": "math",
@@ -125,8 +185,11 @@
       {
         "subject": "chinese",
         "subject_label": "语文",
-        "summary": "本周暂无语文学习材料，暂不生成具体建议。",
-        "main_risks": []
+        "summary": "语文材料显示，学生开始先找中心论点，但论据作用说明和作文细节支撑仍需要固定模板训练。",
+        "main_risks": [
+          "论据作用回答没有明确写出支撑关系。",
+          "作文例子仍偏概括，缺少具体场景。"
+        ]
       },
       {
         "subject": "math",
@@ -146,6 +209,26 @@
     ]
   },
   "suggestions": [
+    {
+      "suggestion_id": "suggestion_20260525_004",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "type": "阅读答题",
+      "content": "用“论据内容 + 证明的观点 + 表达效果”三步回答论据作用题。",
+      "related_focus_question_ids": [
+        "focus_q_20260525_003"
+      ]
+    },
+    {
+      "suggestion_id": "suggestion_20260525_005",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "type": "作文修改",
+      "content": "每次作文修改至少补一个动作、场景或语言细节，并检查它是否服务中心句。",
+      "related_focus_question_ids": [
+        "focus_q_20260525_004"
+      ]
+    },
     {
       "suggestion_id": "suggestion_20260525_001",
       "subject": "math",
@@ -176,6 +259,24 @@
     }
   ],
   "next_actions": [
+    {
+      "action_id": "action_20260525_004",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "title": "完成 2 道论据作用答题模板练习",
+      "due_date": "2026-05-28",
+      "priority": "中",
+      "status": "已计划"
+    },
+    {
+      "action_id": "action_20260525_005",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "title": "重写一段作文并补充具体场景",
+      "due_date": "2026-05-30",
+      "priority": "中",
+      "status": "已计划"
+    },
     {
       "action_id": "action_20260525_001",
       "subject": "math",

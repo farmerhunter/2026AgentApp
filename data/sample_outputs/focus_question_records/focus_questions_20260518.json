@@ -4,10 +4,12 @@
   "student_id": "小明",
   "generated_at": "2026-05-18T20:40:00+08:00",
   "source_upload_ids": [
-    "upload_20260518_001"
+    "upload_20260518_001",
+    "upload_20260518_002"
   ],
   "source_note_ids": [
-    "note_20260518_001"
+    "note_20260518_001",
+    "note_20260518_002"
   ],
   "records": [
     {
@@ -61,6 +63,62 @@
         {
           "type": "question_confirmation",
           "id": "q_002"
+        }
+      ]
+    },
+    {
+      "focus_question_id": "focus_q_20260518_003",
+      "question_id": "q_chinese_001",
+      "upload_id": "upload_20260518_002",
+      "student_id": "小明",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "related_textbook_id": "textbook_chinese_grade8_demo",
+      "related_chapter_id": "chapter_argumentative_reading",
+      "knowledge_point_ids": [
+        "kp_argument_central_claim",
+        "kp_argument_evidence_analysis"
+      ],
+      "knowledge_point": "议论文中心论点提取和论据作用分析",
+      "mistake_summary": "学生能找到文章中的关键句，但没有稳定区分中心论点和论据作用，回答容易停留在摘抄层面。",
+      "recommended_action": "练习用“中心论点是什么、论据证明了什么、怎样证明”的三步模板回答阅读题。",
+      "review_priority": "高",
+      "review_status": "需要复习",
+      "weekly_report_id": "week_20260518_20260524",
+      "evidence_refs": [
+        {
+          "type": "question_confirmation",
+          "id": "q_chinese_001"
+        },
+        {
+          "type": "text_note",
+          "id": "note_20260518_002"
+        }
+      ]
+    },
+    {
+      "focus_question_id": "focus_q_20260518_004",
+      "question_id": "q_chinese_002",
+      "upload_id": "upload_20260518_002",
+      "student_id": "小明",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "related_textbook_id": "textbook_chinese_grade8_demo",
+      "related_chapter_id": "chapter_argumentative_reading",
+      "knowledge_point_ids": [
+        "kp_composition_topic_sentence",
+        "kp_composition_detail_support"
+      ],
+      "knowledge_point": "片段作文中心句和细节支撑",
+      "mistake_summary": "学生能补充内容，但段落观点不够清楚，例子偏概括，缺少具体动作或场景。",
+      "recommended_action": "每次修改片段作文时先补中心句，再补一个具体动作、场景或语言细节。",
+      "review_priority": "中",
+      "review_status": "需要复习",
+      "weekly_report_id": "week_20260518_20260524",
+      "evidence_refs": [
+        {
+          "type": "question_confirmation",
+          "id": "q_chinese_002"
         }
       ]
     }

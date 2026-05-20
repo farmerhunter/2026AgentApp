@@ -1,0 +1,64 @@
+{
+  "contract": "textbook_content_summary",
+  "contract_version": "1.1",
+  "textbook_id": "textbook_chinese_grade8_demo",
+  "student_id": "小明",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "grade": "八年级",
+  "source_type": "课本 PDF",
+  "source_title": "八年级语文下册示例教材",
+  "source_file_url": "/data/textbooks/textbook_chinese_grade8_demo/source/textbook_summary.pdf",
+  "processed_at": "2026-05-18T20:05:00+08:00",
+  "processing_status": "已完成",
+  "chapters": [
+    {
+      "chapter_id": "chapter_argumentative_reading",
+      "chapter_title": "议论文阅读与观点表达",
+      "page_range": "18-36",
+      "learning_units": [
+        {
+          "unit_id": "unit_argument_structure",
+          "title": "论点、论据和论证结构",
+          "knowledge_points": [
+            {
+              "knowledge_point_id": "kp_argument_central_claim",
+              "name": "中心论点提取",
+              "description": "从题目、开头、结尾和关键句中判断文章中心论点。"
+            },
+            {
+              "knowledge_point_id": "kp_argument_evidence_analysis",
+              "name": "论据作用分析",
+              "description": "判断事实论据、道理论据与中心论点之间的支撑关系。"
+            }
+          ],
+          "expected_progress": {
+            "status": "进行中",
+            "planned_week": "2026-05-18/2026-05-24"
+          }
+        },
+        {
+          "unit_id": "unit_short_composition_revision",
+          "title": "片段作文修改",
+          "knowledge_points": [
+            {
+              "knowledge_point_id": "kp_composition_topic_sentence",
+              "name": "段落中心句",
+              "description": "在段首或段尾明确表达段落观点，使例子和分析围绕中心展开。"
+            },
+            {
+              "knowledge_point_id": "kp_composition_detail_support",
+              "name": "细节支撑观点",
+              "description": "使用具体动作、场景或引用支撑观点，避免空泛评价。"
+            }
+          ],
+          "expected_progress": {
+            "status": "进行中",
+            "planned_week": "2026-05-18/2026-05-24"
+          }
+        }
+      ]
+    }
+  ],
+  "hermes_summary": "本周示例语文学习内容集中在议论文中心论点提取、论据作用分析和片段作文修改。"
+}

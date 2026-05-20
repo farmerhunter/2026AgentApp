@@ -9,12 +9,12 @@
       "week_start": "2026-05-25",
       "week_end": "2026-05-31",
       "title": "2026-05-25 至 2026-05-31 学习周报",
-      "summary": "本周跨学科总览中，数学反比例函数代入验证更稳定，仍需加强图像与实际情境题。",
+      "summary": "本周跨学科总览中，数学反比例函数代入验证更稳定，语文继续加强议论文答题结构和作文细节支撑。",
       "subjects": [
         {
           "subject": "chinese",
           "subject_label": "语文",
-          "status": "no_data"
+          "status": "active"
         },
         {
           "subject": "math",
@@ -36,12 +36,12 @@
       "week_start": "2026-05-18",
       "week_end": "2026-05-24",
       "title": "2026-05-18 至 2026-05-24 学习周报",
-      "summary": "本周跨学科总览中，数学重点关注反比例函数图像与象限判断。",
+      "summary": "本周跨学科总览中，数学重点关注反比例函数图像与象限判断，语文重点关注议论文阅读和片段作文修改。",
       "subjects": [
         {
           "subject": "chinese",
           "subject_label": "语文",
-          "status": "no_data"
+          "status": "active"
         },
         {
           "subject": "math",
