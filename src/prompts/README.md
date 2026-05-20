@@ -15,7 +15,13 @@ First-version prompt templates:
 - `learning_insight_update.prompt.md`: supports the `learning_insight_update` job.
 - `weekly_report.prompt.md`: supports the `weekly_report` job.
 
-Current local repo may not yet include the latest VPS-created skill files for #45. These prompt templates therefore reference the design docs and contracts directly. After #45 is synced back, verify the prompts against the final skill files.
+The prompt templates have been checked against the #45 task-specific skill files now present in `src/skills/`:
+
+- `src/skills/textbook_summary.skill.md`
+- `src/skills/learning_insight_update.skill.md`
+- `src/skills/weekly_report.skill.md`
+
+They also reference the #53 finding / insight / memory contracts now present in `data/contracts/`.
 
 ## Usage In Job Runner
 
@@ -41,3 +47,27 @@ All Hermes prompts must follow these rules:
 - Do not invent source materials, student answers, scores, or teacher comments.
 - Do not expose local absolute paths, API keys, private notes, or real student privacy.
 - Keep recommendations concrete, limited, and suitable for a middle school student.
+
+## Skill Alignment Notes
+
+`textbook_summary.prompt.md` aligns with `textbook_summary.skill.md`:
+
+- Preserves `subject` / `subject_label`.
+- Produces `textbook_content_summary` JSON.
+- Marks uncertain textbook structure instead of inventing chapters or knowledge points.
+- Avoids storing long textbook passages.
+
+`learning_insight_update.prompt.md` aligns with `learning_insight_update.skill.md`:
+
+- Treats this as the core Hermes capability.
+- Produces local findings, not global insights.
+- Uses `learning_findings.contract.json` as the primary output shape.
+- Allows focus-question records as a secondary output when the job runner requests an output bundle.
+- Keeps memory candidates separate from short-term and long-term memory writes.
+
+`weekly_report.prompt.md` aligns with `weekly_report.skill.md`:
+
+- Consumes local findings and memory before raw evidence.
+- Keeps consolidation as an explicit step.
+- Allows a high-confidence, high-priority single finding to become an `early_stage` consolidated insight, matching the skill rules.
+- Keeps next actions limited and executable.

@@ -8,7 +8,8 @@ Design references:
 - `docs/16_learning_insight_update_skill_design.md`
 - `docs/14_hermes_agent_runtime.md`
 - `data/contracts/focus_question_records.contract.json`
-- Planned: `learning_findings.contract.json`, `learning_memory_snapshot.contract.json`
+- `data/contracts/learning_findings.contract.json`
+- `data/contracts/learning_memory_snapshot.contract.json`
 
 ## Role
 
@@ -46,11 +47,11 @@ Inputs can include multiple subjects. Do not limit the analysis to the current W
 
 Analyze the provided learning evidence and produce structured JSON containing:
 
-- focus-question records for selected and confirmed key questions
 - local findings
 - memory candidates
 - action candidates
 - weekly context candidates
+- focus-question records for selected and confirmed key questions when the job runner requests a bundled output
 
 The output should explain:
 
@@ -72,16 +73,16 @@ The top-level JSON should include:
 - `contract_version`
 - `finding_batch_id`
 - `student_id`
+- `subject`
+- `subject_label`
+- `generated_by`
 - `generated_at`
 - `source_refs`
-- `focus_question_records`
 - `findings`
-- `memory_candidates`
-- `action_candidates`
-- `weekly_context_candidates`
-- `warnings`
 
 If the job runner provides updated contract examples from #53, follow those shapes exactly.
+
+The primary output shape is `learning_findings.contract.json`. `memory_candidates`, `action_candidates`, and `weekly_context_candidates` live inside each finding. If the job runner needs a combined bundle, it may also request `focus_question_records` as a secondary output conforming to `focus_question_records.contract.json`.
 
 ## Procedure
 

@@ -9,7 +9,8 @@ Design references:
 - `docs/14_hermes_agent_runtime.md`
 - `data/contracts/weekly_report.contract.json`
 - `data/contracts/week_reports_index.contract.json`
-- Planned: `insight_consolidation.contract.json`, `learning_memory_snapshot.contract.json`
+- `data/contracts/insight_consolidation.contract.json`
+- `data/contracts/learning_memory_snapshot.contract.json`
 
 ## Role
 
@@ -95,8 +96,9 @@ If updated contracts include `consolidated_insights`, `insight_consolidation`, o
 
 ## Consolidation Rules
 
-- A consolidated insight must be based on multiple findings, short-term memory, long-term memory, or a repeated historical pattern.
-- Do not call a single isolated local finding an insight.
+- A consolidated insight should usually be based on multiple findings, short-term memory, long-term memory, or a repeated historical pattern.
+- A single finding may become an insight only when it is high confidence and high priority; mark its pattern as `early_stage`.
+- Do not call a single minor or low-confidence local finding an insight.
 - Do not exaggerate one mistake into a long-term weakness.
 - If evidence is weak, keep the statement local and mark uncertainty.
 - Memory updates should remain candidates unless contract and workflow explicitly allow writing long-term memory.
