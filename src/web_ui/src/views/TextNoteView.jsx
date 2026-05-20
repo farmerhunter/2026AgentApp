@@ -1,13 +1,20 @@
+import { useState } from "react";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
+import SubjectFilter, {
+  matchesSubject,
+} from "../components/SubjectFilter.jsx";
 import { fetchTextNote } from "../lib/api.js";
+import { defaultSubjects, demoNoteIds } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
-const DEMO_NOTE_ID = "note_20260518_001";
-
 export default function TextNoteView() {
+  const [selectedSubject, setSelectedSubject] = useState("all");
+  const [draftSubject, setDraftSubject] = useState("math");
   const { data, error, isLoading } = useAsyncData(() =>
-    fetchTextNote(DEMO_NOTE_ID),
+    Promise.all(demoNoteIds.map((noteId) => fetchTextNote(noteId))),
   );
+  const notes = data ?? [];
+  const filteredNotes = notes.filter((note) => matchesSubject(note, selectedSubject));
 
   return (
     <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
@@ -17,24 +24,56 @@ export default function TextNoteView() {
         记录课堂提醒、自己不理解的知识点、复习备注或临时问题。后续这些文字会和课本章节、学习成果、重点题一起进入
         Hermes 分析。
       </p>
+      <SubjectFilter
+        value={selectedSubject}
+        onChange={setSelectedSubject}
+        subjects={defaultSubjects}
+        className="mt-4"
+      />
       <div className="mt-5">
         {isLoading && <LoadingState label="正在读取备注样例..." />}
         {error && <ErrorState error={error} label="备注样例读取失败" />}
-        {data && (
-          <div className="rounded-xl border border-aurora/20 bg-aurora/5 p-4 text-sm leading-6 text-slate-600">
-            <p className="font-semibold text-ink">已读取备注样例</p>
-            <p className="mt-2">{data.content}</p>
-            <p className="mt-2 text-xs text-slate-500">
-              {data.subject} · {data.note_type} · {data.student_confidence}
-            </p>
+        {data && filteredNotes.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-500">
+            当前学科暂无备注样例。
           </div>
         )}
+        {filteredNotes.map((note) => (
+          <div
+            key={note.note_id}
+            className="mb-3 rounded-xl border border-aurora/20 bg-aurora/5 p-4 text-sm leading-6 text-slate-600"
+          >
+            <p className="font-semibold text-ink">已读取备注样例</p>
+            <p className="mt-2">{note.content}</p>
+            <p className="mt-2 text-xs text-slate-500">
+              {note.subject_label} · {note.note_type} · {note.student_confidence}
+            </p>
+          </div>
+        ))}
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <textarea
-          className="min-h-48 resize-y rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 outline-none transition placeholder:text-slate-400 focus:border-aurora focus:ring-4 focus:ring-aurora/10"
-          placeholder="例如：今天老师强调反比例函数图像所在象限，我还是容易把 k 的正负和象限对应关系记反。"
-        />
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-ink" htmlFor="note-subject">
+            备注学科
+          </label>
+          <select
+            id="note-subject"
+            value={draftSubject}
+            onChange={(event) => setDraftSubject(event.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-aurora focus:ring-4 focus:ring-aurora/10"
+          >
+            <option value="chinese">语文</option>
+            <option value="math">数学</option>
+            <option value="english">英语</option>
+          </select>
+          <textarea
+            className="min-h-48 w-full resize-y rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 outline-none transition placeholder:text-slate-400 focus:border-aurora focus:ring-4 focus:ring-aurora/10"
+            placeholder="例如：今天老师提醒阅读题要先判断中心论点，再说明论据作用。"
+          />
+          <button className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora">
+            保存备注
+          </button>
+        </div>
         <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-600">
           <p className="font-semibold text-ink">备注会用于</p>
           <ul className="mt-3 space-y-2">

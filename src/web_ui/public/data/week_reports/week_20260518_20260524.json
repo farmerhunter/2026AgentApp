@@ -1,6 +1,6 @@
 {
   "contract": "weekly_report",
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "weekly_report_id": "week_20260518_20260524",
   "student": {
     "student_id": "小明",
@@ -13,20 +13,52 @@
     "title": "2026-05-18 至 2026-05-24 学习周报"
   },
   "generated_at": "2026-05-18T20:45:00+08:00",
+  "subjects": [
+    {
+      "subject": "chinese",
+      "subject_label": "语文",
+      "status": "active",
+      "summary": "本周语文重点关注议论文中心论点提取、论据作用分析和片段作文修改。"
+    },
+    {
+      "subject": "math",
+      "subject_label": "数学",
+      "status": "active",
+      "summary": "本周数学重点关注反比例函数表达式和图像象限判断。"
+    },
+    {
+      "subject": "english",
+      "subject_label": "英语",
+      "status": "no_data",
+      "summary": "本周暂无英语学习材料。"
+    }
+  ],
   "learning_context": {
     "textbook_refs": [
       {
         "textbook_id": "textbook_math_grade8_demo",
+        "subject": "math",
+        "subject_label": "数学",
         "chapter_id": "chapter_inverse_function",
         "chapter_title": "反比例函数"
       }
     ],
-    "progress_summary": "本周学习内容集中在反比例函数表达式和图像象限判断。"
+    "progress_summary": "本周学习内容集中在数学反比例函数表达式与图像象限判断，以及语文议论文阅读和片段作文修改。"
   },
   "uploaded_materials": [
     {
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "source_type": "练习页",
+      "source_title": "议论文阅读与片段作文修改示例页",
+      "captured_at": "2026-05-18",
+      "public_url": "/data/question_sessions/upload_20260518_002/upload_meta.json"
+    },
+    {
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "source_type": "试卷页",
       "source_title": "反比例函数课堂练习示例页",
       "captured_at": "2026-05-18",
@@ -35,8 +67,20 @@
   ],
   "text_notes": [
     {
+      "note_id": "note_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "note_type": "课堂提醒",
+      "content": "老师提醒我阅读题不能只摘原文，要先判断中心论点；作文段落要先写清楚自己的观点，再举例说明。",
+      "related_knowledge_point_ids": [
+        "kp_argument_central_claim",
+        "kp_composition_topic_sentence"
+      ]
+    },
+    {
       "note_id": "note_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "note_type": "学生问题",
       "content": "我总是分不清 k 大于 0 和小于 0 时图像在哪些象限。",
       "related_knowledge_point_ids": [
@@ -46,10 +90,35 @@
   ],
   "focus_questions": [
     {
+      "focus_question_id": "focus_q_20260518_003",
+      "question_id": "q_chinese_001",
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "knowledge_point": "议论文中心论点提取和论据作用分析",
+      "mistake_summary": "学生能找到关键句，但回答论据作用时仍停留在摘抄层面。",
+      "recommended_action": "练习用“中心论点、论据内容、证明作用”三步回答阅读题。",
+      "review_priority": "高",
+      "review_status": "需要复习"
+    },
+    {
+      "focus_question_id": "focus_q_20260518_004",
+      "question_id": "q_chinese_002",
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "knowledge_point": "片段作文中心句和细节支撑",
+      "mistake_summary": "学生修改作文时观点不够明确，例子缺少具体细节。",
+      "recommended_action": "每个片段先写中心句，再补一个具体动作、场景或语言细节。",
+      "review_priority": "中",
+      "review_status": "需要复习"
+    },
+    {
       "focus_question_id": "focus_q_20260518_001",
       "question_id": "q_001",
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "knowledge_point": "反比例函数图像所在象限",
       "mistake_summary": "学生在判断反比例函数图像所在象限时出错。",
       "recommended_action": "复习 k 的正负与图像象限关系，并完成 3 道同类题。",
@@ -60,7 +129,8 @@
       "focus_question_id": "focus_q_20260518_002",
       "question_id": "q_002",
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "knowledge_point": "反比例函数表达式代入验证",
       "mistake_summary": "学生在表达代入验证步骤时不完整。",
       "recommended_action": "练习用点坐标代入反比例函数，并写清判断依据。",
@@ -69,31 +139,99 @@
     }
   ],
   "analysis": {
-    "overall_summary": "学生已经接触反比例函数的核心内容，但在图像象限判断和过程表达上仍不稳定。",
+    "overall_summary": "学生本周在数学和语文都有可追踪材料。数学主要问题是反比例函数图像象限判断和过程表达；语文主要问题是议论文阅读回答不够结构化、作文片段观点和细节支撑不足。",
     "main_strengths": [
       "能够识别题目中给出的点坐标和函数表达式关系。",
-      "能完成部分代入计算。"
+      "能完成部分代入计算。",
+      "语文阅读题能定位原文关键句。"
     ],
     "main_risks": [
       "k 的正负与图像所在象限之间的对应关系还没有形成稳定记忆。",
-      "解题过程表达不完整，可能造成过程分丢失。"
+      "解题过程表达不完整，可能造成过程分丢失。",
+      "语文阅读和作文回答容易停留在摘抄或空泛评价，缺少结构化说明。"
     ],
     "knowledge_gaps": [
       {
+        "knowledge_point_id": "kp_argument_central_claim",
+        "subject": "chinese",
+        "subject_label": "语文",
+        "name": "议论文中心论点提取",
+        "severity": "高"
+      },
+      {
+        "knowledge_point_id": "kp_composition_topic_sentence",
+        "subject": "chinese",
+        "subject_label": "语文",
+        "name": "片段作文中心句",
+        "severity": "中"
+      },
+      {
         "knowledge_point_id": "kp_inverse_function_quadrant",
+        "subject": "math",
+        "subject_label": "数学",
         "name": "反比例函数图像所在象限",
         "severity": "高"
       },
       {
         "knowledge_point_id": "kp_inverse_function_expression",
+        "subject": "math",
+        "subject_label": "数学",
         "name": "反比例函数表达式代入验证",
         "severity": "中"
+      }
+    ],
+    "subject_summaries": [
+      {
+        "subject": "chinese",
+        "subject_label": "语文",
+        "summary": "语文材料显示，学生能找到文本关键句，但还需要把中心论点、论据作用和作文中心句表达得更清楚。",
+        "main_risks": [
+          "阅读题回答停留在摘抄，缺少对论据作用的说明。",
+          "作文片段观点不够明确，具体细节支撑不足。"
+        ]
+      },
+      {
+        "subject": "math",
+        "subject_label": "数学",
+        "summary": "数学材料显示，学生在反比例函数图像象限判断和过程表达上仍不稳定。",
+        "main_risks": [
+          "k 的正负与图像所在象限之间的对应关系还没有形成稳定记忆。",
+          "解题过程表达不完整，可能造成过程分丢失。"
+        ]
+      },
+      {
+        "subject": "english",
+        "subject_label": "英语",
+        "summary": "本周暂无英语学习材料，暂不生成具体建议。",
+        "main_risks": []
       }
     ]
   },
   "suggestions": [
     {
+      "suggestion_id": "suggestion_003",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "type": "阅读答题",
+      "content": "议论文阅读题先写中心论点，再用“这个例子证明了……”说明论据作用。",
+      "related_focus_question_ids": [
+        "focus_q_20260518_003"
+      ]
+    },
+    {
+      "suggestion_id": "suggestion_004",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "type": "作文修改",
+      "content": "片段作文修改时先补中心句，再补一个具体动作或场景，避免只写空泛评价。",
+      "related_focus_question_ids": [
+        "focus_q_20260518_004"
+      ]
+    },
+    {
       "suggestion_id": "suggestion_001",
+      "subject": "math",
+      "subject_label": "数学",
       "type": "复习",
       "content": "先复习 k 大于 0 和 k 小于 0 时图像所在象限，再做 3 道同类题巩固。",
       "related_focus_question_ids": [
@@ -102,6 +240,8 @@
     },
     {
       "suggestion_id": "suggestion_002",
+      "subject": "math",
+      "subject_label": "数学",
       "type": "过程表达",
       "content": "每道代入验证题都写出“代入、计算、判断”三步，避免只写答案。",
       "related_focus_question_ids": [
@@ -111,7 +251,27 @@
   ],
   "next_actions": [
     {
+      "action_id": "action_003",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "title": "完成 2 道议论文论据作用题",
+      "due_date": "2026-05-21",
+      "priority": "高",
+      "status": "已计划"
+    },
+    {
+      "action_id": "action_004",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "title": "修改一段作文并标出中心句",
+      "due_date": "2026-05-22",
+      "priority": "中",
+      "status": "已计划"
+    },
+    {
       "action_id": "action_001",
+      "subject": "math",
+      "subject_label": "数学",
       "title": "完成反比例函数象限判断专项练习",
       "due_date": "2026-05-21",
       "priority": "高",
@@ -119,6 +279,8 @@
     },
     {
       "action_id": "action_002",
+      "subject": "math",
+      "subject_label": "数学",
       "title": "整理一张 k 的正负与象限关系卡片",
       "due_date": "2026-05-22",
       "priority": "中",

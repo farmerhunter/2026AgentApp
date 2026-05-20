@@ -2,6 +2,7 @@ import { EmptyState } from "../components/DataState.jsx";
 
 export default function UploadView({ uploadMeta }) {
   const files = uploadMeta?.original_files ?? [];
+  const subjectLabel = uploadMeta?.subject_label ?? uploadMeta?.subject ?? "-";
 
   return (
     <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
@@ -14,7 +15,7 @@ export default function UploadView({ uploadMeta }) {
           </p>
         </div>
         <button className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora">
-          添加材料
+          上传材料
         </button>
       </div>
 
@@ -30,7 +31,7 @@ export default function UploadView({ uploadMeta }) {
             <div className="min-w-0">
               <p className="font-semibold text-ink">{uploadMeta.source_title}</p>
               <p className="mt-1 text-sm text-slate-500">
-                {uploadMeta.subject} · {uploadMeta.source_type} ·{" "}
+                {subjectLabel} · {uploadMeta.source_type} ·{" "}
                 {uploadMeta.captured_at}
               </p>
             </div>
@@ -40,6 +41,7 @@ export default function UploadView({ uploadMeta }) {
           </div>
           <div className="mt-4 grid gap-2 text-sm text-slate-500">
             <p>上传编号：{uploadMeta.upload_id}</p>
+            <p>学科：{subjectLabel}</p>
             <p>关联教材：{uploadMeta.related_textbook_id}</p>
             <p>文件数量：{files.length}</p>
           </div>

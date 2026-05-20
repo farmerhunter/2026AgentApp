@@ -1,10 +1,14 @@
 import { useMemo, useState } from "react";
 import { EmptyState, ErrorState, LoadingState } from "../components/DataState.jsx";
+import SubjectFilter, {
+  matchesSubject,
+} from "../components/SubjectFilter.jsx";
 import { fetchWeekReportsIndex, fetchWeeklyReport } from "../lib/api.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 export default function WeeklyReportsView() {
   const [selectedReportUrl, setSelectedReportUrl] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState("all");
   const indexState = useAsyncData(fetchWeekReportsIndex);
   const reports = indexState.data?.reports ?? [];
   const activeReportUrl = selectedReportUrl ?? reports[0]?.report_url ?? null;
@@ -17,6 +21,23 @@ export default function WeeklyReportsView() {
     [activeFileName],
   );
   const report = reportState.data;
+  const reportSubjects = report?.subjects ?? [];
+  const filteredMaterials =
+    report?.uploaded_materials.filter((item) => matchesSubject(item, selectedSubject)) ??
+    [];
+  const filteredQuestions =
+    report?.focus_questions.filter((item) => matchesSubject(item, selectedSubject)) ??
+    [];
+  const filteredSuggestions =
+    report?.suggestions.filter((item) => matchesSubject(item, selectedSubject)) ?? [];
+  const filteredActions =
+    report?.next_actions.filter((item) => matchesSubject(item, selectedSubject)) ?? [];
+  const filteredRisks =
+    selectedSubject === "all"
+      ? report?.analysis.main_risks ?? []
+      : (report?.analysis.subject_summaries
+          ?.find((item) => item.subject === selectedSubject)
+          ?.main_risks ?? []);
 
   return (
     <div className="space-y-5">
@@ -69,19 +90,45 @@ export default function WeeklyReportsView() {
               <h3 className="text-lg font-semibold text-ink">
                 {report.week.title}
               </h3>
+              <SubjectFilter
+                value={selectedSubject}
+                onChange={setSelectedSubject}
+                subjects={reportSubjects}
+                className="mt-4"
+              />
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                {report.analysis.overall_summary}
+                {selectedSubject === "all"
+                  ? report.analysis.overall_summary
+                  : report.analysis.subject_summaries?.find(
+                      (item) => item.subject === selectedSubject,
+                    )?.summary ?? "当前学科暂无周报摘要。"}
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <Metric label="上传材料" value={report.uploaded_materials.length} />
-                <Metric label="重点题" value={report.focus_questions.length} />
-                <Metric label="下周行动" value={report.next_actions.length} />
+                <Metric label="上传材料" value={filteredMaterials.length} />
+                <Metric label="重点题" value={filteredQuestions.length} />
+                <Metric label="下周行动" value={filteredActions.length} />
               </div>
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                <ReportList title="主要风险" items={report.analysis.main_risks} />
+                <ReportList title="主要风险" items={filteredRisks} />
                 <ReportList
                   title="学习建议"
-                  items={report.suggestions.map((item) => item.content)}
+                  items={filteredSuggestions.map(
+                    (item) => `${item.subject_label}：${item.content}`,
+                  )}
+                />
+              </div>
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <ReportList
+                  title="重点题"
+                  items={filteredQuestions.map(
+                    (item) => `${item.subject_label}：${item.knowledge_point}`,
+                  )}
+                />
+                <ReportList
+                  title="下周行动"
+                  items={filteredActions.map(
+                    (item) => `${item.subject_label}：${item.title}`,
+                  )}
                 />
               </div>
             </>
@@ -106,6 +153,7 @@ function ReportList({ title, items }) {
     <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
       <p className="text-sm font-semibold text-ink">{title}</p>
       <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+        {items.length === 0 && <li className="text-slate-400">当前学科暂无数据</li>}
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}

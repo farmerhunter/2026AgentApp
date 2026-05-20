@@ -1,0 +1,23 @@
+{
+  "contract": "text_note",
+  "contract_version": "1.1",
+  "note_id": "note_20260518_002",
+  "student_id": "小明",
+  "created_at": "2026-05-18T20:18:00+08:00",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "note_type": "课堂提醒",
+  "related_textbook_id": "textbook_chinese_grade8_demo",
+  "related_chapter_id": "chapter_argumentative_reading",
+  "related_knowledge_point_ids": [
+    "kp_argument_central_claim",
+    "kp_composition_topic_sentence"
+  ],
+  "content": "老师提醒我阅读题不能只摘原文，要先判断中心论点；作文段落要先写清楚自己的观点，再举例说明。",
+  "student_confidence": "中",
+  "tags": [
+    "课堂提醒",
+    "需要复习"
+  ],
+  "visibility": "演示公开"
+}

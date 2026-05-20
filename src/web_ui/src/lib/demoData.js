@@ -43,3 +43,30 @@ export const learningResultSteps = [
     description: "学生选择需要记录的题，补充得分、错因、知识点、备注和优先级。",
   },
 ];
+
+export const demoUploadIds = ["upload_20260518_001", "upload_20260518_002"];
+
+export const demoTextbookIds = [
+  "textbook_math_grade8_demo",
+  "textbook_chinese_grade8_demo",
+];
+
+export const demoNoteIds = ["note_20260518_001", "note_20260518_002"];
+
+export const defaultSubjects = [
+  {
+    subject: "chinese",
+    subject_label: "语文",
+    status: "active",
+  },
+  {
+    subject: "math",
+    subject_label: "数学",
+    status: "active",
+  },
+  {
+    subject: "english",
+    subject_label: "英语",
+    status: "no_data",
+  },
+];
