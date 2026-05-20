@@ -1,0 +1,56 @@
+{
+  "contract": "learning_memory_snapshot",
+  "contract_version": "1.0",
+  "memory_snapshot_id": "short_term_memory_2026W21",
+  "student_id": "小明",
+  "memory_scope": "short_term",
+  "period": {
+    "week_start": "2026-05-18",
+    "week_end": "2026-05-24"
+  },
+  "generated_at": "2026-05-25T20:00:00+08:00",
+  "source_finding_refs": [
+    {
+      "finding_batch_id": "findings_20260518_math",
+      "ref_path": "/data/learning_findings/findings_20260518_math.json"
+    },
+    {
+      "finding_batch_id": "findings_20260518_chinese",
+      "ref_path": "/data/learning_findings/findings_20260518_chinese.json"
+    }
+  ],
+  "active_followups": [
+    {
+      "followup_id": "followup_2026W21_001",
+      "subject": "math",
+      "subject_label": "数学",
+      "content": "反比例函数象限判断是否稳定——下周检查同类题目。",
+      "source_finding": "finding_math_001",
+      "priority": "高",
+      "status": "pending",
+      "target_week": "2026-05-25/2026-05-31"
+    },
+    {
+      "followup_id": "followup_2026W21_002",
+      "subject": "math",
+      "subject_label": "数学",
+      "content": "解题步骤规范性——检查是否持续写出完整代入验证。",
+      "source_finding": "finding_math_002",
+      "priority": "中",
+      "status": "pending",
+      "target_week": "2026-05-25/2026-05-31"
+    },
+    {
+      "followup_id": "followup_2026W21_003",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "content": "议论文论据分析能力是否提升——下周检查同类练习。",
+      "source_finding": "finding_chinese_001",
+      "priority": "中",
+      "status": "pending",
+      "target_week": "2026-05-25/2026-05-31"
+    }
+  ],
+  "stable_patterns": [],
+  "notes": "第一版短期记忆。stable_patterns 在第一周为空是正常的——重复出现的模式需要通过多周 consolidation 积累后才写入长期记忆。"
+}
