@@ -42,6 +42,9 @@
 - `docs/12_demo_script.md`：演示脚本
 - `docs/13_reference_links.md`：参考链接
 - `docs/14_hermes_agent_runtime.md`：Hermes 智能体运行时、skill、job runner 和 Web 触发设计
+- `docs/15_textbook_summary_skill_design.md`：教材摘要 skill 设计
+- `docs/16_learning_insight_update_skill_design.md`：学习洞察更新 skill 设计，项目核心智能体能力
+- `docs/17_weekly_report_skill_design.md`：周报生成 skill 设计
 
 ## 仓库结构
 
