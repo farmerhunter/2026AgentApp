@@ -8,10 +8,9 @@ export default function UploadView({ uploadMeta }) {
     <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-ink">添加材料</h3>
+          <h3 className="text-lg font-semibold text-ink">{uploadMeta?.source_title || "已上传材料"}</h3>
           <p className="text-sm text-slate-500">
-            当前读取 /data/question_sessions/
-            {uploadMeta?.upload_id ?? "upload_id"}/upload_meta.json
+            {uploadMeta?.subject_label ?? uploadMeta?.subject ?? "-"} · {uploadMeta?.source_type ?? "-"}
           </p>
         </div>
         <button className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora">
