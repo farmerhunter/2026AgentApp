@@ -1,8 +1,10 @@
 {
   "contract": "question_split_result",
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "upload_id": "upload_20260518_001",
   "student_id": "小明",
+  "subject": "math",
+  "subject_label": "数学",
   "ocr_provider": "tencent_question_split_ocr",
   "ocr_status": "已完成",
   "processed_at": "2026-05-18T20:21:00+08:00",

@@ -1,6 +1,6 @@
 {
   "contract": "weekly_report",
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "weekly_report_id": "week_20260525_20260531",
   "student": {
     "student_id": "小明",
@@ -13,10 +13,32 @@
     "title": "2026-05-25 至 2026-05-31 学习周报"
   },
   "generated_at": "2026-05-25T20:40:00+08:00",
+  "subjects": [
+    {
+      "subject": "chinese",
+      "subject_label": "语文",
+      "status": "no_data",
+      "summary": "本周暂无语文学习材料。"
+    },
+    {
+      "subject": "math",
+      "subject_label": "数学",
+      "status": "active",
+      "summary": "本周数学反比例函数代入验证更稳定，仍需加强图像与实际情境题。"
+    },
+    {
+      "subject": "english",
+      "subject_label": "英语",
+      "status": "no_data",
+      "summary": "本周暂无英语学习材料。"
+    }
+  ],
   "learning_context": {
     "textbook_refs": [
       {
         "textbook_id": "textbook_math_grade8_demo",
+        "subject": "math",
+        "subject_label": "数学",
         "chapter_id": "chapter_inverse_function",
         "chapter_title": "反比例函数"
       }
@@ -26,7 +48,8 @@
   "uploaded_materials": [
     {
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "source_type": "试卷页",
       "source_title": "反比例函数课堂练习示例页",
       "captured_at": "2026-05-18",
@@ -36,7 +59,8 @@
   "text_notes": [
     {
       "note_id": "note_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "note_type": "学生问题",
       "content": "我现在能记住 k 大于 0 和小于 0 的象限，但遇到图像和应用题时还是会慢。",
       "related_knowledge_point_ids": [
@@ -49,7 +73,8 @@
       "focus_question_id": "focus_q_20260525_001",
       "question_id": "q_001",
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "knowledge_point": "反比例函数图像所在象限",
       "mistake_summary": "学生能说出 k 的正负与象限关系，但在图像题中需要更快完成判断。",
       "recommended_action": "用坐标点和图像草图互相验证，完成 2 道图像判断题。",
@@ -60,7 +85,8 @@
       "focus_question_id": "focus_q_20260525_002",
       "question_id": "q_003",
       "upload_id": "upload_20260518_001",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "knowledge_point": "反比例函数关系识别",
       "mistake_summary": "学生在表格题中能计算 xy 是否恒定，但需要补充文字说明。",
       "recommended_action": "练习用“乘积是否恒定”解释变量关系，避免只给结论。",
@@ -82,19 +108,48 @@
     "knowledge_gaps": [
       {
         "knowledge_point_id": "kp_inverse_function_quadrant",
+        "subject": "math",
+        "subject_label": "数学",
         "name": "反比例函数图像所在象限",
         "severity": "中"
       },
       {
         "knowledge_point_id": "kp_inverse_function_expression",
+        "subject": "math",
+        "subject_label": "数学",
         "name": "反比例函数关系识别",
         "severity": "中"
+      }
+    ],
+    "subject_summaries": [
+      {
+        "subject": "chinese",
+        "subject_label": "语文",
+        "summary": "本周暂无语文学习材料，暂不生成具体建议。",
+        "main_risks": []
+      },
+      {
+        "subject": "math",
+        "subject_label": "数学",
+        "summary": "数学材料显示，学生对反比例函数表达式代入验证更稳定，但图像题和应用题迁移仍需练习。",
+        "main_risks": [
+          "图像判断速度还不稳定，遇到坐标轴和象限信息混合时容易犹豫。",
+          "表格题和实际情境题中，文字说明仍偏短，可能影响过程分。"
+        ]
+      },
+      {
+        "subject": "english",
+        "subject_label": "英语",
+        "summary": "本周暂无英语学习材料，暂不生成具体建议。",
+        "main_risks": []
       }
     ]
   },
   "suggestions": [
     {
       "suggestion_id": "suggestion_20260525_001",
+      "subject": "math",
+      "subject_label": "数学",
       "type": "图像理解",
       "content": "每次判断图像所在象限时，先写出 k 的正负，再画一个简短草图辅助确认。",
       "related_focus_question_ids": [
@@ -103,6 +158,8 @@
     },
     {
       "suggestion_id": "suggestion_20260525_002",
+      "subject": "math",
+      "subject_label": "数学",
       "type": "过程表达",
       "content": "表格题统一使用“计算 xy，比较乘积，判断是否恒定”的三步表达。",
       "related_focus_question_ids": [
@@ -111,6 +168,8 @@
     },
     {
       "suggestion_id": "suggestion_20260525_003",
+      "subject": "math",
+      "subject_label": "数学",
       "type": "迁移练习",
       "content": "下周加入 1 至 2 道实际情境题，训练从题意中抽象出反比例关系。",
       "related_focus_question_ids": []
@@ -119,6 +178,8 @@
   "next_actions": [
     {
       "action_id": "action_20260525_001",
+      "subject": "math",
+      "subject_label": "数学",
       "title": "完成反比例函数图像判断 mini set",
       "due_date": "2026-05-28",
       "priority": "中",
@@ -126,6 +187,8 @@
     },
     {
       "action_id": "action_20260525_002",
+      "subject": "math",
+      "subject_label": "数学",
       "title": "整理表格题三步说明模板",
       "due_date": "2026-05-29",
       "priority": "中",
@@ -133,6 +196,8 @@
     },
     {
       "action_id": "action_20260525_003",
+      "subject": "math",
+      "subject_label": "数学",
       "title": "尝试 2 道反比例函数实际情境题",
       "due_date": "2026-05-31",
       "priority": "低",

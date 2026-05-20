@@ -29,3 +29,13 @@ The files are example-shaped contracts rather than strict JSON Schema files. The
 - `question_id`: question identifier scoped to an upload.
 - `focus_question_id`: Hermes-generated focus-question record identifier.
 - `weekly_report_id`: week identifier, for example `week_20260518_20260524`.
+
+## Subject Conventions
+
+All first-version learning materials must carry a `subject` field. Use stable internal subject codes in JSON, and use `subject_label` only for Chinese display text.
+
+- `chinese`: 语文
+- `math`: 数学
+- `english`: 英语
+
+Hermes Web should not use subject as a top-level navigation item. It should use `subject` for filtering, grouping, and rendering subject sections inside the four main views.

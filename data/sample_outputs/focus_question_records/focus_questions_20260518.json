@@ -1,6 +1,6 @@
 {
   "contract": "focus_question_records",
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "student_id": "小明",
   "generated_at": "2026-05-18T20:40:00+08:00",
   "source_upload_ids": [
@@ -15,7 +15,8 @@
       "question_id": "q_001",
       "upload_id": "upload_20260518_001",
       "student_id": "小明",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "related_textbook_id": "textbook_math_grade8_demo",
       "related_chapter_id": "chapter_inverse_function",
       "knowledge_point_ids": [
@@ -43,7 +44,8 @@
       "question_id": "q_002",
       "upload_id": "upload_20260518_001",
       "student_id": "小明",
-      "subject": "数学",
+      "subject": "math",
+      "subject_label": "数学",
       "related_textbook_id": "textbook_math_grade8_demo",
       "related_chapter_id": "chapter_inverse_function",
       "knowledge_point_ids": [
