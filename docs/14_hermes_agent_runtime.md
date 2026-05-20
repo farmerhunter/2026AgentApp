@@ -119,9 +119,9 @@ Hermes 生成结果必须先通过 contract 校验，再发布到前端公开目
 
 ### 3.2 `learning_insight_update`
 
-用途：基于教材摘要、上传材料、试题切分结果、人工确认重点题、文字备注和已有学习记忆，生成学习洞察更新。
+用途：基于教材摘要、上传材料、试题切分结果、人工确认重点题、文字备注和已有学习记忆，生成 local findings（局部发现）。
 
-这是项目的核心 skill。它不应被当前 Web UI 的上传材料功能限制住，而应作为“把学习证据转化为学习记忆和行动建议”的可扩展能力。
+这是项目的核心 skill。它不应被当前 Web UI 的上传材料功能限制住，而应作为“把学习证据转化为可追溯发现、记忆候选和行动候选”的可扩展能力。
 
 输入：
 
@@ -135,9 +135,10 @@ Hermes 生成结果必须先通过 contract 校验，再发布到前端公开目
 输出：
 
 - `focus_question_records.contract.json` 对应的数据。
-- learning insight / memory update 数据。
-- 推荐行动和后续跟进事项。
-- 可进入本周周报上下文的条目。
+- `learning_findings.contract.json` 对应的 local findings。
+- memory candidates。
+- action candidates。
+- weekly context candidates。
 
 该 skill 负责回答：
 
@@ -147,9 +148,11 @@ Hermes 生成结果必须先通过 contract 校验，再发布到前端公开目
 - 它与教材章节、知识点和近期学习内容有什么关系？
 - 后续应采取什么行动，优先级如何？
 
+该 skill 不直接生成全局 insight。全局 insight 必须经过 consolidation，第一阶段由 `weekly_report` job 内部执行，未来可拆成独立 job。
+
 ### 3.3 `weekly_report`
 
-用途：基于一周内的教材摘要、上传材料、重点题记录和文字备注，生成跨学科周报。
+用途：基于一周内的教材摘要、上传材料、重点题记录、文字备注、local findings 和 memory，生成跨学科周报。
 
 输入：
 
@@ -157,13 +160,16 @@ Hermes 生成结果必须先通过 contract 校验，再发布到前端公开目
 - 本周重点题记录。
 - 本周文字备注。
 - 相关教材摘要。
+- 本周 local findings。
+- 短期和长期 memory 摘要。
 
 输出：
 
 - `weekly_report.contract.json` 对应的数据。
 - 更新 `week_reports_index.contract.json` 对应的索引。
+- consolidation 形成的 insights / 见解。
 
-`weekly_report` 可以包含下周行动计划，但第一版不单独设置 `study_plan` skill。学习行动建议由 `learning_insight_update` 和 `weekly_report` 共同产出：前者负责局部材料级建议，后者负责阶段性计划。
+`weekly_report` 可以包含下周行动计划，但第一版不单独设置 `study_plan` skill。学习行动建议由 `learning_insight_update` 和 `weekly_report` 共同产出：前者负责局部材料级 action candidates，后者基于 consolidation 结果生成阶段性计划。
 
 ## 4. Web UI 触发方式
 
