@@ -1,0 +1,36 @@
+{
+  "contract": "question_sessions_index",
+  "contract_version": "1.0",
+  "generated_at": "2026-05-20T20:00:00+08:00",
+  "total_sessions": 2,
+  "total_questions": 6,
+  "total_confirmed": 4,
+  "sessions": [
+    {
+      "upload_id": "upload_20260518_001",
+      "subject": "math",
+      "subject_label": "数学",
+      "source_title": "反比例函数练习",
+      "source_type": "试卷页",
+      "captured_at": "2026-05-18",
+      "ocr_status": "已完成",
+      "question_count": 3,
+      "confirmed_count": 1,
+      "has_split_result": true,
+      "has_confirmation_result": true
+    },
+    {
+      "upload_id": "upload_20260518_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "source_title": "议论文片段分析",
+      "source_type": "试卷页",
+      "captured_at": "2026-05-18",
+      "ocr_status": "已完成",
+      "question_count": 3,
+      "confirmed_count": 3,
+      "has_split_result": true,
+      "has_confirmation_result": true
+    }
+  ]
+}

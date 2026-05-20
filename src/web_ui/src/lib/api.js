@@ -106,6 +106,10 @@ export function fetchQuestionSession(uploadId, fileName) {
   return fetchJson(`/question_sessions/${uploadId}/${fileName}`);
 }
 
+export function fetchSessionIndex() {
+  return fetchJson("/question_sessions/_index.json");
+}
+
 export function fetchTextbookSummary(textbookId) {
   return fetchJson(`/textbooks/${textbookId}/textbook_content_summary.json`);
 }
