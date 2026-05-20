@@ -13,9 +13,6 @@ export default function UploadView({ uploadMeta }) {
             {uploadMeta?.subject_label ?? uploadMeta?.subject ?? "-"} · {uploadMeta?.source_type ?? "-"}
           </p>
         </div>
-        <button className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora">
-          上传材料
-        </button>
       </div>
 
       {!uploadMeta && (
