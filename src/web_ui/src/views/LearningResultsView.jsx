@@ -1,6 +1,7 @@
 import { useState } from "react";
 import QuestionReviewView from "./QuestionReviewView.jsx";
 import UploadView from "./UploadView.jsx";
+import UploadMaterialFlow from "../components/UploadMaterialFlow.jsx";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
 import SubjectFilter, {
   matchesSubject,
@@ -15,6 +16,7 @@ import useAsyncData from "../lib/useAsyncData.js";
 
 export default function LearningResultsView() {
   const [selectedSubject, setSelectedSubject] = useState("all");
+  const [mode, setMode] = useState("list");
   const { data, error, isLoading } = useAsyncData(() =>
     Promise.all(
       demoUploadIds.map((uploadId) =>
@@ -34,6 +36,12 @@ export default function LearningResultsView() {
   const filteredSessions = sessions.filter((session) =>
     matchesSubject(session.uploadMeta, selectedSubject),
   );
+
+  if (mode === "uploadFlow") {
+    return (
+      <UploadMaterialFlow onCancel={() => setMode("list")} />
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -73,6 +81,25 @@ export default function LearningResultsView() {
         ))}
       </section>
 
+      {/* Add Materials Section */}
+      <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-ink">添加材料</h3>
+            <p className="text-sm text-slate-500">
+              上传新的试卷、作业或错题本，进入材料信息、切题识别和重点题确认流程。
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMode("uploadFlow")}
+            className="rounded-xl bg-ink px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora"
+          >
+            上传材料
+          </button>
+        </div>
+      </section>
+
       {isLoading && <LoadingState label="正在读取学习成果 demo 数据..." />}
       {error && <ErrorState error={error} label="学习成果数据读取失败" />}
       {data && filteredSessions.length === 0 && (
@@ -93,7 +120,7 @@ export default function LearningResultsView() {
         <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
           <p className="text-sm font-semibold text-ink">跨学科状态</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            当前 demo 同时包含语文和数学学习成果，可用于验证“全部”视图和单学科筛选。
+            当前 demo 同时包含语文和数学学习成果，可用于验证"全部"视图和单学科筛选。
           </p>
         </section>
       )}
