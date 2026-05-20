@@ -4,7 +4,7 @@
 
 Consolidate one week's learning materials, local findings, memory state, and action candidates into a cross-subject weekly report readable by students and parents. This skill handles the first-phase consolidation step — merging multiple findings into insights — and produces the final weekly report JSON.
 
-Corresponds to use case 5 in `docs/03_design_brief.md`.
+Corresponds to use case 5 in `design_docs/03_design_brief.md`.
 
 ## Terminology
 

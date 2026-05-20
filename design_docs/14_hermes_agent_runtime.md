@@ -281,15 +281,15 @@ GET /api/hermes/jobs/:job_id/result
 
 ## 7. 与现有文档的关系
 
-- `docs/03_design_brief.md`：定义 Hermes 要支持的核心用例。
-- `docs/05_architecture.md`：定义系统模块和源码目录。
-- `docs/07_website_design_note.md`：定义 Web UI 如何展示和触发学习流程。
-- `docs/08_hermes_web_integration.md`：定义静态 JSON 和 REST API 两阶段集成。
-- `docs/09_question_capture_workflow.md`：定义试卷切题、人工确认和重点题记录流程。
-- `docs/10_storage_design.md`：定义运行时数据、公开数据和长期存储策略。
-- `docs/15_textbook_summary_skill_design.md`：定义教材摘要 skill。
-- `docs/16_learning_insight_update_skill_design.md`：定义学习洞察更新 skill，这是项目核心智能体能力。
-- `docs/17_weekly_report_skill_design.md`：定义周报生成 skill。
+- `design_docs/03_design_brief.md`：定义 Hermes 要支持的核心用例。
+- `design_docs/05_architecture.md`：定义系统模块和源码目录。
+- `design_docs/07_website_design_note.md`：定义 Web UI 如何展示和触发学习流程。
+- `design_docs/08_hermes_web_integration.md`：定义静态 JSON 和 REST API 两阶段集成。
+- `design_docs/09_question_capture_workflow.md`：定义试卷切题、人工确认和重点题记录流程。
+- `design_docs/10_storage_design.md`：定义运行时数据、公开数据和长期存储策略。
+- `design_docs/15_textbook_summary_skill_design.md`：定义教材摘要 skill。
+- `design_docs/16_learning_insight_update_skill_design.md`：定义学习洞察更新 skill，这是项目核心智能体能力。
+- `design_docs/17_weekly_report_skill_design.md`：定义周报生成 skill。
 
 ## 8. 建议 Issue 阶段
 

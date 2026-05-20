@@ -4,7 +4,7 @@
 
 This is the **core agent capability** of the project. It transforms learning evidence — upload sessions, question splits, human confirmations, text notes, and textbook summaries — into structured, traceable, confidence-annotated local findings. It generates candidates for memory, action, and weekly context that feed into downstream consolidation and weekly report generation.
 
-Corresponds to use case 4 in `docs/03_design_brief.md`.
+Corresponds to use case 4 in `design_docs/03_design_brief.md`.
 
 **Important**: This skill is NOT limited to the current Web UI upload-material flow. It should be designed to accept evidence from any future source: WeChat messages, parent/teacher feedback, quiz scores, study plan completion records, classroom notes, and review check-in logs.
 

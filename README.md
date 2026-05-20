@@ -28,27 +28,28 @@
 
 ## 文档入口
 
-- `docs/01_competition_rules.md`：比赛规则和报名方向整理
-- `docs/02_product_brief.md`：产品目标、用户和核心能力
-- `docs/03_design_brief.md`：设计简报
-- `docs/04_technical_decisions.md`：技术决策记录
-- `docs/05_architecture.md`：系统架构
-- `docs/06_frontend_technical_route.md`：前端技术路线，包含 Vite/React/Tailwind 和部署决策
-- `docs/07_website_design_note.md`：Hermes Web 页面草图、视图关系和页面生成指令模板
-- `docs/08_hermes_web_integration.md`：Hermes 周报 JSON 与 Web 前端集成方案
-- `docs/09_question_capture_workflow.md`：试卷/错题本上传、切题、重点题确认流程
-- `docs/10_storage_design.md`：VPS 本地存储、公开目录、COS 和数据库演进方案
-- `docs/11_deployment.md`：部署说明
-- `docs/12_demo_script.md`：演示脚本
-- `docs/13_reference_links.md`：参考链接
-- `docs/14_hermes_agent_runtime.md`：Hermes 智能体运行时、skill、job runner 和 Web 触发设计
-- `docs/15_textbook_summary_skill_design.md`：教材摘要 skill 设计
-- `docs/16_learning_insight_update_skill_design.md`：学习洞察更新 skill 设计，项目核心智能体能力
-- `docs/17_weekly_report_skill_design.md`：周报生成 skill 设计
+- `design_docs/01_competition_rules.md`：比赛规则和报名方向整理
+- `design_docs/02_product_brief.md`：产品目标、用户和核心能力
+- `design_docs/03_design_brief.md`：设计简报
+- `design_docs/04_technical_decisions.md`：技术决策记录
+- `design_docs/05_architecture.md`：系统架构
+- `design_docs/06_frontend_technical_route.md`：前端技术路线，包含 Vite/React/Tailwind 和部署决策
+- `design_docs/07_website_design_note.md`：Hermes Web 页面草图、视图关系和页面生成指令模板
+- `design_docs/08_hermes_web_integration.md`：Hermes 周报 JSON 与 Web 前端集成方案
+- `design_docs/09_question_capture_workflow.md`：试卷/错题本上传、切题、重点题确认流程
+- `design_docs/10_storage_design.md`：VPS 本地存储、公开目录、COS 和数据库演进方案
+- `design_docs/11_deployment.md`：部署说明
+- `design_docs/12_demo_script.md`：演示脚本
+- `design_docs/13_reference_links.md`：参考链接
+- `design_docs/14_hermes_agent_runtime.md`：Hermes 智能体运行时、skill、job runner 和 Web 触发设计
+- `design_docs/15_textbook_summary_skill_design.md`：教材摘要 skill 设计
+- `design_docs/16_learning_insight_update_skill_design.md`：学习洞察更新 skill 设计，项目核心智能体能力
+- `design_docs/17_weekly_report_skill_design.md`：周报生成 skill 设计
+- `design_docs/18_prompt_template_design.md`：Hermes prompt 模板设计
 
 ## 仓库结构
 
-- `docs/`：产品、架构、前端、部署、比赛和设计文档
+- `design_docs/`：产品、架构、前端、部署、比赛和设计文档
 - `scripts/`：部署和运维脚本
 - `src/agent/`：智能体摄取、分析、计划、提醒和存储模块占位
 - `src/web_ui/`：计划中的 Vite + React 前端目录

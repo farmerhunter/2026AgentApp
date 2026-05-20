@@ -1,7 +1,7 @@
 # 比赛提交 Checklist
 
 本文用于提交前核对最终交付物。比赛要求来源见
-[`docs/01_competition_rules.md`](../docs/01_competition_rules.md)。
+[`design_docs/01_competition_rules.md`](../design_docs/01_competition_rules.md)。
 
 ## 1. 基本信息
 
@@ -18,7 +18,7 @@
 - [ ] 已说明主要工作流，包括学习成果记录、材料上传、重点题确认、周报生成和学习计划建议。
 - [ ] 已说明应用价值、亮点与创新之处。
 - [ ] 已说明当前限制、不足和后续改进方向。
-- [ ] 文档内容与 `docs/` 中的设计文档保持一致。
+- [ ] 文档内容与 `design_docs/` 中的设计文档保持一致。
 
 ## 3. 智能体说明
 

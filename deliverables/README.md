@@ -1,7 +1,7 @@
 # 比赛交付物目录
 
 本目录用于集中管理“AI 智能体应用”比赛最终提交材料。比赛要求以
-[`docs/01_competition_rules.md`](../docs/01_competition_rules.md) 为准；本目录只保存可公开提交或可公开说明的材料，不保存真实学生隐私数据、账号密码、未脱敏原始试卷或私人报名信息。
+[`design_docs/01_competition_rules.md`](../design_docs/01_competition_rules.md) 为准；本目录只保存可公开提交或可公开说明的材料，不保存真实学生隐私数据、账号密码、未脱敏原始试卷或私人报名信息。
 
 ## 目录结构
 

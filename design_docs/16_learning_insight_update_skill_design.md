@@ -1,6 +1,6 @@
 # Learning Insight Update Skill 设计
 
-本文档定义 `learning_insight_update` skill。它对应 `docs/03_design_brief.md` 的用例 4：生成重点题记录并更新记忆。
+本文档定义 `learning_insight_update` skill。它对应 `design_docs/03_design_brief.md` 的用例 4：生成重点题记录并更新记忆。
 
 这是项目的关键智能体能力。它不只是“错题总结”，而是将各种学习证据转化为可积累、可追踪、可行动的学习发现。
 

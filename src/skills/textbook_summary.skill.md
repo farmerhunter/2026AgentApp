@@ -4,7 +4,7 @@
 
 Convert textbook PDFs, lecture notes, or pre-extracted textbook text into a structured textbook content summary that Hermes can reuse for later analysis — linking questions, mistakes, notes, and weekly reports back to chapters, learning units, and knowledge points.
 
-Corresponds to use case 1 in `docs/03_design_brief.md`.
+Corresponds to use case 1 in `design_docs/03_design_brief.md`.
 
 ## Input
 
