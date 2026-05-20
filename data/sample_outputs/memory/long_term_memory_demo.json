@@ -1,0 +1,37 @@
+{
+  "contract": "learning_memory_snapshot",
+  "contract_version": "1.0",
+  "memory_snapshot_id": "long_term_memory_demo",
+  "student_id": "小明",
+  "memory_scope": "long_term",
+  "period": {
+    "note": "长期记忆不绑定单周，保存累积形成的稳定学习画像。"
+  },
+  "generated_at": "2026-05-25T20:00:00+08:00",
+  "source_finding_refs": [],
+  "stable_patterns": [
+    {
+      "pattern_id": "pattern_math_calculation_care",
+      "subject": "math",
+      "subject_label": "数学",
+      "pattern_type": "recurring_weakness",
+      "description": "学生计算环节容易粗心失分，在正负号、括号展开等步骤上多次出现。",
+      "first_observed_week": "2026-04-01/2026-04-07",
+      "last_observed_week": "2026-05-18/2026-05-24",
+      "recurrence_count": 4,
+      "confidence": "high",
+      "recommended_action": "每次做题后自查计算步骤，标记容易出错的环节。"
+    }
+  ],
+  "active_followups": [
+    {
+      "followup_id": "followup_lt_001",
+      "subject": "math",
+      "subject_label": "数学",
+      "content": "计算粗心问题持续跟踪——每次周报检查是否有新的计算失误记录。",
+      "priority": "高",
+      "status": "ongoing"
+    }
+  ],
+  "notes": "长期记忆 demo 展示了一个跨周稳定的学习模式（计算粗心）。新 findings 需要满足重复出现、多周确认等条件后才能写入长期记忆。"
+}

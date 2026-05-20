@@ -1,0 +1,98 @@
+{
+  "contract": "insight_consolidation",
+  "contract_version": "1.0",
+  "consolidation_id": "consolidation_2026W21",
+  "student_id": "小明",
+  "week_start": "2026-05-18",
+  "week_end": "2026-05-24",
+  "generated_by": "weekly_report.consolidation_step",
+  "generated_at": "2026-05-25T20:00:00+08:00",
+  "input_finding_refs": [
+    {
+      "finding_batch_id": "findings_20260518_math",
+      "ref_path": "/data/learning_findings/findings_20260518_math.json",
+      "findings_used": ["finding_math_001", "finding_math_002"]
+    },
+    {
+      "finding_batch_id": "findings_20260518_chinese",
+      "ref_path": "/data/learning_findings/findings_20260518_chinese.json",
+      "findings_used": ["finding_chinese_001"]
+    }
+  ],
+  "consolidated_insights": [
+    {
+      "insight_id": "insight_2026W21_001",
+      "subject": "math",
+      "subject_label": "数学",
+      "scope": "consolidated",
+      "statement": "反比例函数是本周数学最突出的薄弱领域，涉及概念理解（象限判断）和解题规范（代入验证）两个层次。",
+      "supporting_findings": ["finding_math_001", "finding_math_002"],
+      "pattern": {
+        "type": "recurring_within_week",
+        "description": "同一知识点（反比例函数）在概念理解和步骤规范上同时暴露问题，且出现在同一份练习材料中。"
+      },
+      "confidence": "high",
+      "first_observed_week": "2026-05-18/2026-05-24",
+      "is_escalated_to_long_term": false
+    },
+    {
+      "insight_id": "insight_2026W21_002",
+      "subject": "chinese",
+      "subject_label": "语文",
+      "scope": "consolidated",
+      "statement": "议论文中心论点提取能力初步建立，但文本证据支撑和细节分析尚不充分。",
+      "supporting_findings": ["finding_chinese_001"],
+      "pattern": {
+        "type": "early_stage",
+        "description": "首次学习议论文答题框架，属于新接触题型。基础框架已掌握但细节有待积累。"
+      },
+      "confidence": "medium",
+      "first_observed_week": "2026-05-18/2026-05-24",
+      "is_escalated_to_long_term": false
+    }
+  ],
+  "memory_updates": [
+    {
+      "memory_type": "short_term",
+      "action": "add",
+      "content": "反比例函数象限判断需要持续关注，下周安排专项练习。",
+      "source_finding": "finding_math_001",
+      "priority": "高"
+    },
+    {
+      "memory_type": "short_term",
+      "action": "add",
+      "content": "数学解题步骤规范性需要提醒和检查。",
+      "source_finding": "finding_math_002",
+      "priority": "中"
+    },
+    {
+      "memory_type": "short_term",
+      "action": "add",
+      "content": "议论文论据分析需要更多练习积累。",
+      "source_finding": "finding_chinese_001",
+      "priority": "中"
+    }
+  ],
+  "action_plan_candidates": [
+    {
+      "subject": "math",
+      "subject_label": "数学",
+      "priority": "高",
+      "actions": [
+        "反比例函数象限判断专项练习 5 题",
+        "要求所有反比例函数题目写出完整代入验证步骤",
+        "下周继续检查象限判断是否稳定"
+      ]
+    },
+    {
+      "subject": "chinese",
+      "subject_label": "语文",
+      "priority": "中",
+      "actions": [
+        "继续练习议论文片段分析，重点训练文本证据定位",
+        "下周增加一篇完整议论文分析练习"
+      ]
+    }
+  ]
+}
