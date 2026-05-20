@@ -171,7 +171,7 @@
 
 输出原则：
 
-- `learning_insight_update` 主要产出局部发现、重点题记录、记忆候选和行动候选。
+- `learning_insight_update` 主要产出局部发现、重点题记录、待确定记忆和行动候选。
 - `weekly_report` 第一阶段负责执行 consolidation，把多个局部发现整理成聚合见解。
 - 周报中的重要建议应能追溯到学习证据、局部发现或聚合见解。
 
@@ -183,7 +183,7 @@
 
 记忆层级：
 
-- `memory candidate`：记忆候选。中文使用“记忆候选”。它由局部发现产生，表示“这件事可能值得记住”，但还不等于已经进入长期记忆。
+- `memory candidate`：待确定记忆。中文 UI 使用“待确定记忆”，技术文档也可写作“记忆候选”。它由局部发现产生，表示“这件事可能值得记住”，但还不等于已经进入长期记忆。
 - `short-term memory`：短期记忆。中文使用“短期记忆”。它保存近期上下文，例如本周局部发现、待跟进行动、重点题和备注，可以较宽松地吸收记忆候选。
 - `long-term memory`：长期记忆。中文使用“长期记忆”。它保存稳定学习画像、反复出现的问题模式和长期跟进事项，需要更严格写入条件。
 
@@ -198,7 +198,7 @@
 
 ```text
 局部发现
-  -> 记忆候选
+  -> 待确定记忆
   -> 短期记忆
   -> consolidation 整理
   -> 聚合见解
@@ -219,28 +219,32 @@
 - 给老师：能参考的薄弱模式和证据来源，而不是模型未经解释的判断。
 - 给评委：清楚展示 Hermes 如何从学习证据形成可追溯发现、学习记忆和行动建议。
 
-## ADR-012：第一版暂不实现 learning insight review 界面
+## ADR-012：上传结束页承载 findings 与待确定记忆确认
 
-决策：第一版 Web UI 不单独提供“学习洞察确认”或“长期记忆确认”界面。Hermes 生成的局部发现、记忆候选和行动候选先通过样例 JSON、周报和后续 job runner 输出体现。
+决策：第一版 Web UI 不新增独立顶层“学习洞察确认”或“长期记忆管理”模块，但在上传材料子流程的完成页中承载 Hermes 分析状态、局部发现和待确定记忆确认。
+
+保存 `question_confirmation_result` 后，前端触发或提示触发 `learning_insight_update` job。由于从 evidence 到 findings 属于 Hermes job/skill 处理，不应假设它与上传表单保存同步完成；上传结束页应支持轮询 job 状态，也应提供手动刷新状态能力。job 完成后，前端读取 `learning_findings` 结果，展示 local findings、memory candidates 和 action candidates。
 
 原因：
 
-- 当前核心用例中，人工确认已经发生在“上传学习成果并标注重点题”步骤。
-- 再增加 learning insight review 界面会扩大第一版 UI 范围，影响演示闭环稳定性。
-- 没有专门界面时，不能要求学生或家长确认每条记忆候选，因此第一版不自动把单次局部发现写入长期记忆。
+- 当前核心用例中，人工确认已经发生在“上传学习成果并标注重点题”步骤；继续在上传结束页展示 findings，可以保持同一条用户路径。
+- findings 依赖跨进程 Hermes job 处理，上传流程最后一步只能展示 job 状态、已有结果或 demo fixture，不能假装分析同步完成。
+- 待确定记忆需要人工选择和设置优先级，否则不应自动进入长期记忆。
+- 不单独新增顶层 review 模块，可以控制第一版 UI 范围，同时补上核心价值展示缺口。
 
 约束：
 
-- 文档和数据结构必须保留 learning insight review 作为 TBD 设计点。
-- 记忆候选、短期记忆和长期记忆的边界必须在 contract 与 sample data 中表达清楚。
-- 后续若加入该界面，应允许用户确认、忽略或修改 Hermes 生成的记忆候选。
+- 上传结束页必须区分 `pending` / `running` / `completed` / `failed` 等 job 状态。
+- 页面应允许用户确认、忽略或修改 Hermes 生成的待确定记忆，并设置优先级。
+- 待确定记忆、短期记忆和长期记忆的边界必须在 contract 与 sample data 中表达清楚。
+- 第一版可以使用静态 sample data 模拟 job 完成结果；后续接入 API 后通过 `/api/hermes/jobs` 创建和查询任务。
 
 ## ADR-013：首批 Hermes 能力拆成三个 task-specific skills
 
 决策：第一版 Hermes 不再依赖单一泛化 `study_assistant.skill.md`，而是拆成三个任务型 skill：
 
 - `textbook_summary`：从教材 PDF、讲义或已提取文本生成教材理解结构。
-- `learning_insight_update`：从重点题、备注、教材摘要和历史上下文生成局部发现、记忆候选和行动候选。
+- `learning_insight_update`：从重点题、备注、教材摘要和历史上下文生成局部发现、待确定记忆和行动候选。
 - `weekly_report`：对一周内的局部发现和记忆进行 consolidation，生成跨学科周报和下周行动。
 
 原因：

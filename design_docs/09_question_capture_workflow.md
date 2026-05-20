@@ -116,7 +116,18 @@ english = 英语
 - 备注
 - 复习优先级
 
-用户点击“保存确认结果”后，系统保存 `question_confirmation_result`。保存成功后，用户可以返回“学习成果”视图，查看该材料的处理状态和重点题摘要。
+用户点击“保存确认结果”后，系统保存 `question_confirmation_result`。保存成功后，用户进入上传结束页，而不是立即只返回“学习成果”视图。
+
+上传结束页负责衔接 Hermes 分析：
+
+- 触发或提示触发 `learning_insight_update` job。
+- 显示 job 状态：`pending`、`running`、`completed`、`failed`。
+- 支持自动轮询，也提供“刷新分析状态”按钮。
+- job 完成后读取 `learning_findings` 结果。
+- 展示 local findings、待确定记忆和行动候选。
+- 允许用户确认、忽略或调整待确定记忆的优先级。
+
+这个页面仍属于上传材料子流程的最后一步，不作为独立顶层导航。若 API 或 job runner 尚不可用，第一版可以读取 sample data 模拟“分析完成”的状态。
 
 确认结果需要继承上传材料的学科。若单页材料中混有多个学科，第一版不做自动拆分，要求用户按单一学科上传；后续再考虑跨学科混合材料。
 
@@ -127,11 +138,12 @@ english = 英语
 Hermes 输出：
 
 - 重点题记录
-- 错因总结
-- 知识点归类
-- 复习建议
-- 下周行动项
-- 周报 JSON
+- local findings / 局部发现
+- memory candidates / 待确定记忆
+- action candidates / 行动候选
+- weekly context candidates / 周报上下文候选
+
+周报 JSON 由后续 `weekly_report` job 生成，不应在上传结束页重新从原始 evidence 做完整周报分析。
 
 ## 5. 数据结构草案
 

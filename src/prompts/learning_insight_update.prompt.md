@@ -22,7 +22,7 @@ This is the core Hermes capability. Do not treat it as a simple wrong-question c
 - `evidence` / 学习证据: source material such as textbook summaries, upload metadata, question split results, human confirmations, text notes, and historical memory.
 - `finding` / 局部发现: a local, traceable, confidence-aware interpretation derived from one upload, one question, one note, or a small related evidence set.
 - `insight` / 聚合见解: a consolidated conclusion formed from multiple findings, short-term memory, or historical patterns.
-- `memory_candidate` / 记忆候选: a candidate item that may enter short-term memory or later long-term memory after consolidation or confirmation.
+- `memory_candidate` / 待确定记忆: a candidate item that may enter short-term memory or later long-term memory after consolidation or confirmation.
 
 Important boundary: this prompt produces local findings, not global insights. Do not label a single local result as an insight.
 

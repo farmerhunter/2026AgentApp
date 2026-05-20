@@ -121,7 +121,7 @@ Hermes 生成结果必须先通过 contract 校验，再发布到前端公开目
 
 用途：基于教材摘要、上传材料、试题切分结果、人工确认重点题、文字备注和已有学习记忆，生成 local findings（局部发现）。
 
-这是项目的核心 skill。它不应被当前 Web UI 的上传材料功能限制住，而应作为“把学习证据转化为可追溯发现、记忆候选和行动候选”的可扩展能力。
+这是项目的核心 skill。它不应被当前 Web UI 的上传材料功能限制住，而应作为“把学习证据转化为可追溯发现、待确定记忆和行动候选”的可扩展能力。
 
 输入：
 
@@ -188,7 +188,7 @@ Hermes job runner
 Web UI 中的按钮可以先表现为 demo 状态：
 
 - 上传材料：进入上传/切题/确认子流程，读取样例 session。
-- 生成总结：显示“处理中 / 已完成”的本地状态。
+- 上传结束页：保存重点题确认后显示 `learning_insight_update` 的“等待分析 / 分析中 / 已完成 / 失败”状态，可以先读取静态 sample data 模拟 job 结果。
 - 查看周报：读取静态周报 JSON。
 
 该阶段不要求真实后端 API，也不要求任务队列。
@@ -207,11 +207,10 @@ GET /api/hermes/jobs/:job_id/result
 
 ```json
 {
-  "job_type": "weekly_report",
-  "subject_scope": ["chinese", "math", "english"],
-  "week_start": "2026-05-18",
-  "week_end": "2026-05-24",
-  "source_ids": ["upload_20260518_001", "upload_20260518_002"]
+  "job_type": "learning_insight_update",
+  "subject_scope": ["math"],
+  "source_ids": ["upload_20260518_001"],
+  "trigger_source": "after_upload"
 }
 ```
 
@@ -226,11 +225,11 @@ GET /api/hermes/jobs/:job_id/result
 ```json
 {
   "job_id": "job_20260520_001",
-  "job_type": "weekly_report",
+  "job_type": "learning_insight_update",
   "status": "completed",
   "created_at": "2026-05-20T20:00:00+08:00",
   "completed_at": "2026-05-20T20:01:30+08:00",
-  "result_path": "/data/week_reports/week_20260518_20260524.json"
+  "result_path": "/data/learning_findings/findings_20260518_math.json"
 }
 ```
 
@@ -244,6 +243,17 @@ GET /api/hermes/jobs/:job_id/result
   -> 前端 fetch result_path
   -> 渲染结果
 ```
+
+上传结束页是第一版最重要的 `learning_insight_update` 触发入口。它应在保存 `question_confirmation_result` 后创建 job 或进入 demo fallback 状态；如果 job 仍在运行，页面展示轮询状态；如果用户离开页面后再回来，页面可通过 upload id 查询最近 job 或手动刷新。
+
+job 完成后，上传结束页渲染：
+
+- local findings / 局部发现。
+- memory candidates / 待确定记忆。
+- action candidates / 行动候选。
+- 与原始上传、切题结果和重点题确认的 source refs。
+
+待确定记忆的人工操作结果应单独保存，避免把未确认的 memory candidate 自动写入长期记忆。第一版可以用 sample data 表达确认结果；后续再接入真实 storage。
 
 ## 5. Skill 与开发流程的衔接
 

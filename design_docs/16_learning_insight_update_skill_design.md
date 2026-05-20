@@ -8,6 +8,7 @@
 
 - `finding`：中文建议译为“发现”或“局部发现”。它来自一次上传、一道重点题、一条备注或一组相近材料，是局部、可追溯、带置信度的判断。
 - `insight`：中文建议译为“见解”。它必须经过 consolidation，对多个 findings、短期记忆和历史模式进行归并后形成，不能把单次局部判断直接称为 insight。
+- `memory candidate`：中文 UI 建议使用“待确定记忆”。它由 local finding 产生，表示可能值得保留的问题模式，但需要人工确认、后续证据或 consolidation，才进入更稳定的学习记忆。
 - `memory`：学习记忆。它不是单条 finding，而是系统保留下来的近期上下文、长期薄弱点、已确认模式和后续跟进状态。
 
 ## 1. 核心定位
@@ -18,7 +19,7 @@
 学习证据
   -> Hermes 理解、归因、归类、判断优先级
   -> learning finding / 局部发现
-  -> memory candidate / 记忆候选
+  -> memory candidate / 待确定记忆
   -> action candidate / 行动候选
   -> weekly context candidate / 周报上下文候选
 ```
@@ -63,7 +64,7 @@
 
 - `focus_question_records.contract.json` 对应的重点题记录。
 - local findings / 局部发现。
-- memory candidates / 记忆候选。
+- memory candidates / 待确定记忆。
 - action candidates / 行动候选。
 - weekly context candidates / 周报上下文候选。
 
@@ -156,7 +157,7 @@ learning_findings.contract.json
 
 ### 4.4 Memory Candidate
 
-判断某个 finding 是否应成为记忆候选。
+判断某个 finding 是否应成为待确定记忆。
 
 默认规则：
 
@@ -164,7 +165,7 @@ learning_findings.contract.json
 - local finding 不应直接覆盖长期记忆。
 - 长期记忆只接受经过 consolidation 或人工确认的稳定模式。
 
-进入长期记忆候选的条件可以包括：
+进入长期记忆候选或高优先级待确定记忆的条件可以包括：
 
 - 同类问题重复出现。
 - 学生明确标注为不理解。
@@ -278,7 +279,7 @@ Hermes 负责：
 
 - 综合多来源学习证据。
 - 生成 local findings。
-- 生成记忆候选、行动候选和周报上下文候选。
+- 生成待确定记忆、行动候选和周报上下文候选。
 - 保留可解释的来源引用。
 
 Hermes 不负责：
@@ -299,7 +300,10 @@ Hermes 不负责：
 ```text
 上传材料子流程保存确认结果
   -> 触发 learning_insight_update
-  -> 生成重点题记录、local findings 和行动候选
+  -> 生成重点题记录、local findings、待确定记忆和行动候选
+  -> 上传结束页轮询或刷新 job 状态
+  -> 上传结束页展示 local findings、待确定记忆和行动候选
+  -> 用户确认、忽略或调整待确定记忆优先级
   -> 学习成果视图展示状态和摘要
 ```
 
