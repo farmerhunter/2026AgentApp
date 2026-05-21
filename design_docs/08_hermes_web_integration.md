@@ -28,7 +28,105 @@
 
 如果 API 不可用，前端可以直接读取 sample `learning_findings` JSON，并明确显示 demo 状态。
 
-### 1.2 周报历史检索
+### 1.2 静态 demo job 链路
+
+第一阶段不是简单隐藏“分析教材”“学习洞察更新”“生成周报”等按钮，而是让这些按钮走静态 demo job 链路。这样评委看到的是完整的智能体执行体验：用户点击任务按钮，页面进入处理中状态，然后读取已准备好的 sample result 渲染结果。
+
+阶段 B 应补齐一层前端静态 job adapter：
+
+```text
+用户点击 Hermes 任务按钮
+  -> runHermesJob(payload)
+  -> static mode: 读取 demo job manifest
+  -> 模拟 pending / running / completed 状态
+  -> fetch result_url
+  -> 渲染 sample result
+```
+
+执行模式由前端环境变量控制：
+
+```text
+VITE_HERMES_EXECUTION_MODE=static   # 1.0 默认，使用 sample data 模拟 job
+VITE_HERMES_EXECUTION_MODE=api      # 2.0，调用 /api/hermes/jobs
+```
+
+建议新增公开 demo job 数据：
+
+```text
+/data/demo_jobs/index.json
+/data/demo_jobs/textbook_summary_math_demo.json
+/data/demo_jobs/textbook_summary_chinese_demo.json
+/data/demo_jobs/learning_insight_update_math_demo.json
+/data/demo_jobs/learning_insight_update_chinese_demo.json
+/data/demo_jobs/weekly_report_20260518_20260524_demo.json
+```
+
+`/data/demo_jobs/index.json` 负责把 job payload 映射到 sample result：
+
+```json
+{
+  "contract": "demo_jobs_index",
+  "contract_version": "1.0",
+  "execution_mode": "static",
+  "jobs": {
+    "textbook_summary": {
+      "textbook_math_grade8_demo": "/data/textbooks/textbook_math_grade8_demo/textbook_content_summary.json",
+      "textbook_chinese_grade8_demo": "/data/textbooks/textbook_chinese_grade8_demo/textbook_content_summary.json"
+    },
+    "learning_insight_update": {
+      "upload_20260518_001": "/data/learning_findings/findings_20260518_math.json",
+      "upload_20260518_002": "/data/learning_findings/findings_20260518_chinese.json"
+    },
+    "weekly_report": {
+      "2026-05-18_2026-05-24": "/data/week_reports/week_20260518_20260524.json"
+    }
+  }
+}
+```
+
+单个 demo job status 示例：
+
+```json
+{
+  "job_id": "demo_job_learning_insight_update_math",
+  "job_type": "learning_insight_update",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["upload_20260518_001"],
+  "result_url": "/data/learning_findings/findings_20260518_math.json",
+  "result_label": "数学反比例函数学习发现样例"
+}
+```
+
+前端应封装统一接口，而不是让组件直接判断 API 或 static：
+
+```text
+runHermesJob(payload)
+  -> static: runStaticDemoJob(payload)
+  -> api: createHermesJob(payload) + pollHermesJob(job_id)
+```
+
+UI 组件只消费统一结果：
+
+```json
+{
+  "job_id": "demo_job_learning_insight_update_math",
+  "job_type": "learning_insight_update",
+  "status": "completed",
+  "mode": "static",
+  "result_url": "/data/learning_findings/findings_20260518_math.json",
+  "result": {}
+}
+```
+
+第一阶段验收要求：
+
+- `VITE_HERMES_EXECUTION_MODE=static` 时不请求 `/api/hermes/*`。
+- 教材分析、学习洞察更新和生成周报按钮仍可点击，并展示处理中状态。
+- 任务完成后从 `/data/...` 读取对应 sample result。
+- 静态 demo job 数据纳入 `validate-demo-data.mjs` 校验。
+
+### 1.3 周报历史检索
 
 1. Hermes 每周生成跨学科周报 JSON 文件，命名如 `week_YYYYMMDD_YYYYMMDD.json`，放在 `/var/www/html/data/week_reports/`
 2. Hermes 生成索引文件 `week_reports_index.json`，列出历史周报

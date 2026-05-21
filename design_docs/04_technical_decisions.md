@@ -393,7 +393,9 @@ src/web_ui/public/data/
 
 - 环境差异通过环境变量表达，避免在业务代码中写死部署路径、模型名、provider 或 secret。
 - 1.0 默认 `HERMES_DATA_SOURCE=static`，前端读取 `/data/` 静态 JSON。
+- 1.0 默认 `VITE_HERMES_EXECUTION_MODE=static`，前端任务按钮通过 demo job manifest 模拟 pending / running / completed，并读取 sample result。
 - 2.0 默认 `HERMES_DATA_SOURCE=api`、`HERMES_STORAGE_PROVIDER=local`、`DATABASE_URL=sqlite:////var/lib/hermes/hermes.db`。
+- 2.0 默认 `VITE_HERMES_EXECUTION_MODE=api`，前端任务按钮通过 `/api/hermes/jobs` 创建和轮询真实 job。
 - 2.0 使用 `HERMES_JOB_MODE=fixture` 做演示和回归测试，使用 `HERMES_JOB_MODE=real` 接入真实 LLM。
 - 3.0 默认 `HERMES_DATA_SOURCE=api`、`HERMES_STORAGE_PROVIDER=cos`，数据库迁移到 PostgreSQL/MySQL。
 - 前端数据访问函数必须保留 API fallback 到静态 JSON 的能力，直到 3.0 明确不再需要 demo fallback。
@@ -407,5 +409,6 @@ src/web_ui/public/data/
 执行规则：
 
 - 新功能仍按“设计文档 -> data contract -> sample data -> skill -> prompt -> job runner -> API trigger -> Web UI -> 验证”的顺序开发。
+- 阶段 B 可以先实现 static demo job adapter，用 sample data 表达 Hermes 任务执行过程；阶段 G/F 再替换为真实 API/job runner。
 - 不允许为了追赶版本号绕过 contract validation 或隐私脱敏。
 - 版本升级优先保持 API contract 兼容；必须破坏兼容时，需要在设计文档中记录迁移策略。
