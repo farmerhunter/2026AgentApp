@@ -1,14 +1,7 @@
 import { createHermesJob, pollHermesJob, fetchHermesJobResult } from "./api.js";
+import { getHermesExecutionMode } from "./hermesExecutionMode.js";
 
 const DATA_BASE_URL = "/data";
-
-/**
- * Get the current Hermes execution mode.
- * Returns "static" | "api".
- */
-export function getHermesExecutionMode() {
-  return import.meta.env.VITE_HERMES_EXECUTION_MODE ?? "static";
-}
 
 /**
  * Resolve a demo job mapping key from payload.

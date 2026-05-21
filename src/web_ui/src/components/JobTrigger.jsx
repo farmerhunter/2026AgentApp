@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { runHermesJob, getHermesExecutionMode } from "../lib/hermesJobs.js";
+import { runHermesJob } from "../lib/hermesJobs.js";
+import { getHermesExecutionMode } from "../lib/hermesExecutionMode.js";
 
 const STATUS_STYLES = {
   pending: { label: "等待中", color: "text-slate-400", bg: "bg-slate-100", dot: "bg-slate-400" },
