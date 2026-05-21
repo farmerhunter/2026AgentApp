@@ -35,7 +35,7 @@ export const learningResultSteps = [
   {
     step: "02",
     title: "自动切题",
-    description: "后续接入 Tencent QuestionSplitOCR，展示题目框、识别文字和切题列表。",
+    description: "系统自动识别并切割题目区域，展示题目边框、识别文字和切题列表。",
   },
   {
     step: "03",

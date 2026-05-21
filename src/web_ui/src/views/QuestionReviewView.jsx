@@ -13,7 +13,7 @@ export default function QuestionReviewView({ splitResult, confirmationResult }) 
         <div>
           <h3 className="text-lg font-semibold text-ink">重点题确认</h3>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            已读取{subjectLabel}切题结果和人工确认结果。后续 #7 会把这里扩展成可编辑确认工作台。
+            已读取{subjectLabel}的切题结果和人工确认结果。可查看和编辑已确认的重点题目。
           </p>
         </div>
         <span className="w-fit rounded-full bg-berry/10 px-3 py-1 text-xs font-semibold text-berry">
