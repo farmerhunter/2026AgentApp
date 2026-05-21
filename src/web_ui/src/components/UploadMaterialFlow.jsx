@@ -202,7 +202,7 @@ export default function UploadMaterialFlow({ onCancel }) {
         <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
           <h3 className="text-lg font-semibold text-ink">材料信息</h3>
           <p className="mt-1 text-sm text-slate-500">
-            填写学习材料的基本信息，第一版使用 demo 数据模拟上传。
+            填写学习材料的基本信息。
           </p>
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <div className="space-y-3">
@@ -249,7 +249,7 @@ export default function UploadMaterialFlow({ onCancel }) {
           <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
             <p className="font-semibold text-ink">选择文件</p>
             <p className="mt-1">
-              第一版 demo：选择一个样例 upload session 继续流程。不执行真实文件上传。
+              请选择一个样例材料继续。
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {DEMO_SESSIONS.map((session) => (
@@ -277,7 +277,7 @@ export default function UploadMaterialFlow({ onCancel }) {
         <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
           <h3 className="text-lg font-semibold text-ink">识别/切题</h3>
           <p className="mt-1 text-sm text-slate-500">
-            读取 demo 切题结果，展示题目数量、原图信息和题目列表摘要。
+            展示题目数量、原图信息和题目列表摘要。
           </p>
           {splitLoading && <LoadingState label="正在读取切题结果..." />}
           {splitError && <ErrorState error={splitError} label="切题结果读取失败" />}
@@ -334,7 +334,7 @@ export default function UploadMaterialFlow({ onCancel }) {
         <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
           <h3 className="text-lg font-semibold text-ink">保存结果</h3>
           <p className="mt-1 text-sm text-slate-500">
-            确认并保存本次上传材料的结果。第一版保存到本地 demo state。
+            确认并保存本次上传材料的结果。
           </p>
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600">
             <p className="font-semibold text-ink">保存内容摘要</p>
@@ -357,7 +357,7 @@ export default function UploadMaterialFlow({ onCancel }) {
           <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
             <h3 className="text-lg font-semibold text-emerald-700">保存成功 ✓</h3>
             <p className="mt-1 text-sm text-emerald-600">
-              上传材料流程已完成（demo 状态，未写入服务器）。
+              上传材料流程已完成。
             </p>
           </section>
 

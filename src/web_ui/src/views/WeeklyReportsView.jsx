@@ -53,7 +53,6 @@ export default function WeeklyReportsView() {
             jobType="weekly_report"
             payload={{ week_start: "2026-05-18", week_end: "2026-05-24" }}
             label="生成最新周报"
-            onComplete={(job) => console.log("weekly_report completed:", job.result_path)}
           />
         </div>
       </section>
