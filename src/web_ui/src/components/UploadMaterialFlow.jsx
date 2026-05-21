@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
 import QuestionReviewWorkspace from "./questionReview/QuestionReviewWorkspace.jsx";
 import JobTrigger from "./JobTrigger.jsx";
-import { fetchQuestionSession } from "../lib/api.js";
+import AnalysisStatusBadge from "./AnalysisStatusBadge.jsx";
+import FindingCard from "./FindingCard.jsx";
+import MemoryCandidateCard from "./MemoryCandidateCard.jsx";
+import ActionCandidateItem from "./ActionCandidateItem.jsx";
+import { fetchQuestionSession, fetchLearningFindings, isApiAvailable, createHermesJob, pollHermesJob, fetchHermesJobResult } from "../lib/api.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 const STEPS = [
@@ -68,6 +72,77 @@ export default function UploadMaterialFlow({ onCancel }) {
 
   const selectedLabel =
     DEMO_SESSIONS.find((s) => s.uploadId === selectedDemoSession)?.label ?? "";
+
+  // ── Analysis result state ──
+  const [analysisPhase, setAnalysisPhase] = useState("idle");
+  const [findingsData, setFindingsData] = useState(null);
+  const [findingsError, setFindingsError] = useState(null);
+  const [memoryDecisions, setMemoryDecisions] = useState({});
+  const [isDemoFallback, setIsDemoFallback] = useState(false);
+
+  useEffect(() => {
+    if (!saved) return;
+
+    const runAnalysis = async () => {
+      setAnalysisPhase("pending");
+      setFindingsError(null);
+      setFindingsData(null);
+      setIsDemoFallback(false);
+
+      try {
+        const apiOk = await isApiAvailable();
+        if (apiOk) {
+          setAnalysisPhase("running");
+          const result = await createHermesJob({
+            job_type: "learning_insight_update",
+            source_ids: [selectedDemoSession ?? DEMO_SESSIONS[0].uploadId],
+          });
+          if (result?.job_id) {
+            const final = await pollHermesJob(result.job_id, { timeoutMs: 300_000 });
+            if (final?.status === "completed") {
+              const jobResult = await fetchHermesJobResult(result.job_id);
+              if (jobResult) {
+                setFindingsData(jobResult);
+              }
+              setAnalysisPhase("completed");
+            } else {
+              setAnalysisPhase("failed");
+              setFindingsError(final?.error_message ?? "任务未能完成");
+            }
+          } else {
+            setAnalysisPhase("failed");
+            setFindingsError("无法创建任务");
+          }
+        } else {
+          setAnalysisPhase("running");
+          await new Promise((r) => setTimeout(r, 1500));
+          const batchId = formSubject === "math" ? "findings_20260518_math" : "findings_20260518_chinese";
+          const data = await fetchLearningFindings(batchId);
+          setFindingsData(data);
+          setIsDemoFallback(true);
+          setAnalysisPhase("completed");
+        }
+      } catch (err) {
+        setFindingsError(err.message);
+        setAnalysisPhase("failed");
+      }
+    };
+
+    runAnalysis();
+  }, [saved, selectedDemoSession, formSubject]);
+
+  const handleRefreshAnalysis = () => {
+    if (analysisPhase === "running" || analysisPhase === "pending") return;
+    setSaved(false);
+    setTimeout(() => setSaved(true), 0);
+  };
+
+  const handleMemoryDecision = (findingId, candidateIndex, decision) => {
+    setMemoryDecisions((prev) => ({
+      ...prev,
+      [`${findingId}_${candidateIndex}`]: decision,
+    }));
+  };
 
   return (
     <div className="space-y-5">
@@ -282,20 +357,100 @@ export default function UploadMaterialFlow({ onCancel }) {
 
       {/* Saved state */}
       {saved && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
             <h3 className="text-lg font-semibold text-emerald-700">保存成功 ✓</h3>
             <p className="mt-1 text-sm text-emerald-600">
               上传材料流程已完成（demo 状态，未写入服务器）。
             </p>
           </section>
-          <JobTrigger
-            jobType="learning_insight_update"
-            payload={{ source_ids: [selectedDemoSession] }}
-            label="触发 Hermes 学习洞察更新"
-            variant="primary"
-            onComplete={(job) => console.log("learning_insight_update completed:", job.result_path)}
-          />
+
+          {/* Analysis Status */}
+          <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-ink">Hermes 分析状态</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <AnalysisStatusBadge status={analysisPhase} />
+                  {isDemoFallback && (
+                    <span className="text-xs text-slate-400">demo 数据</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRefreshAnalysis}
+                disabled={analysisPhase === "running" || analysisPhase === "pending"}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
+              >
+                刷新分析状态
+              </button>
+            </div>
+
+            {findingsError && (
+              <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                {findingsError}
+              </div>
+            )}
+          </section>
+
+          {/* Analysis Results */}
+          {analysisPhase === "completed" && findingsData?.findings?.length > 0 && (
+            <div className="space-y-4">
+              <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
+                <p className="text-sm font-semibold text-ink mb-4">
+                  局部发现（{findingsData.findings.length} 条）
+                </p>
+                <div className="space-y-6">
+                  {findingsData.findings.map((finding) => (
+                    <div key={finding.finding_id} className="space-y-3">
+                      <FindingCard finding={finding} />
+
+                      {/* Memory Candidates */}
+                      {finding.memory_candidates?.length > 0 && (
+                        <div className="ml-4 space-y-2">
+                          <p className="text-xs font-semibold text-slate-500">待确定记忆</p>
+                          {finding.memory_candidates.map((candidate, idx) => (
+                            <MemoryCandidateCard
+                              key={idx}
+                              candidate={candidate}
+                              index={idx}
+                              findingId={finding.finding_id}
+                              decision={memoryDecisions[`${finding.finding_id}_${idx}`]}
+                              onDecisionChange={handleMemoryDecision}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Action Candidates */}
+                      {finding.action_candidates?.length > 0 && (
+                        <div className="ml-4 space-y-2">
+                          <p className="text-xs font-semibold text-slate-500">行动候选</p>
+                          <div className="space-y-2">
+                            {finding.action_candidates.map((candidate, idx) => (
+                              <ActionCandidateItem key={idx} candidate={candidate} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* Real API trigger (only when not in demo fallback) */}
+          {!isDemoFallback && analysisPhase !== "completed" && (
+            <JobTrigger
+              jobType="learning_insight_update"
+              payload={{ source_ids: [selectedDemoSession] }}
+              label="触发 Hermes 学习洞察更新"
+              variant="primary"
+              onComplete={(job) => console.log("learning_insight_update completed:", job.result_path)}
+            />
+          )}
         </div>
       )}
 

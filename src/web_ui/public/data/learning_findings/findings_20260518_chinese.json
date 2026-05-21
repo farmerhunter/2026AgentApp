@@ -1,0 +1,77 @@
+{
+  "contract": "learning_findings",
+  "contract_version": "1.0",
+  "finding_batch_id": "findings_20260518_chinese",
+  "student_id": "小明",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "generated_by": "learning_insight_update",
+  "generated_at": "2026-05-18T20:35:00+08:00",
+  "source_refs": [
+    {
+      "ref_type": "upload_meta",
+      "ref_path": "/data/question_sessions/upload_20260518_002/upload_meta.json"
+    },
+    {
+      "ref_type": "question_split_result",
+      "ref_path": "/data/question_sessions/upload_20260518_002/question_split_result.json"
+    },
+    {
+      "ref_type": "question_confirmation_result",
+      "ref_path": "/data/question_sessions/upload_20260518_002/question_confirmation_result.json"
+    },
+    {
+      "ref_type": "text_note",
+      "ref_path": "/data/notes/note_20260518_002.json"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "finding_chinese_001",
+      "scope": "local",
+      "finding_type": "reading_comprehension",
+      "statement": "学生能识别议论文中心论点，但对论据与论点的支撑关系分析不够深入。",
+      "evidence_summary": "学生备注中记录了'老师提醒阅读题要先判断中心论点，再说明论据作用'，说明知道答题框架但对论据分析环节掌握不牢。",
+      "concept_links": [
+        {
+          "concept_type": "learning_unit",
+          "concept_id": "unit_argumentation_structure",
+          "concept_name": "议论文答题结构",
+          "relationship": "直接相关",
+          "confidence": "high"
+        }
+      ],
+      "mistake_reasons": ["reading_comprehension", "expression_issue"],
+      "confidence": "medium",
+      "is_recurring": false,
+      "memory_candidates": [
+        {
+          "candidate_type": "short_term",
+          "reason": "属于新接触题型，需要观察后续几周是否稳定掌握。",
+          "priority": "中"
+        }
+      ],
+      "action_candidates": [
+        {
+          "action_type": "practice_set",
+          "description": "找 3 篇短议论文片段，专门练习'论点-论据'配对分析。",
+          "priority": "中",
+          "target_week": "本周"
+        },
+        {
+          "action_type": "make_summary",
+          "description": "整理议论文答题模板：中心论点→论据 1→作用→论据 2→作用→总结。",
+          "priority": "中",
+          "target_week": "本周"
+        }
+      ],
+      "weekly_context_candidates": [
+        {
+          "relevance": "议论文答题框架是新接触题型，本周以建立框架为主。",
+          "priority": "中",
+          "include_in_summary": true
+        }
+      ]
+    }
+  ]
+}
