@@ -363,3 +363,49 @@ src/web_ui/public/data/
 - Let's Encrypt SSL（如需 HTTPS）
 
 未来选项：竞赛结束后可平滑迁移到 PostgreSQL + Drizzle ORM + 腾讯云 COS，保持 API 契约不变。
+
+## ADR-018：产品大版本与工程阶段分离管理
+
+决策：Hermes 对外发布采用 1.0、2.0、3.0 三个大版本；工程执行仍保留现有阶段命名，例如第一阶段、阶段 G、阶段 F 和第二阶段。
+
+版本定义：
+
+```text
+1.0 = 静态全链路演示版
+2.0 = 真实 AI 和云端 API 版
+3.0 = 多用户真实场景版
+```
+
+阶段映射：
+
+- 1.0 对应前面文档中的阶段一：Vite/React Web UI + 脱敏静态 JSON + fixture job 状态，证明完整学习闭环。
+- 2.0 汇合阶段 G 和阶段 F：阶段 G 提供 SQLite + REST API + 可写入持久化，阶段 F 在同一契约上接入 LLM 动态生成 findings 和周报。
+- 3.0 对应长期生产化阶段：多用户鉴权、真实数据隔离、对象存储、云数据库、后台任务队列、审计和备份。
+
+原因：
+
+- 产品版本需要面向评委、用户和后续交付，表达“能做什么”。
+- 工程阶段需要面向开发排期，表达“先做什么、后做什么”。
+- 阶段 G 是 2.0 的基础设施前置工作，不应被误解为已经具备真实 AI 能力。
+- 阶段 F 依赖阶段 G 的 API 和数据库，二者合并后才构成 2.0 的核心发布能力。
+
+配置管理规则：
+
+- 环境差异通过环境变量表达，避免在业务代码中写死部署路径、模型名、provider 或 secret。
+- 1.0 默认 `HERMES_DATA_SOURCE=static`，前端读取 `/data/` 静态 JSON。
+- 2.0 默认 `HERMES_DATA_SOURCE=api`、`HERMES_STORAGE_PROVIDER=local`、`DATABASE_URL=sqlite:////var/lib/hermes/hermes.db`。
+- 2.0 使用 `HERMES_JOB_MODE=fixture` 做演示和回归测试，使用 `HERMES_JOB_MODE=real` 接入真实 LLM。
+- 3.0 默认 `HERMES_DATA_SOURCE=api`、`HERMES_STORAGE_PROVIDER=cos`，数据库迁移到 PostgreSQL/MySQL。
+- 前端数据访问函数必须保留 API fallback 到静态 JSON 的能力，直到 3.0 明确不再需要 demo fallback。
+
+发布门槛：
+
+- 1.0：静态 demo data 完整、脱敏、可校验；公开链接能走完整演示路径。
+- 2.0：API 可写入，SQLite 持久化，真实 LLM 输出经过 contract validation 后入库；fixture 和 real 模式可切换。
+- 3.0：多用户数据隔离、鉴权、私有对象存储、云数据库迁移、任务队列、备份和运行日志具备最小可用实现。
+
+执行规则：
+
+- 新功能仍按“设计文档 -> data contract -> sample data -> skill -> prompt -> job runner -> API trigger -> Web UI -> 验证”的顺序开发。
+- 不允许为了追赶版本号绕过 contract validation 或隐私脱敏。
+- 版本升级优先保持 API contract 兼容；必须破坏兼容时，需要在设计文档中记录迁移策略。

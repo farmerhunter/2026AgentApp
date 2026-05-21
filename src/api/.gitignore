@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Runtime generated data
+runtime/public/
+runtime/data/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
