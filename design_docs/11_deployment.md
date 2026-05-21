@@ -99,3 +99,44 @@ VITE_ENABLE_HERMES_MODE_SWITCH=true
 Web 前端源码建议放在 VPS 的 `/opt/hermes/2026AgentApp/src/web_ui/`。构建后的静态文件部署到 `/var/www/hermes-web/`，由 Nginx 提供服务。
 
 Hermes 生成的周报 JSON 建议放在 `/var/www/html/data/week_reports/`，由 Nginx 作为静态数据提供给前端读取。
+
+### 构建故障排除
+
+**Rollup 原生模块缺失**：在某些环境下 `npm ci` 可能报错 `Cannot find module @rollup/rollup-linux-x64-gnu`。这是已知的 npm 可选依赖 bug。
+
+解决方法：
+```bash
+cd /opt/hermes/2026AgentApp/src/web_ui
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+### Nginx 数据路径配置
+
+v1.0 静态 demo 需要以下 Nginx location alias，将前端 `/data/*` 请求映射到 `/var/www/html/data/`：
+
+| 路径 | 用途 |
+|------|------|
+| `/data/week_reports/` | 周报 JSON |
+| `/data/question_sessions/` | 题目拆解结果 |
+| `/data/demo_jobs/` | Hermes job 静态 demo |
+| `/data/learning_findings/` | 学习发现 |
+| `/data/notes/` | 学习笔记 |
+| `/data/textbooks/` | 教材内容摘要 |
+| `/data/focus_question_records/` | 核心问题记录 |
+
+示例配置片段：
+```nginx
+location /data/week_reports/ {
+    alias /var/www/html/data/week_reports/;
+    add_header Cache-Control "no-cache";
+}
+location /data/demo_jobs/ {
+    alias /var/www/html/data/demo_jobs/;
+    add_header Cache-Control "no-cache";
+}
+# ... 其他路径同理
+```
+
+构建输出中的 `dist/data/` 已包含所有 demo 数据。`scripts/deploy_web_ui.sh` 会将 `dist/data/*` 同步到 `/var/www/html/data/`。
