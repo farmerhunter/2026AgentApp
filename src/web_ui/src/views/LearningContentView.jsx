@@ -5,13 +5,15 @@ import SubjectFilter, {
 } from "../components/SubjectFilter.jsx";
 import JobTrigger from "../components/JobTrigger.jsx";
 import { fetchTextbookSummary } from "../lib/api.js";
+import { runHermesJob } from "../lib/hermesJobs.js";
 import { defaultSubjects, demoTextbookIds } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 const ANALYSIS_STATES = {
   idle: { label: "待上传", color: "text-slate-400", bg: "bg-slate-100" },
   selected: { label: "已选择文件", color: "text-blue-600", bg: "bg-blue-50" },
-  analyzing: { label: "分析中", color: "text-amber-600", bg: "bg-amber-50" },
+  pending: { label: "等待中", color: "text-slate-400", bg: "bg-slate-100" },
+  running: { label: "分析中", color: "text-amber-600", bg: "bg-amber-50" },
   completed: { label: "已完成", color: "text-emerald-600", bg: "bg-emerald-50" },
   failed: { label: "失败", color: "text-red-600", bg: "bg-red-50" },
 };
@@ -19,6 +21,7 @@ const ANALYSIS_STATES = {
 export default function LearningContentView() {
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [analysisState, setAnalysisState] = useState("idle");
+  const [analysisError, setAnalysisError] = useState("");
   const [formSubject, setFormSubject] = useState("math");
   const [grade, setGrade] = useState("八年级");
   const [sourceTitle, setSourceTitle] = useState("");
@@ -41,11 +44,31 @@ export default function LearningContentView() {
     ),
   );
 
-  const handleAnalyze = () => {
-    setAnalysisState("analyzing");
-    setTimeout(() => {
-      setAnalysisState("completed");
-    }, 2500);
+  const handleAnalyze = async () => {
+    setAnalysisState("pending");
+    setAnalysisError("");
+
+    try {
+      const final = await runHermesJob(
+        {
+          job_type: "textbook_summary",
+          textbook_id: formSubject === "chinese" ? "textbook_chinese_grade8_demo" : "textbook_math_grade8_demo",
+        },
+        {
+          onUpdate: (s) => setAnalysisState(s.status),
+        },
+      );
+
+      if (final.status === "completed") {
+        setAnalysisState("completed");
+      } else {
+        setAnalysisState("failed");
+        setAnalysisError("任务未能完成");
+      }
+    } catch (err) {
+      setAnalysisState("failed");
+      setAnalysisError(err.message);
+    }
   };
 
   const handleFileSelect = () => {
@@ -83,7 +106,7 @@ export default function LearningContentView() {
             <select
               value={formSubject}
               onChange={(e) => setFormSubject(e.target.value)}
-              disabled={analysisState === "analyzing"}
+              disabled={analysisState === "pending" || analysisState === "running"}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-aurora focus:ring-4 focus:ring-aurora/10 disabled:opacity-50"
             >
               <option value="chinese">语文</option>
@@ -96,7 +119,7 @@ export default function LearningContentView() {
               type="text"
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
-              disabled={analysisState === "analyzing"}
+              disabled={analysisState === "pending" || analysisState === "running"}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-aurora focus:ring-4 focus:ring-aurora/10 disabled:opacity-50"
             />
           </div>
@@ -108,7 +131,7 @@ export default function LearningContentView() {
               value={sourceTitle}
               onChange={(e) => setSourceTitle(e.target.value)}
               placeholder="例如：八年级数学下册示例教材"
-              disabled={analysisState === "analyzing"}
+              disabled={analysisState === "pending" || analysisState === "running"}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-aurora focus:ring-4 focus:ring-aurora/10 disabled:opacity-50"
             />
 
@@ -118,7 +141,7 @@ export default function LearningContentView() {
               value={pageRange}
               onChange={(e) => setPageRange(e.target.value)}
               placeholder="例如：42-58"
-              disabled={analysisState === "analyzing"}
+              disabled={analysisState === "pending" || analysisState === "running"}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-aurora focus:ring-4 focus:ring-aurora/10 disabled:opacity-50"
             />
           </div>
@@ -130,7 +153,7 @@ export default function LearningContentView() {
               <button
                 type="button"
                 onClick={handleFileSelect}
-                disabled={analysisState === "analyzing"}
+                disabled={analysisState === "pending" || analysisState === "running"}
                 className="font-semibold text-aurora underline decoration-aurora/30 underline-offset-2 transition hover:text-ink disabled:opacity-50 disabled:no-underline"
               >
                 选择 PDF 文件
@@ -144,7 +167,7 @@ export default function LearningContentView() {
             >
               <span
                 className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  analysisState === "analyzing" ? "animate-pulse bg-amber-500" : "bg-current"
+                  analysisState === "running" ? "animate-pulse bg-amber-500" : "bg-current"
                 }`}
               />
               {stateStyle.label}
@@ -168,19 +191,19 @@ export default function LearningContentView() {
             <button
               type="button"
               onClick={handleAnalyze}
-              disabled={analysisState === "analyzing" || analysisState === "idle"}
+              disabled={analysisState === "pending" || analysisState === "running" || analysisState === "idle"}
               className="rounded-xl bg-ink px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-aurora disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {analysisState === "analyzing" ? "分析中..." : "分析教材"}
+              {analysisState === "running" || analysisState === "pending" ? "分析中..." : "分析教材"}
             </button>
           </div>
         </div>
 
-        {analysisState === "analyzing" && (
+        {(analysisState === "running" || analysisState === "pending") && (
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
             <p className="font-semibold">Hermes 正在分析教材…</p>
             <p className="mt-1 text-amber-600">
-              正在提取章节结构、学习单元和知识点（demo 模拟，约 2-3 秒）。
+              正在提取章节结构、学习单元和知识点（demo 模拟，约 2 秒）。
             </p>
           </div>
         )}
@@ -197,7 +220,7 @@ export default function LearningContentView() {
               jobType="textbook_summary"
               payload={{ textbook_id: formSubject === "chinese" ? "textbook_chinese_grade8_demo" : "textbook_math_grade8_demo" }}
               label="触发 Hermes 教材分析"
-              onComplete={(job) => console.log("textbook_summary completed:", job.result_path)}
+              onComplete={(job) => console.log("textbook_summary completed:", job.result_url)}
             />
           </div>
         )}
@@ -205,7 +228,7 @@ export default function LearningContentView() {
         {analysisState === "failed" && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             <p className="font-semibold">分析失败</p>
-            <p className="mt-1">请重试或检查 PDF 文件是否可读。</p>
+            <p className="mt-1">{analysisError || "请重试或检查 PDF 文件是否可读。"}</p>
           </div>
         )}
       </section>

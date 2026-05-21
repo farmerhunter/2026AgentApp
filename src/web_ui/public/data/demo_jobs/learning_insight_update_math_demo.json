@@ -1,0 +1,9 @@
+{
+  "job_id": "demo_job_learning_insight_update_math",
+  "job_type": "learning_insight_update",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["upload_20260518_001"],
+  "result_url": "/data/learning_findings/findings_20260518_math.json",
+  "result_label": "数学反比例函数学习发现样例"
+}

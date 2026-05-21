@@ -1,0 +1,9 @@
+{
+  "job_id": "demo_job_weekly_report_20260518_20260524",
+  "job_type": "weekly_report",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["upload_20260518_001", "upload_20260518_002"],
+  "result_url": "/data/week_reports/week_20260518_20260524.json",
+  "result_label": "2026-05-18 至 2026-05-24 跨学科周报样例"
+}

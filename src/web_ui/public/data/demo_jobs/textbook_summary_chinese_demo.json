@@ -1,0 +1,9 @@
+{
+  "job_id": "demo_job_textbook_summary_chinese",
+  "job_type": "textbook_summary",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["textbook_chinese_grade8_demo"],
+  "result_url": "/data/textbooks/textbook_chinese_grade8_demo/textbook_content_summary.json",
+  "result_label": "八年级语文下册示例教材分析样例"
+}

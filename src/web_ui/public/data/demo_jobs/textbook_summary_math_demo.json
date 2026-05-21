@@ -1,0 +1,9 @@
+{
+  "job_id": "demo_job_textbook_summary_math",
+  "job_type": "textbook_summary",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["textbook_math_grade8_demo"],
+  "result_url": "/data/textbooks/textbook_math_grade8_demo/textbook_content_summary.json",
+  "result_label": "八年级数学下册示例教材分析样例"
+}

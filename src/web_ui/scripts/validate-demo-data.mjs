@@ -255,6 +255,69 @@ for (const file of focusFiles) {
 
 log(focusCount >= 1, `has ${focusCount} focus question record files (expected ≥ 1)`);
 
+// ── 6. Demo jobs ──
+console.log("\n📋 Demo Jobs");
+const demoJobsDir = resolve(DATA_DIR, "demo_jobs");
+const demoIndexPath = resolve(demoJobsDir, "index.json");
+const demoIndex = readJson(demoIndexPath);
+
+if (!demoIndex) {
+  log(false, "demo_jobs/index.json missing or invalid JSON");
+} else {
+  log(true, "demo_jobs/index.json exists and is valid JSON");
+  log(demoIndex.contract === "demo_jobs_index", "has correct contract");
+  log(demoIndex.execution_mode === "static", 'execution_mode is "static"');
+
+  const jobTypes = Object.keys(demoIndex.jobs ?? {});
+  log(jobTypes.length >= 3, `has ${jobTypes.length} job types (expected ≥ 3)`);
+
+  for (const jobType of jobTypes) {
+    const mappings = demoIndex.jobs[jobType];
+    const keys = Object.keys(mappings);
+    log(keys.length >= 1, `${jobType}: has ${keys.length} mappings`);
+
+    for (const key of keys) {
+      const resultUrl = mappings[key];
+      const resultPath = resolve(DATA_DIR, ...resultUrl.replace(/^\/data\//, "").split("/"));
+      const exists = existsSync(resultPath);
+      log(exists, `${jobType}/${key}: result_url exists (${resultUrl})`);
+    }
+  }
+
+  checkNoLocalPaths(demoIndex, "demo_jobs/index.json");
+}
+
+const REQUIRED_DEMO_JOB_FIELDS = ["job_id", "job_type", "status", "mode", "result_url"];
+const demoJobFiles = [
+  "textbook_summary_math_demo.json",
+  "textbook_summary_chinese_demo.json",
+  "learning_insight_update_math_demo.json",
+  "learning_insight_update_chinese_demo.json",
+  "weekly_report_20260518_20260524_demo.json",
+];
+
+let demoJobCount = 0;
+for (const file of demoJobFiles) {
+  const filePath = resolve(demoJobsDir, file);
+  const exists = existsSync(filePath);
+  const data = readJson(filePath);
+  log(exists && data !== null, `${file} exists and is valid JSON`);
+
+  if (data) {
+    for (const field of REQUIRED_DEMO_JOB_FIELDS) {
+      log(!!data[field], `${file}: has ${field}`);
+    }
+    log(data.mode === "static", `${file}: mode is "static"`);
+    log(data.status === "completed", `${file}: status is "completed"`);
+    const resultPath = resolve(DATA_DIR, ...data.result_url.replace(/^\/data\//, "").split("/"));
+    log(existsSync(resultPath), `${file}: result_url points to existing file`);
+    checkNoLocalPaths(data, file);
+    demoJobCount++;
+  }
+}
+
+log(demoJobCount >= 5, `has ${demoJobCount} demo job files (expected ≥ 5)`);
+
 // ── Summary ──
 console.log(`\n${"─".repeat(40)}`);
 console.log(`Passed: ${passed}  Failed: ${failed}`);

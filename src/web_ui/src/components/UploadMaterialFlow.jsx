@@ -6,7 +6,8 @@ import AnalysisStatusBadge from "./AnalysisStatusBadge.jsx";
 import FindingCard from "./FindingCard.jsx";
 import MemoryCandidateCard from "./MemoryCandidateCard.jsx";
 import ActionCandidateItem from "./ActionCandidateItem.jsx";
-import { fetchQuestionSession, fetchLearningFindings, isApiAvailable, createHermesJob, pollHermesJob, fetchHermesJobResult } from "../lib/api.js";
+import { fetchQuestionSession } from "../lib/api.js";
+import { runHermesJob } from "../lib/hermesJobs.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 const STEPS = [
@@ -83,6 +84,8 @@ export default function UploadMaterialFlow({ onCancel }) {
   useEffect(() => {
     if (!saved) return;
 
+    const controller = new AbortController();
+
     const runAnalysis = async () => {
       setAnalysisPhase("pending");
       setFindingsError(null);
@@ -90,46 +93,39 @@ export default function UploadMaterialFlow({ onCancel }) {
       setIsDemoFallback(false);
 
       try {
-        const apiOk = await isApiAvailable();
-        if (apiOk) {
-          setAnalysisPhase("running");
-          const result = await createHermesJob({
+        const final = await runHermesJob(
+          {
             job_type: "learning_insight_update",
             source_ids: [selectedDemoSession ?? DEMO_SESSIONS[0].uploadId],
-          });
-          if (result?.job_id) {
-            const final = await pollHermesJob(result.job_id, { timeoutMs: 300_000 });
-            if (final?.status === "completed") {
-              const jobResult = await fetchHermesJobResult(result.job_id);
-              if (jobResult) {
-                setFindingsData(jobResult);
-              }
-              setAnalysisPhase("completed");
-            } else {
-              setAnalysisPhase("failed");
-              setFindingsError(final?.error_message ?? "任务未能完成");
-            }
-          } else {
-            setAnalysisPhase("failed");
-            setFindingsError("无法创建任务");
-          }
-        } else {
-          setAnalysisPhase("running");
-          await new Promise((r) => setTimeout(r, 1500));
-          const batchId = formSubject === "math" ? "findings_20260518_math" : "findings_20260518_chinese";
-          const data = await fetchLearningFindings(batchId);
-          setFindingsData(data);
-          setIsDemoFallback(true);
+          },
+          {
+            onUpdate: (s) => {
+              if (!controller.signal.aborted) setAnalysisPhase(s.status);
+            },
+            signal: controller.signal,
+          },
+        );
+
+        if (controller.signal.aborted) return;
+
+        if (final.status === "completed" && final.result) {
+          setFindingsData(final.result);
+          setIsDemoFallback(final.mode === "static");
           setAnalysisPhase("completed");
+        } else {
+          setAnalysisPhase("failed");
+          setFindingsError("任务未能完成");
         }
       } catch (err) {
+        if (err.name === "AbortError") return;
         setFindingsError(err.message);
         setAnalysisPhase("failed");
       }
     };
 
     runAnalysis();
-  }, [saved, selectedDemoSession, formSubject]);
+    return () => controller.abort();
+  }, [saved, selectedDemoSession]);
 
   const handleRefreshAnalysis = () => {
     if (analysisPhase === "running" || analysisPhase === "pending") return;
