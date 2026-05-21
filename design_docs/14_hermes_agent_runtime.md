@@ -185,13 +185,99 @@ Hermes job runner
   -> 页面渲染
 ```
 
-Web UI 中的按钮可以先表现为 demo 状态：
+Web UI 中的按钮在第一版不应消失，也不应直接暴露未完成的真实 API。它们应先通过静态 demo job adapter 表现为可执行的任务：
 
 - 上传材料：进入上传/切题/确认子流程，读取样例 session。
-- 上传结束页：保存重点题确认后显示 `learning_insight_update` 的“等待分析 / 分析中 / 已完成 / 失败”状态，可以先读取静态 sample data 模拟 job 结果。
-- 查看周报：读取静态周报 JSON。
+- 教材分析：点击后显示分析中，完成后读取 `/data/textbooks/.../textbook_content_summary.json`。
+- 上传结束页：保存重点题确认后触发 `learning_insight_update` demo job，展示“等待分析 / 分析中 / 已完成 / 失败”状态，完成后读取 `/data/learning_findings/...`。
+- 生成周报：点击后触发 `weekly_report` demo job，完成后读取 `/data/week_reports/...` 和索引。
+- 查看周报：读取静态周报 JSON，也可以由 demo job 完成后刷新当前周报。
 
 该阶段不要求真实后端 API，也不要求任务队列。
+
+第一版推荐新增统一前端执行接口：
+
+```text
+runHermesJob(payload)
+  -> VITE_HERMES_EXECUTION_MODE=static: runStaticDemoJob(payload)
+  -> VITE_HERMES_EXECUTION_MODE=api: createHermesJob(payload) + pollHermesJob(job_id)
+```
+
+其中 `static` 是 1.0 默认模式，`api` 是 2.0 真实后端模式。UI 组件不直接判断 API 是否可用，而是只接收统一任务结果：
+
+```json
+{
+  "job_id": "demo_job_learning_insight_update_math",
+  "job_type": "learning_insight_update",
+  "status": "completed",
+  "mode": "static",
+  "result_url": "/data/learning_findings/findings_20260518_math.json",
+  "result": {}
+}
+```
+
+静态 demo job 数据建议放在：
+
+```text
+src/web_ui/public/data/demo_jobs/
+  index.json
+  textbook_summary_math_demo.json
+  textbook_summary_chinese_demo.json
+  learning_insight_update_math_demo.json
+  learning_insight_update_chinese_demo.json
+  weekly_report_20260518_20260524_demo.json
+```
+
+这层数据的作用不是替代 sample output，而是补齐“点击任务 -> 状态变化 -> 读取结果”的演示链路。最终业务结果仍复用既有 sample output，例如 `learning_findings`、`week_reports` 和 `textbooks`。
+
+### 4.1.1 网页执行模式切换
+
+有时开发者或演示者需要在同一个已部署页面里比较 static demo job 和 API job。这个能力应作为前端 debug/demo switch，而不是改变产品发布边界。
+
+配置：
+
+```text
+VITE_HERMES_EXECUTION_MODE=static | api
+VITE_ENABLE_HERMES_MODE_SWITCH=true | false
+```
+
+解析规则：
+
+```text
+effective_mode =
+  localStorage.hermesExecutionMode  # 仅当 VITE_ENABLE_HERMES_MODE_SWITCH=true
+  ?? VITE_HERMES_EXECUTION_MODE
+  ?? "static"
+```
+
+推荐模块：
+
+```text
+src/web_ui/src/lib/hermesExecutionMode.js
+```
+
+职责：
+
+- 读取构建默认模式。
+- 判断网页切换是否启用。
+- 从 `localStorage` 读取或写入当前 override。
+- 暴露 `getHermesExecutionMode()`、`setHermesExecutionMode(mode)`、`clearHermesExecutionModeOverride()`。
+- 通知 UI 更新当前模式，例如通过 React state、context 或轻量事件订阅。
+
+UI 建议：
+
+- 在 AppShell 页眉或设置区域显示小型切换器。
+- 只在 `VITE_ENABLE_HERMES_MODE_SWITCH=true` 时渲染。
+- 文案区分“静态演示”和“API 实时”，避免学生用户误解。
+- API 不可用时不要自动切回 static，但应显示明确提示。
+- 提供“恢复默认”按钮，删除 `localStorage` override。
+
+安全和发布规则：
+
+- v1 正式评审构建默认 `static`，即使启用切换，也应能不操作切换完成完整演示。
+- 网页切换只影响前端选择 `runStaticDemoJob` 还是 `runApiJob`，不改变数据 contract。
+- 不在前端存储 secret、API key 或模型配置。
+- 生产多用户版本是否保留该切换器需要重新评估，默认应关闭。
 
 ### 4.2 最小真实触发阶段
 

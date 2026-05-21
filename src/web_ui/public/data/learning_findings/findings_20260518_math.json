@@ -1,0 +1,121 @@
+{
+  "contract": "learning_findings",
+  "contract_version": "1.0",
+  "finding_batch_id": "findings_20260518_math",
+  "student_id": "小明",
+  "subject": "math",
+  "subject_label": "数学",
+  "generated_by": "learning_insight_update",
+  "generated_at": "2026-05-18T20:30:00+08:00",
+  "source_refs": [
+    {
+      "ref_type": "upload_meta",
+      "ref_path": "/data/question_sessions/upload_20260518_001/upload_meta.json"
+    },
+    {
+      "ref_type": "question_split_result",
+      "ref_path": "/data/question_sessions/upload_20260518_001/question_split_result.json"
+    },
+    {
+      "ref_type": "question_confirmation_result",
+      "ref_path": "/data/question_sessions/upload_20260518_001/question_confirmation_result.json"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "finding_math_001",
+      "scope": "local",
+      "finding_type": "concept_gap",
+      "statement": "学生对反比例函数 k 的正负与象限对应关系理解不牢固。",
+      "evidence_summary": "题目 q_001 要求根据点 A(2,3) 求 k 值并判断图像所在象限，学生未能正确判断象限。",
+      "concept_links": [
+        {
+          "concept_type": "knowledge_point",
+          "concept_id": "kp_inverse_function_quadrant",
+          "concept_name": "反比例函数图像所在象限",
+          "relationship": "直接相关",
+          "confidence": "high"
+        },
+        {
+          "concept_type": "knowledge_point",
+          "concept_id": "kp_inverse_function_expression",
+          "concept_name": "反比例函数表达式",
+          "relationship": "前置知识",
+          "confidence": "high"
+        }
+      ],
+      "mistake_reasons": ["concept_gap", "procedure_gap"],
+      "confidence": "high",
+      "is_recurring": false,
+      "memory_candidates": [
+        {
+          "candidate_type": "short_term",
+          "reason": "本周首次出现，但属于基础知识点，应记住以便后续追踪是否重复。",
+          "priority": "高"
+        }
+      ],
+      "action_candidates": [
+        {
+          "action_type": "review_concept",
+          "description": "复习反比例函数 k 的正负与象限关系口诀。",
+          "priority": "高",
+          "target_week": "本周"
+        },
+        {
+          "action_type": "practice_set",
+          "description": "做 5 道反比例函数象限判断题巩固理解。",
+          "priority": "高",
+          "target_week": "本周"
+        }
+      ],
+      "weekly_context_candidates": [
+        {
+          "relevance": "本周核心发现：反比例函数象限判断是基础薄弱点。",
+          "priority": "高",
+          "include_in_summary": true
+        }
+      ]
+    },
+    {
+      "finding_id": "finding_math_002",
+      "scope": "local",
+      "finding_type": "procedure_gap",
+      "statement": "学生能根据点坐标求 k 值，但代入验证步骤不完整。",
+      "evidence_summary": "题目 q_001 中学生正确求得 k=6，但未完整写出代入验证过程。",
+      "concept_links": [
+        {
+          "concept_type": "knowledge_point",
+          "concept_id": "kp_inverse_function_expression",
+          "concept_name": "反比例函数表达式",
+          "relationship": "直接相关",
+          "confidence": "high"
+        }
+      ],
+      "mistake_reasons": ["procedure_gap"],
+      "confidence": "medium",
+      "is_recurring": false,
+      "memory_candidates": [
+        {
+          "candidate_type": "short_term",
+          "reason": "步骤规范性不足，需观察下周同类题目是否持续出现。",
+          "priority": "中"
+        }
+      ],
+      "action_candidates": [
+        {
+          "action_type": "redo_question",
+          "description": "重做 q_001，要求写出完整的代入验证步骤。",
+          "priority": "中",
+          "target_week": "本周"
+        }
+      ],
+      "weekly_context_candidates": [
+        {
+          "relevance": "步骤规范性需要提醒。",
+          "priority": "中",
+          "include_in_summary": true
+        }
+      ]
+    }
+  ]
+}

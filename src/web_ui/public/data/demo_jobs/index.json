@@ -1,0 +1,19 @@
+{
+  "contract": "demo_jobs_index",
+  "contract_version": "1.0",
+  "execution_mode": "static",
+  "jobs": {
+    "textbook_summary": {
+      "textbook_math_grade8_demo": "/data/textbooks/textbook_math_grade8_demo/textbook_content_summary.json",
+      "textbook_chinese_grade8_demo": "/data/textbooks/textbook_chinese_grade8_demo/textbook_content_summary.json"
+    },
+    "learning_insight_update": {
+      "upload_20260518_001": "/data/learning_findings/findings_20260518_math.json",
+      "upload_20260518_002": "/data/learning_findings/findings_20260518_chinese.json"
+    },
+    "weekly_report": {
+      "2026-05-18_2026-05-24": "/data/week_reports/week_20260518_20260524.json",
+      "2026-05-25_2026-05-31": "/data/week_reports/week_20260525_20260531.json"
+    }
+  }
+}

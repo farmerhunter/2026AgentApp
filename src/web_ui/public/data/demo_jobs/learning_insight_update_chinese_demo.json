@@ -1,0 +1,9 @@
+{
+  "job_id": "demo_job_learning_insight_update_chinese",
+  "job_type": "learning_insight_update",
+  "status": "completed",
+  "mode": "static",
+  "source_ids": ["upload_20260518_002"],
+  "result_url": "/data/learning_findings/findings_20260518_chinese.json",
+  "result_label": "语文议论文学习发现样例"
+}

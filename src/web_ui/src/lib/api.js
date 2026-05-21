@@ -117,3 +117,7 @@ export function fetchTextbookSummary(textbookId) {
 export function fetchTextNote(noteId) {
   return fetchJson(`/notes/${noteId}.json`);
 }
+
+export function fetchLearningFindings(batchId) {
+  return fetchJson(`/learning_findings/${batchId}.json`);
+}

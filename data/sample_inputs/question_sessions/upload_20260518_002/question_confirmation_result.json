@@ -1,0 +1,56 @@
+{
+  "contract": "question_confirmation_result",
+  "contract_version": "1.1",
+  "upload_id": "upload_20260518_002",
+  "student_id": "小明",
+  "subject": "chinese",
+  "subject_label": "语文",
+  "confirmed_at": "2026-05-18T20:33:00+08:00",
+  "confirmed_by": "student",
+  "confirmations": [
+    {
+      "question_id": "q_chinese_001",
+      "selected": true,
+      "subject": "chinese",
+      "subject_label": "语文",
+      "student_mark": "做错了",
+      "teacher_score": "3",
+      "full_score": "6",
+      "knowledge_point": "议论文中心论点提取和论据作用分析",
+      "knowledge_point_ids": [
+        "kp_argument_central_claim",
+        "kp_argument_evidence_analysis"
+      ],
+      "mistake_reason": "只摘录了文中一句话，没有说明例子如何支撑中心论点。",
+      "review_priority": "高",
+      "review_status": "需要复习",
+      "tags": [
+        "阅读题",
+        "老师讲过"
+      ],
+      "note": "需要先用自己的话概括中心论点，再回答论据作用。"
+    },
+    {
+      "question_id": "q_chinese_002",
+      "selected": true,
+      "subject": "chinese",
+      "subject_label": "语文",
+      "student_mark": "不确定",
+      "teacher_score": "4",
+      "full_score": "6",
+      "knowledge_point": "片段作文中心句和细节支撑",
+      "knowledge_point_ids": [
+        "kp_composition_topic_sentence",
+        "kp_composition_detail_support"
+      ],
+      "mistake_reason": "段落观点不够明确，补充的例子偏空泛。",
+      "review_priority": "中",
+      "review_status": "需要复习",
+      "tags": [
+        "作文修改",
+        "需要复盘"
+      ],
+      "note": "修改时先写中心句，再加入一个具体动作或场景。"
+    }
+  ]
+}

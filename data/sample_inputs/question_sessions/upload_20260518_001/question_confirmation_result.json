@@ -1,0 +1,74 @@
+{
+  "contract": "question_confirmation_result",
+  "contract_version": "1.1",
+  "upload_id": "upload_20260518_001",
+  "student_id": "小明",
+  "subject": "math",
+  "subject_label": "数学",
+  "confirmed_at": "2026-05-18T20:30:00+08:00",
+  "confirmed_by": "student",
+  "confirmations": [
+    {
+      "question_id": "q_001",
+      "selected": true,
+      "subject": "math",
+      "subject_label": "数学",
+      "student_mark": "做错了",
+      "teacher_score": "0",
+      "full_score": "3",
+      "knowledge_point": "反比例函数图像所在象限",
+      "knowledge_point_ids": [
+        "kp_inverse_function_quadrant"
+      ],
+      "mistake_reason": "没有根据 k 的正负判断象限。",
+      "review_priority": "高",
+      "review_status": "需要复习",
+      "tags": [
+        "错题",
+        "老师讲过"
+      ],
+      "note": "需要把 k 的正负和象限关系整理成口诀。"
+    },
+    {
+      "question_id": "q_002",
+      "selected": true,
+      "subject": "math",
+      "subject_label": "数学",
+      "student_mark": "不确定",
+      "teacher_score": "2",
+      "full_score": "3",
+      "knowledge_point": "反比例函数表达式代入验证",
+      "knowledge_point_ids": [
+        "kp_inverse_function_expression"
+      ],
+      "mistake_reason": "代入验证步骤不完整。",
+      "review_priority": "中",
+      "review_status": "需要复习",
+      "tags": [
+        "不确定",
+        "需要复盘"
+      ],
+      "note": "计算结果对了，但表达过程不清楚。"
+    },
+    {
+      "question_id": "q_003",
+      "selected": false,
+      "subject": "math",
+      "subject_label": "数学",
+      "student_mark": "已掌握",
+      "teacher_score": "4",
+      "full_score": "4",
+      "knowledge_point": "反比例函数关系判断",
+      "knowledge_point_ids": [
+        "kp_inverse_function_expression"
+      ],
+      "mistake_reason": "",
+      "review_priority": "低",
+      "review_status": "已掌握",
+      "tags": [
+        "已掌握"
+      ],
+      "note": "暂不加入重点题。"
+    }
+  ]
+}

@@ -7,7 +7,7 @@
 #
 # Environment:
 #   HERMES_JOB_MODE=fixture   default, uses sample data
-#   HERMES_JOB_MODE=hermes    calls hermes CLI with skill + prompt
+#   HERMES_JOB_MODE=real      calls hermes CLI with skill + prompt
 
 set -euo pipefail
 
@@ -26,7 +26,7 @@ while [[ $# -gt 0 ]]; do
     --output)      OUTPUT_DIR="$2"; shift 2 ;;
     --help)
       echo "Usage: $0 --textbook-id <id> [--output <dir>]"
-      echo "  JOB_MODE=fixture|hermes (default: fixture)"
+      echo "  JOB_MODE=fixture|real (default: fixture)"
       exit 0
       ;;
     *) shift ;;
@@ -48,7 +48,7 @@ OUTPUT_FILE="$OUTPUT_DIR/$TEXTBOOK_ID/textbook_content_summary.json"
 
 if [ "$JOB_MODE" = "fixture" ]; then
   run_fixture "$SAMPLE_TEXTBOOK" "$OUTPUT_FILE"
-elif [ "$JOB_MODE" = "hermes" ]; then
+elif [ "$JOB_MODE" = "real" ]; then
   CONTEXT=$(load_json "$SAMPLE_TEXTBOOK")
   echo "$CONTEXT" | run_hermes "$SKILL_FILE" "$PROMPT_FILE" "-" "$OUTPUT_FILE"
 else
