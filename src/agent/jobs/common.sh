@@ -15,6 +15,9 @@ JOB_TYPE="${JOB_TYPE:-unknown}"
 JOB_ID="${JOB_ID:-job_$(date +%Y%m%d_%H%M%S)}"
 JOB_MODE="${HERMES_JOB_MODE:-fixture}"
 
+# Normalize legacy mode names
+[[ "$JOB_MODE" == "hermes" ]] && JOB_MODE="real"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -136,7 +139,7 @@ json.dump(data, sys.stdout, ensure_ascii=False, indent=2)
   validate_output "$output_file"
 }
 
-# Hermes mode: call hermes run with skill + prompt + context
+# Real mode: call hermes CLI with skill + prompt + context
 run_hermes() {
   local skill_file="$1"
   local prompt_file="$2"

@@ -11,6 +11,7 @@
  * - all subject fields use internal codes (chinese/math/english)
  * - subject_label exists for display
  * - no local absolute paths in public data
+ * - sample_inputs/question_sessions/ has required files for job runners
  *
  * Usage: node scripts/validate-demo-data.mjs
  */
@@ -317,6 +318,38 @@ for (const file of demoJobFiles) {
 }
 
 log(demoJobCount >= 5, `has ${demoJobCount} demo job files (expected ≥ 5)`);
+
+// ── 7. Sample inputs (job runner sources) ──
+console.log("\n📋 Sample Inputs");
+const sampleInputsDir = resolve(__dirname, "..", "..", "..", "data", "sample_inputs", "question_sessions");
+let sampleSessionDirs = [];
+try {
+  sampleSessionDirs = readdirSync(sampleInputsDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+} catch {
+  log(false, "data/sample_inputs/question_sessions directory not found");
+}
+
+const REQUIRED_SAMPLE_INPUT_FILES = [
+  "upload_meta.json",
+  "question_split_result.json",
+  "question_confirmation_result.json",
+];
+
+let sampleSessionCount = 0;
+for (const uploadId of sampleSessionDirs) {
+  const sessionDir = resolve(sampleInputsDir, uploadId);
+  for (const file of REQUIRED_SAMPLE_INPUT_FILES) {
+    const filePath = resolve(sessionDir, file);
+    const exists = existsSync(filePath);
+    const data = readJson(filePath);
+    log(exists && data !== null, `sample_inputs/${uploadId}/${file} exists and is valid JSON`);
+  }
+  sampleSessionCount++;
+}
+
+log(sampleSessionCount >= 2, `has ${sampleSessionCount} sample input sessions (expected ≥ 2)`);
 
 // ── Summary ──
 console.log(`\n${"─".repeat(40)}`);

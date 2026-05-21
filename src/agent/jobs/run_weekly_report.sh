@@ -6,7 +6,7 @@
 #
 # Environment:
 #   HERMES_JOB_MODE=fixture   default, uses sample data
-#   HERMES_JOB_MODE=hermes    calls hermes CLI with skill + prompt
+#   HERMES_JOB_MODE=real      calls hermes CLI with skill + prompt
 
 set -euo pipefail
 
@@ -83,7 +83,7 @@ if [ "$JOB_MODE" = "fixture" ]; then
     log_info "Consolidation output copied to $CONSOL_OUT_DIR"
   fi
 
-elif [ "$JOB_MODE" = "hermes" ]; then
+elif [ "$JOB_MODE" = "real" ]; then
   # Assemble context: findings + memory + materials
   CONTEXT=$(python3 -c "
 import json, os, sys

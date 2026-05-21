@@ -7,7 +7,7 @@
 #
 # Environment:
 #   HERMES_JOB_MODE=fixture   default, uses sample data
-#   HERMES_JOB_MODE=hermes    calls hermes CLI with skill + prompt
+#   HERMES_JOB_MODE=real      calls hermes CLI with skill + prompt
 
 set -euo pipefail
 
@@ -81,7 +81,17 @@ if [ "$JOB_MODE" = "fixture" ]; then
     log_info "Focus question records copied to $FOCUS_OUT_DIR"
   fi
 
-elif [ "$JOB_MODE" = "hermes" ]; then
+elif [ "$JOB_MODE" = "real" ]; then
+  # Validate required inputs for real mode
+  if [ ! -f "$SPLIT_RESULT" ]; then
+    log_error "Missing required input for real learning_insight_update: $SPLIT_RESULT"
+    exit 1
+  fi
+  if [ ! -f "$CONFIRM_RESULT" ]; then
+    log_error "Missing required input for real learning_insight_update: $CONFIRM_RESULT"
+    exit 1
+  fi
+
   # Assemble context: upload meta + split + confirmation + textbook
   CONTEXT=$(python3 -c "
 import json, sys
@@ -89,8 +99,8 @@ import json, sys
 context = {
     'upload_id': '$UPLOAD_ID',
     'upload_meta': json.load(open('$UPLOAD_META')),
-    'split_result': json.load(open('$SPLIT_RESULT')) if __import__('os').path.exists('$SPLIT_RESULT') else None,
-    'confirmation_result': json.load(open('$CONFIRM_RESULT')) if __import__('os').path.exists('$CONFIRM_RESULT') else None,
+    'split_result': json.load(open('$SPLIT_RESULT')),
+    'confirmation_result': json.load(open('$CONFIRM_RESULT')),
 }
 # Try to load related textbook summary
 import os

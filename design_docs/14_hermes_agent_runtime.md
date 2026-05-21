@@ -230,6 +230,55 @@ src/web_ui/public/data/demo_jobs/
 
 这层数据的作用不是替代 sample output，而是补齐“点击任务 -> 状态变化 -> 读取结果”的演示链路。最终业务结果仍复用既有 sample output，例如 `learning_findings`、`week_reports` 和 `textbooks`。
 
+### 4.1.1 网页执行模式切换
+
+有时开发者或演示者需要在同一个已部署页面里比较 static demo job 和 API job。这个能力应作为前端 debug/demo switch，而不是改变产品发布边界。
+
+配置：
+
+```text
+VITE_HERMES_EXECUTION_MODE=static | api
+VITE_ENABLE_HERMES_MODE_SWITCH=true | false
+```
+
+解析规则：
+
+```text
+effective_mode =
+  localStorage.hermesExecutionMode  # 仅当 VITE_ENABLE_HERMES_MODE_SWITCH=true
+  ?? VITE_HERMES_EXECUTION_MODE
+  ?? "static"
+```
+
+推荐模块：
+
+```text
+src/web_ui/src/lib/hermesExecutionMode.js
+```
+
+职责：
+
+- 读取构建默认模式。
+- 判断网页切换是否启用。
+- 从 `localStorage` 读取或写入当前 override。
+- 暴露 `getHermesExecutionMode()`、`setHermesExecutionMode(mode)`、`clearHermesExecutionModeOverride()`。
+- 通知 UI 更新当前模式，例如通过 React state、context 或轻量事件订阅。
+
+UI 建议：
+
+- 在 AppShell 页眉或设置区域显示小型切换器。
+- 只在 `VITE_ENABLE_HERMES_MODE_SWITCH=true` 时渲染。
+- 文案区分“静态演示”和“API 实时”，避免学生用户误解。
+- API 不可用时不要自动切回 static，但应显示明确提示。
+- 提供“恢复默认”按钮，删除 `localStorage` override。
+
+安全和发布规则：
+
+- v1 正式评审构建默认 `static`，即使启用切换，也应能不操作切换完成完整演示。
+- 网页切换只影响前端选择 `runStaticDemoJob` 还是 `runApiJob`，不改变数据 contract。
+- 不在前端存储 secret、API key 或模型配置。
+- 生产多用户版本是否保留该切换器需要重新评估，默认应关闭。
+
 ### 4.2 最小真实触发阶段
 
 当需要从 Web UI 真实触发 Hermes 时，应增加轻量后端 API：

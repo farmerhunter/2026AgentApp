@@ -50,6 +50,50 @@ VITE_HERMES_EXECUTION_MODE=static   # 1.0 默认，使用 sample data 模拟 job
 VITE_HERMES_EXECUTION_MODE=api      # 2.0，调用 /api/hermes/jobs
 ```
 
+如果需要在网页中切换执行模式，应把它设计成受控的 demo/debug 能力，而不是替代发布配置。默认发布模式仍由 `VITE_HERMES_EXECUTION_MODE` 决定；网页切换只在显式开启时可用：
+
+```text
+VITE_ENABLE_HERMES_MODE_SWITCH=true
+```
+
+前端执行模式解析顺序：
+
+```text
+1. 如果 VITE_ENABLE_HERMES_MODE_SWITCH=true，优先读取 localStorage.hermesExecutionMode
+2. 如果 localStorage 没有值，使用 VITE_HERMES_EXECUTION_MODE
+3. 如果环境变量也没有值，默认 static
+```
+
+建议封装：
+
+```text
+getHermesExecutionMode()
+setHermesExecutionMode(mode)
+subscribeHermesExecutionMode(listener)
+```
+
+网页切换控件建议放在非主流程区域，例如页眉右侧的“小型开发模式切换器”或设置抽屉，不放在学生主要任务路径中。控件只允许两个值：
+
+```text
+static = 静态演示
+api = API 实时
+```
+
+切换行为：
+
+- 从 `static` 切到 `api`：后续任务按钮调用 `/api/hermes/jobs`，已有页面数据不强制清空。
+- 从 `api` 切回 `static`：后续任务按钮读取 `/data/demo_jobs/`，并停止新建 API job。
+- 如果 API 不可用且用户选择 `api`，UI 应显示“API 不可用，可切回静态演示”，但不要自动污染用户选择。
+- 模式选择保存在浏览器 `localStorage`，刷新后保持；不同浏览器或设备互不影响。
+- 提供“恢复默认模式”操作，删除 localStorage override，回到构建时环境变量。
+
+约束：
+
+- v1 公开评审链接默认应使用 `VITE_HERMES_EXECUTION_MODE=static`。
+- 是否开启网页切换由部署者决定；正式提交版本不应依赖用户切换才能正确演示。
+- 切换状态只影响前端任务执行来源，不改变业务数据 contract，不写入后端数据库。
+- 不应把 API key、模型名或 secret 暴露到前端切换器。
+
 建议新增公开 demo job 数据：
 
 ```text

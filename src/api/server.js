@@ -12,7 +12,8 @@ const STATUS_DIR = resolve(REPO_ROOT, "runtime", "public", "job_status");
 const PUBLIC_DIR = resolve(REPO_ROOT, "runtime", "public");
 
 const PORT = process.env.HERMES_API_PORT ?? 8000;
-const MODE = process.env.HERMES_JOB_MODE ?? "fixture";
+let MODE = process.env.HERMES_JOB_MODE ?? "fixture";
+if (MODE === "hermes") MODE = "real";
 
 const JOB_SCRIPTS = {
   textbook_summary: "run_textbook_summary.sh",
