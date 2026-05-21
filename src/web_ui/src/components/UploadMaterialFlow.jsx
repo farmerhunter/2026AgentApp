@@ -399,7 +399,7 @@ export default function UploadMaterialFlow({ onCancel }) {
             <div className="space-y-4">
               <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
                 <p className="text-sm font-semibold text-ink mb-4">
-                  局部发现（{findingsData.findings.length} 条）
+                  最新发现（{findingsData.findings.length} 条）
                 </p>
                 <div className="space-y-6">
                   {findingsData.findings.map((finding) => (
