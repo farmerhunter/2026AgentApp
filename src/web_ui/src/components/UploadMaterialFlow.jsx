@@ -369,7 +369,7 @@ export default function UploadMaterialFlow({ onCancel }) {
                 <div className="mt-2 flex items-center gap-2">
                   <AnalysisStatusBadge status={analysisPhase} />
                   {isDemoFallback && (
-                    <span className="text-xs text-slate-400">demo 数据</span>
+                    <span className="text-xs text-slate-400">示例数据</span>
                   )}
                 </div>
               </div>
