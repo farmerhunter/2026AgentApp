@@ -123,9 +123,9 @@ export default function QuestionReviewWorkspace({
 
       {saved && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-          <p className="font-semibold">确认结果已保存（demo 状态）</p>
+          <p className="font-semibold">确认结果已保存</p>
           <p className="mt-1">
-            共确认 {selectedCount} 道重点题，未写入服务器。可在下方 JSON 预览中查看完整数据。
+            共确认 {selectedCount} 道重点题。可在下方 JSON 预览中查看完整数据。
           </p>
         </div>
       )}
@@ -182,14 +182,14 @@ function QuestionImageViewer({ splitResult, activeQuestionId, onSelectQuestion }
     <div className="rounded-xl border border-slate-200 bg-white p-4">
       <p className="text-sm font-semibold text-ink">原图预览</p>
       <p className="text-xs text-slate-400">
-        {splitResult?.source_image_url ?? "demo image"} · {imgW}×{imgH}
+        {splitResult?.source_image_url ?? "暂无原图"} · {imgW}×{imgH}
       </p>
       <div
         className="relative mt-3 overflow-hidden rounded-lg border border-dashed border-aurora/30 bg-slate-100"
         style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: 360 }}
       >
         <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
-          demo 试卷图片区域
+          试卷图片区域
         </div>
         {sourceImageUrl && (
           <img

@@ -96,9 +96,9 @@ export default function LearningContentView() {
       {/* Upload / Analyze Section */}
       <section className="rounded-2xl border border-white/80 bg-white/86 p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-ink">上传课本 PDF</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          第一版 demo：选择样例 PDF 并填写资料信息，触发本地模拟分析流程。不进行真实 PDF 解析或 LLM 调用。
-        </p>
+          <p className="mt-1 text-sm text-slate-500">
+            选择课本 PDF 文件，填写学科和年级信息后开始分析。
+          </p>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
@@ -159,7 +159,7 @@ export default function LearningContentView() {
                 选择 PDF 文件
               </button>
               <span className="ml-2">
-                {analysisState === "idle" ? "未选择文件" : "demo_textbook_sample.pdf"}
+                {analysisState === "idle" ? "未选择文件" : "示例教材文件"}
               </span>
             </div>
             <span
@@ -203,7 +203,7 @@ export default function LearningContentView() {
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
             <p className="font-semibold">Hermes 正在分析教材…</p>
             <p className="mt-1 text-amber-600">
-              正在提取章节结构、学习单元和知识点（demo 模拟，约 2 秒）。
+              正在提取章节结构、学习单元和知识点…
             </p>
           </div>
         )}
@@ -213,14 +213,13 @@ export default function LearningContentView() {
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
               <p className="font-semibold">分析完成 ✓</p>
               <p className="mt-1 text-emerald-600">
-                教材摘要已生成。下方展示 {formSubject === "chinese" ? "语文" : formSubject === "math" ? "数学" : "英语"} 学科的现有 demo 教材摘要。第一版使用已脱敏的样例数据，未调用真实 LLM。
+                教材摘要已生成。下方展示 {formSubject === "chinese" ? "语文" : formSubject === "math" ? "数学" : "英语"} 学科的教材摘要。
               </p>
             </div>
             <JobTrigger
               jobType="textbook_summary"
               payload={{ textbook_id: formSubject === "chinese" ? "textbook_chinese_grade8_demo" : "textbook_math_grade8_demo" }}
               label="触发 Hermes 教材分析"
-              onComplete={(job) => console.log("textbook_summary completed:", job.result_url)}
             />
           </div>
         )}
