@@ -41,12 +41,36 @@ Web 或微信上传带学科字段的学习资料 → Hermes skill 生成 local 
 6. 第一版默认支持语文、数学、英语。周报不是按学科拆成多个独立文件，而是在一个周报文件中包含整体总结和各学科分区
 7. 优点：实现简单、快速部署；限制：无法实时订阅、扩展性有限
 
-## 第二阶段：长期部署（数据库方案）
+## 阶段 G：后端基础设施（SQLite + REST API）
 
-1. Hermes 输出写入数据库（SQLite / MySQL / PostgreSQL），数据表包含 job、周报日期、学生、学科、上传文件、重点题、local findings、待确定记忆、推荐动作等
-2. Web 前端通过 REST API 查询 job 状态、学习发现和历史周报，生成选择器和渲染页面，并支持在跨学科周报内按学科过滤或分区展示
+阶段 G 在 VPS 上部署 SQLite + Express REST API，让前端从"只读静态 JSON"升级为"可写入、可查询、可累积"。
+
+1. 结构化数据写入 SQLite（见 `10_storage_design.md` 第 7 节），文件仍存 VPS 本地磁盘
+2. Web 前端通过 REST API 查询和写入：
+   - 上传记录、题目元数据、人工确认结果
+   - job 状态（`hermes_jobs` 表替代文件系统状态存储）
+   - 学习发现、待确定记忆、行动候选（阶段 G 先插样例数据，阶段 F 动态生成）
+   - 历史周报、笔记
 3. 数据流：
 
-Web 或微信上传带学科字段的学习资料 → Hermes skill 生成 findings 和周报数据 → 写入数据库 → REST API → Web 前端查询/渲染上传结束页、待确定记忆、跨学科总览和学科分区
+Web 上传学习资料 → 保存到 SQLite + 本地磁盘 → （阶段 F）Hermes skill 调用 LLM 生成 findings → 写入 SQLite → REST API → Web 前端查询/渲染上传结束页、待确定记忆、跨学科总览和学科分区
 
-4. 优点：支持多学生、多学科、多技能、分页检索、长期历史记录、趋势图展示和互动功能
+4. API 不可用时前端自动降级到 `public/data/` 静态 JSON，与阶段 B 行为一致
+5. 优点：支持数据写入与累积、多技能查询、长期历史记录；限制：单 VPS 部署，无高可用
+
+## 阶段 F：接入 LLM 动态生成 findings
+
+阶段 F 在阶段 G 的基础设施上，将静态样例 findings 替换为真实 DeepSeek API 调用：
+
+1. `learning_insight_update` job 调用 LLM，基于上传材料和人工确认结果生成 findings
+2. 生成的 findings、memory_candidates、action_candidates 写入阶段 G 的 SQLite 表
+3. 前端 `FindingCard`、`MemoryCandidateCard` 等组件直接消费真实数据，无需改动
+4. 数据流与阶段 G 相同，只是 findings 来源从"预生成 JSON"变为"LLM 实时生成"
+
+## 第二阶段（未来）：腾讯云 COS + PostgreSQL/MySQL
+
+竞赛结束后如需扩展：
+
+1. 大文件迁移到腾讯云 COS
+2. SQLite 迁移到 PostgreSQL/MySQL（Drizzle ORM 支持平滑迁移）
+3. 保持前端 API 契约不变

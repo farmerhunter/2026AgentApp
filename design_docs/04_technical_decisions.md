@@ -336,3 +336,30 @@ src/web_ui/public/data/
 - Public JSON 不允许包含 `/Users/`、`/var/lib/`、`/private/` 等本地绝对路径。
 
 未来选项：长期阶段可以由 job runner 将 contract-validated 输出发布到 public data 或数据库/API，不再手动维护重复文件。
+
+## ADR-017：阶段 G 使用 SQLite + Express + 原生 SQL 构建后端基础设施
+
+决策：阶段 G 在现有 Express 骨架（`src/api/server.js`）上扩展，使用 SQLite 作为数据库，原生 SQL（`better-sqlite3`）作为查询层，文件存储继续使用 VPS 本地磁盘。
+
+原因：
+
+- 资源友好：SQLite 单文件、零配置，适合 1C1G VPS。
+- 团队熟悉：前端和 API 都是 JavaScript/Node.js，不需要引入 Python 后端框架。
+- Job runner 已经是 bash 脚本（见 #46），Express 作为 API 层和 job 调度层足够。
+- 原生 SQL 无抽象层，竞赛评审最直观，调试时可直接 `sqlite3 hermes.db .schema`。
+- 阶段 F 只需在阶段 G 数据库上插入 LLM 生成的数据，无需改动存储层。
+
+选型排除：
+
+- **PostgreSQL/MySQL**：VPS 资源有限，且阶段 G 是 demo 基础设施，不需要高并发。
+- **Prisma/Drizzle**：增加依赖和学习成本，原生 SQL 对竞赛场景更直接。
+- **FastAPI**：团队已有 Express 骨架，迁移成本高；job runner 是 bash，不需要 Python 生态。
+- **COS/对象存储**：竞赛阶段不需要，VPS 本地磁盘足够。
+
+部署方式：
+
+- systemd service 守护 Express 进程
+- Nginx 反向代理 + 静态文件服务
+- Let's Encrypt SSL（如需 HTTPS）
+
+未来选项：竞赛结束后可平滑迁移到 PostgreSQL + Drizzle ORM + 腾讯云 COS，保持 API 契约不变。
