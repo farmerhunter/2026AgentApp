@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050" role="img" aria-labelledby="title desc">
+  <title id="title">学途智伴系统总体架构图</title>
+  <desc id="desc">展示用户、React Web 工作台、数据契约、智能体运行时、外部工具、存储和部署之间的关系。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .band { fill: #eef2ff; stroke: #c7d2fe; stroke-width: 1.5; }
+      .band2 { fill: #ecfdf5; stroke: #bbf7d0; stroke-width: 1.5; }
+      .band3 { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1.5; }
+      .band4 { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1.5; }
+      .card { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.4; rx: 10; }
+      .cardDark { fill: #0f172a; stroke: #0f172a; stroke-width: 1.4; rx: 10; }
+      .title { font: 700 34px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .section { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #1e293b; }
+      .boxTitle { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .boxText { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .boxTextDark { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #dbeafe; }
+      .boxTitleDark { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #ffffff; }
+      .tag { font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #334155; }
+      .arrow { fill: none; stroke: #334155; stroke-width: 2; marker-end: url(#arrow); }
+      .arrowSoft { fill: none; stroke: #64748b; stroke-width: 1.8; marker-end: url(#arrow); stroke-dasharray: 7 7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1050"/>
+
+  <text class="title" x="80" y="70">学途智伴系统总体架构图</text>
+  <text class="subtitle" x="80" y="105">核心链路：学习材料 → Web 工作台 → 数据契约 → 智能体运行时 → 学习发现 / 记忆 / 周报 / 行动建议</text>
+
+  <rect class="band" x="60" y="145" width="1480" height="155" rx="18"/>
+  <text class="section" x="90" y="180">用户与交互入口</text>
+
+  <rect class="card" x="95" y="205" width="250" height="70"/>
+  <text class="boxTitle" x="120" y="232">学生</text>
+  <text class="boxText" x="120" y="257">上传材料、确认重点题、查看建议</text>
+
+  <rect class="card" x="375" y="205" width="250" height="70"/>
+  <text class="boxTitle" x="400" y="232">家长 / 老师</text>
+  <text class="boxText" x="400" y="257">查看周报、理解问题模式</text>
+
+  <rect class="cardDark" x="710" y="195" width="360" height="90"/>
+  <text class="boxTitleDark" x="735" y="225">React Web 工作台</text>
+  <text class="boxTextDark" x="735" y="250">学习成果、输入备注、历史周报、学习内容</text>
+  <text class="boxTextDark" x="735" y="272">上传流程、题目确认、任务状态、结果展示</text>
+
+  <rect class="card" x="1160" y="205" width="300" height="70"/>
+  <text class="boxTitle" x="1185" y="232">执行模式切换</text>
+  <text class="boxText" x="1185" y="257">static / api / real，保障演示与迁移</text>
+
+  <path class="arrow" d="M 345 240 L 700 240"/>
+  <path class="arrow" d="M 625 240 L 700 240"/>
+  <path class="arrow" d="M 1070 240 L 1150 240"/>
+
+  <rect class="band2" x="60" y="340" width="1480" height="190" rx="18"/>
+  <text class="section" x="90" y="375">数据访问层与结构化契约</text>
+
+  <rect class="card" x="95" y="400" width="300" height="95"/>
+  <text class="boxTitle" x="120" y="428">静态演示数据</text>
+  <text class="boxText" x="120" y="453">/data/*</text>
+  <text class="boxText" x="120" y="475">脱敏 JSON、demo jobs、样例周报</text>
+
+  <rect class="card" x="435" y="400" width="330" height="95"/>
+  <text class="boxTitle" x="460" y="428">REST API</text>
+  <text class="boxText" x="460" y="453">/api/uploads、/api/hermes/jobs</text>
+  <text class="boxText" x="460" y="475">上传记录、确认结果、任务状态</text>
+
+  <rect class="card" x="805" y="400" width="330" height="95"/>
+  <text class="boxTitle" x="830" y="428">JSON Contracts</text>
+  <text class="boxText" x="830" y="453">upload_meta、question_split_result</text>
+  <text class="boxText" x="830" y="475">learning_findings、weekly_report</text>
+
+  <rect class="card" x="1175" y="400" width="300" height="95"/>
+  <text class="boxTitle" x="1200" y="428">前端数据适配</text>
+  <text class="boxText" x="1200" y="453">同一展示层读取静态数据或 API</text>
+  <text class="boxText" x="1200" y="475">降低发布风险，保留升级路径</text>
+
+  <path class="arrow" d="M 890 285 L 890 390"/>
+  <path class="arrow" d="M 245 495 L 245 585"/>
+  <path class="arrow" d="M 600 495 L 600 585"/>
+  <path class="arrow" d="M 970 495 L 970 585"/>
+
+  <rect class="band3" x="60" y="570" width="1480" height="250" rx="18"/>
+  <text class="section" x="90" y="605">智能体运行时：Hermes Runtime</text>
+
+  <rect class="cardDark" x="95" y="630" width="340" height="145"/>
+  <text class="boxTitleDark" x="120" y="660">Skills + Prompts</text>
+  <text class="boxTextDark" x="120" y="688">textbook_summary</text>
+  <text class="boxTextDark" x="120" y="712">learning_insight_update</text>
+  <text class="boxTextDark" x="120" y="736">weekly_report</text>
+  <text class="boxTextDark" x="120" y="760">定义目标、边界、输出格式</text>
+
+  <rect class="card" x="475" y="630" width="320" height="145"/>
+  <text class="boxTitle" x="500" y="660">Job Runner</text>
+  <text class="boxText" x="500" y="688">创建任务、轮询状态、读取结果</text>
+  <text class="boxText" x="500" y="712">pending / running / completed / failed</text>
+  <text class="boxText" x="500" y="736">fixture 模式或真实 LLM 模式</text>
+
+  <rect class="card" x="835" y="630" width="310" height="145"/>
+  <text class="boxTitle" x="860" y="660">分析与记忆链路</text>
+  <text class="boxText" x="860" y="688">evidence → finding</text>
+  <text class="boxText" x="860" y="712">memory candidate → student state</text>
+  <text class="boxText" x="860" y="736">insight → action candidate</text>
+
+  <rect class="card" x="1185" y="630" width="290" height="145"/>
+  <text class="boxTitle" x="1210" y="660">人机协作控制</text>
+  <text class="boxText" x="1210" y="688">人工确认重点题</text>
+  <text class="boxText" x="1210" y="712">接受 / 忽略待确定记忆</text>
+  <text class="boxText" x="1210" y="736">证据不足时保留不确定性</text>
+
+  <path class="arrow" d="M 435 702 L 465 702"/>
+  <path class="arrow" d="M 795 702 L 825 702"/>
+  <path class="arrow" d="M 1145 702 L 1175 702"/>
+  <path class="arrowSoft" d="M 1325 630 C 1325 575 265 575 265 630"/>
+  <text class="tag" x="615" y="562">人工确认与反馈会回流到后续分析</text>
+
+  <rect class="band4" x="60" y="860" width="1480" height="135" rx="18"/>
+  <text class="section" x="90" y="895">外部能力、存储与部署</text>
+
+  <rect class="card" x="95" y="920" width="270" height="50"/>
+  <text class="boxTitle" x="120" y="950">OCR / 切题服务</text>
+
+  <rect class="card" x="405" y="920" width="270" height="50"/>
+  <text class="boxTitle" x="430" y="950">LLM API</text>
+
+  <rect class="card" x="715" y="920" width="300" height="50"/>
+  <text class="boxTitle" x="740" y="950">SQLite + VPS 本地文件</text>
+
+  <rect class="card" x="1055" y="920" width="220" height="50"/>
+  <text class="boxTitle" x="1080" y="950">Nginx + systemd</text>
+
+  <rect class="card" x="1315" y="920" width="160" height="50"/>
+  <text class="boxTitle" x="1340" y="950">未来 COS</text>
+
+  <path class="arrow" d="M 230 920 L 230 785"/>
+  <path class="arrow" d="M 540 920 L 540 785"/>
+  <path class="arrow" d="M 865 920 L 990 785"/>
+  <path class="arrow" d="M 1165 920 L 1165 785"/>
+  <path class="arrowSoft" d="M 1395 920 C 1395 850 1330 835 1330 785"/>
+
+  <text class="subtitle" x="80" y="1030">说明：产品面向用户呈现为“学途智伴学习智能体”；Hermes 是背后的运行时智能体引擎。</text>
+</svg>

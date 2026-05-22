@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">学习证据到行动建议的流程图</title>
+  <desc id="desc">展示学习证据经过问题分析、局部发现、待确定记忆、学生状态认知、周报见解，最终形成行动建议的流程。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .stage { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; rx: 12; }
+      .stageBlue { fill: #eef2ff; stroke: #a5b4fc; stroke-width: 1.5; rx: 12; }
+      .stageGreen { fill: #ecfdf5; stroke: #86efac; stroke-width: 1.5; rx: 12; }
+      .stageOrange { fill: #fff7ed; stroke: #fdba74; stroke-width: 1.5; rx: 12; }
+      .stageDark { fill: #0f172a; stroke: #0f172a; stroke-width: 1.5; rx: 12; }
+      .panel { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1.4; rx: 16; }
+      .label { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .labelDark { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #ffffff; }
+      .text { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .textDark { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #dbeafe; }
+      .small { font: 400 13px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #64748b; }
+      .section { font: 700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #334155; }
+      .arrow { fill: none; stroke: #334155; stroke-width: 2; marker-end: url(#arrow); }
+      .arrowSoft { fill: none; stroke: #64748b; stroke-width: 1.8; marker-end: url(#arrow); stroke-dasharray: 7 7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="760"/>
+
+  <rect class="panel" x="60" y="50" width="1480" height="155"/>
+  <text class="section" x="90" y="85">输入：学习证据</text>
+
+  <rect class="stage" x="100" y="110" width="245" height="65"/>
+  <text class="label" x="125" y="138">教材摘要</text>
+  <text class="text" x="125" y="162">章节、知识点、学习单元</text>
+
+  <rect class="stage" x="385" y="110" width="245" height="65"/>
+  <text class="label" x="410" y="138">学习材料</text>
+  <text class="text" x="410" y="162">试卷、作业、错题图片</text>
+
+  <rect class="stage" x="670" y="110" width="245" height="65"/>
+  <text class="label" x="695" y="138">人工确认</text>
+  <text class="text" x="695" y="162">重点题、得分、错因备注</text>
+
+  <rect class="stage" x="955" y="110" width="245" height="65"/>
+  <text class="label" x="980" y="138">文字备注</text>
+  <text class="text" x="980" y="162">困惑、课堂提醒、反思</text>
+
+  <rect class="stage" x="1240" y="110" width="245" height="65"/>
+  <text class="label" x="1265" y="138">历史上下文</text>
+  <text class="text" x="1265" y="162">周报、短期/长期记忆</text>
+
+  <path class="arrow" d="M 222 205 L 222 250"/>
+  <path class="arrow" d="M 507 205 L 507 250"/>
+  <path class="arrow" d="M 792 205 L 792 250"/>
+  <path class="arrow" d="M 1077 205 L 1077 250"/>
+  <path class="arrow" d="M 1362 205 L 1362 250"/>
+
+  <rect class="stageDark" x="90" y="250" width="1420" height="90"/>
+  <text class="labelDark" x="125" y="285">证据归一化 evidence normalization</text>
+  <text class="textDark" x="125" y="312">把不同来源的数据统一为可追溯的 evidence：保留学科、来源、时间、题目、备注、置信度和 source refs。</text>
+
+  <path class="arrow" d="M 800 340 L 800 390"/>
+
+  <rect class="stageBlue" x="75" y="390" width="215" height="105"/>
+  <text class="label" x="105" y="422">问题分析</text>
+  <text class="text" x="105" y="448">从表面信息推断</text>
+  <text class="text" x="105" y="470">知识、方法、审题</text>
+  <text class="small" x="105" y="490">保留不确定性</text>
+
+  <rect class="stage" x="330" y="390" width="215" height="105"/>
+  <text class="label" x="360" y="422">局部发现</text>
+  <text class="text" x="360" y="448">一次材料或一组证据</text>
+  <text class="text" x="360" y="470">产生 finding</text>
+  <text class="small" x="360" y="490">带证据来源</text>
+
+  <rect class="stageOrange" x="585" y="390" width="215" height="105"/>
+  <text class="label" x="615" y="422">待确定记忆</text>
+  <text class="text" x="615" y="448">可能值得保留的</text>
+  <text class="text" x="615" y="470">问题模式</text>
+  <text class="small" x="615" y="490">需要人工确认</text>
+
+  <rect class="stageGreen" x="840" y="390" width="215" height="105"/>
+  <text class="label" x="870" y="422">学生状态认知</text>
+  <text class="text" x="870" y="448">结合短期上下文</text>
+  <text class="text" x="870" y="470">和长期学习记忆</text>
+  <text class="small" x="870" y="490">越来越了解学生</text>
+
+  <rect class="stage" x="1095" y="390" width="215" height="105"/>
+  <text class="label" x="1125" y="422">周报见解</text>
+  <text class="text" x="1125" y="448">多个 findings 合并</text>
+  <text class="text" x="1125" y="470">形成阶段性 insight</text>
+  <text class="small" x="1125" y="490">跨学科总结</text>
+
+  <rect class="stageDark" x="1350" y="390" width="175" height="105"/>
+  <text class="labelDark" x="1380" y="422">行动建议</text>
+  <text class="textDark" x="1380" y="448">少量、具体</text>
+  <text class="textDark" x="1380" y="470">可执行</text>
+  <text class="textDark" x="1380" y="490">可复查</text>
+
+  <path class="arrow" d="M 290 442 L 320 442"/>
+  <path class="arrow" d="M 545 442 L 575 442"/>
+  <path class="arrow" d="M 800 442 L 830 442"/>
+  <path class="arrow" d="M 1055 442 L 1085 442"/>
+  <path class="arrow" d="M 1310 442 L 1340 442"/>
+
+  <rect class="panel" x="80" y="555" width="700" height="125"/>
+  <text class="section" x="110" y="590">人工确认与反馈</text>
+  <text class="text" x="110" y="620">学生或家长确认重点题、补充错因、接受或忽略待确定记忆。</text>
+  <text class="text" x="110" y="645">反馈不会替代智能体分析，而是提高证据可信度，避免把单次错误变成长期标签。</text>
+
+  <rect class="panel" x="820" y="555" width="700" height="125"/>
+  <text class="section" x="850" y="590">输出去向</text>
+  <text class="text" x="850" y="620">前端展示 findings、memory candidates、weekly insights 和 next actions。</text>
+  <text class="text" x="850" y="645">已确认的记忆进入后续分析，让智能体在持续使用中逐步了解学生。</text>
+
+  <path class="arrowSoft" d="M 430 555 C 430 530 690 525 690 500"/>
+  <path class="arrowSoft" d="M 1170 555 C 1170 530 948 525 948 500"/>
+</svg>
