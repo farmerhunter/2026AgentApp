@@ -8,8 +8,8 @@ export default function AppShell({ activeView, onViewChange, children }) {
       <header className="border-b border-white/70 bg-white/78 px-4 py-4 shadow-sm backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aurora">
-              Hermes Web
+            <p className="text-xs font-semibold text-aurora">
+              AI智能体学习辅导员
             </p>
             <h1 className="mt-1 text-2xl font-bold leading-tight text-ink sm:text-3xl">
               学途智伴
