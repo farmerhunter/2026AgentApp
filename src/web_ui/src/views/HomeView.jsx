@@ -71,8 +71,8 @@ export default function HomeView({ onNavigate }) {
             学途智伴
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-            帮你把材料、错题和备注，整理成看得见的学习进展。
-            不是错题本，不是聊天机器人——是一个了解你学习状态的 AI 辅导员。
+            把刷过的题、记过的笔记，变成真正有用的复习方向。
+            你的AI学习搭子，懂你在哪里卡住，也知道下一步该往哪走。
           </p>
           <button
             type="button"
