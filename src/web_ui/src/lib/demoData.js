@@ -1,9 +1,15 @@
 export const studentSnapshot = {
   displayName: "小明",
+  grade: "八年级",
   status: "本周学习进行中",
 };
 
 export const navigationItems = [
+  {
+    id: "home",
+    label: "首页",
+    description: "学习状态总览和统计数据",
+  },
   {
     id: "results",
     label: "学习成果",
