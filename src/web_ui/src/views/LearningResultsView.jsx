@@ -61,7 +61,6 @@ export default function LearningResultsView() {
     <div className="space-y-5">
       {/* Header */}
       <section className="aurora-panel rounded-2xl border border-white/80 bg-white/86 p-5 shadow-soft backdrop-blur-xl">
-        <p className="text-sm font-semibold text-aurora">用例 2</p>
         <h2 className="mt-2 text-2xl font-bold leading-tight text-ink">学习成果整理</h2>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
           上传试卷、作业或练习册页面后，学途智伴会先展示切题结果，再进入重点题确认。
