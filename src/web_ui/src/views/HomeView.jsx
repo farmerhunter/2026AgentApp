@@ -65,7 +65,7 @@ export default function HomeView({ onNavigate }) {
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-aurora/20 via-aurora/10 to-sunrise/10 p-8 shadow-soft backdrop-blur-xl sm:p-10">
         <div className="relative z-10 max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aurora">
-            AI 学习智能体工作台
+            AI智能体学习辅导员
           </p>
           <h1 className="mt-3 text-3xl font-bold leading-tight text-ink sm:text-4xl">
             学途智伴
