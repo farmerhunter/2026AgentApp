@@ -15,7 +15,7 @@ This is the top-level study assistant skill. It defines the overall strategy and
 Each Hermes capability follows this sequence:
 
 ```
-1. Design document    → design_docs/15-17
+1. Design document    → docs/v1/hermes/ (historical baseline) + docs/v2/
 2. Data contract      → data/contracts/
 3. Sample data        → data/sample_inputs/ + data/sample_outputs/
 4. Skill              → src/skills/*.skill.md  (this directory)
@@ -52,8 +52,8 @@ Weekly findings + memory + materials
 
 ## References
 
-- `design_docs/14_hermes_agent_runtime.md` — Runtime architecture
-- `design_docs/15_textbook_summary_skill_design.md` — Textbook summary design
-- `design_docs/16_learning_insight_update_skill_design.md` — Learning insight design
-- `design_docs/17_weekly_report_skill_design.md` — Weekly report design
+- `docs/v1/hermes/runtime-design.md` — Runtime architecture
+- `docs/v1/hermes/textbook-summary-skill.md` — Textbook summary design
+- `docs/v1/hermes/learning-insight-update-skill.md` — Learning insight design
+- `docs/v1/hermes/weekly-report-skill.md` — Weekly report design
 - `data/contracts/README.md` — Contract catalog and pipeline explanation

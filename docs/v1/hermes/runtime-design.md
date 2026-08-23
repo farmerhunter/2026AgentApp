@@ -1,4 +1,4 @@
-# Hermes 智能体运行时设计
+# Hermes Runtime 设计记录（V1 时代）
 
 本文档记录 Hermes 智能体功能如何以代码方式规划、开发、触发和验证。它补足 Web UI 与静态 JSON 之间缺失的运行时层，目标是让 Hermes 不只是一次性对话助手，而是可以重复执行高质量学习任务的 agent runtime。
 
@@ -377,15 +377,15 @@ job 完成后，上传结束页渲染：
 
 ## 7. 与现有文档的关系
 
-- `design_docs/03_design_brief.md`：定义 Hermes 要支持的核心用例。
-- `design_docs/05_architecture.md`：定义系统模块和源码目录。
-- `design_docs/07_website_design_note.md`：定义 Web UI 如何展示和触发学习流程。
-- `design_docs/08_hermes_web_integration.md`：定义静态 JSON 和 REST API 两阶段集成。
-- `design_docs/09_question_capture_workflow.md`：定义试卷切题、人工确认和重点题记录流程。
-- `design_docs/10_storage_design.md`：定义运行时数据、公开数据和长期存储策略。
-- `design_docs/15_textbook_summary_skill_design.md`：定义教材摘要 skill。
-- `design_docs/16_learning_insight_update_skill_design.md`：定义学习洞察更新 skill，这是项目核心智能体能力。
-- `design_docs/17_weekly_report_skill_design.md`：定义周报生成 skill。
+- `docs/v1/product/experience-design.md`：定义 Hermes 要支持的核心用例。
+- `docs/v1/system/architecture-baseline.md`：定义系统模块和源码目录。
+- `docs/v1/system/web-ui-design.md`：定义 Web UI 如何展示和触发学习流程。
+- `docs/v1/system/hermes-web-integration.md`：定义静态 JSON 和 REST API 两阶段集成。
+- `docs/v1/system/question-capture-workflow.md`：定义试卷切题、人工确认和重点题记录流程。
+- `docs/v1/system/storage-design.md`：定义运行时数据、公开数据和长期存储策略。
+- `docs/v1/hermes/textbook-summary-skill.md`：定义教材摘要 skill。
+- `docs/v1/hermes/learning-insight-update-skill.md`：定义学习洞察更新 skill，这是项目核心智能体能力。
+- `docs/v1/hermes/weekly-report-skill.md`：定义周报生成 skill。
 
 ## 8. 建议 Issue 阶段
 

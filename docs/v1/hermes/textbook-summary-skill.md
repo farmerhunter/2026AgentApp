@@ -1,6 +1,6 @@
-# Textbook Summary Skill 设计
+# Textbook Summary Skill 设计（V1）
 
-本文档定义 `textbook_summary` skill。该 skill 对应 `design_docs/03_design_brief.md` 的用例 1：上传课本 PDF，建立学习内容理解。
+本文档定义 `textbook_summary` skill。该 skill 对应 `docs/v1/product/experience-design.md` 的用例 1：上传课本 PDF，建立学习内容理解。
 
 ## 1. 目标
 

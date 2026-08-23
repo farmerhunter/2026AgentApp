@@ -2,6 +2,8 @@
 
 本文档记录 Hermes 项目的关键设计决策。每条决策说明当前选择、原因和未来演进方向。
 
+本文档跨版本维护，不属于 V1 历史目录。已有 ADR 保留当时背景；后续决策如修正或替代旧决策，应明确写出被替代的 ADR 和迁移影响，不能静默改写历史理由。
+
 ## ADR-001：第一版演示使用文件存储和静态 JSON
 
 决策：第一阶段将周报、重点题记录、人工确认结果和演示数据保存为文件，Web 前端通过静态 JSON 读取。
@@ -139,7 +141,7 @@
 - 项目重点是智能体流程和学习材料处理，不是产品营销。
 - 上传试卷、确认重点题、查看周报三个任务应该成为界面核心。
 
-页面草图和交互细节记录在 `design_docs/07_website_design_note.md`。
+页面草图和交互细节记录在 `docs/v1/system/web-ui-design.md`。
 
 ## ADR-010：区分学习证据、局部发现和聚合见解
 
@@ -412,3 +414,60 @@ src/web_ui/public/data/
 - 阶段 B 可以先实现 static demo job adapter，用 sample data 表达 Hermes 任务执行过程；阶段 G/F 再替换为真实 API/job runner。
 - 不允许为了追赶版本号绕过 contract validation 或隐私脱敏。
 - 版本升级优先保持 API contract 兼容；必须破坏兼容时，需要在设计文档中记录迁移策略。
+
+## ADR-019：Hermes 是领域智能运行时，LLM 是可替换的推理 Provider
+
+决策：Hermes 作为学途智伴稳定的领域智能运行时，负责学习任务、业务语义、上下文、记忆治理、任务状态、结果校验和持久化流程。基础 LLM Service 是 Hermes 使用的基础设施端口；DeepSeek 等云端模型只是该端口的一种 Provider Adapter，不成为产品架构或领域模型的中心。
+
+推荐分层：
+
+```text
+Web UI / API
+  -> Hermes Job Runner
+  -> Task-specific Skill + 领域规则 + 上下文组装
+  -> LLM Provider Port
+  -> DeepSeek / 其他云端模型 / 本地模型 Adapter
+  -> Contract 与语义校验
+  -> Storage / API result
+```
+
+职责边界：
+
+- Hermes 负责选择任务、读取允许使用的学习证据和历史上下文，并维护 `evidence -> finding -> memory candidate -> consolidation -> insight -> action` 的语义边界。
+- Hermes 负责 `pending`、`running`、`completed`、`failed`、`timeout` 等任务状态；模型限流、鉴权失败、超时、无效响应等外部错误必须转换为稳定的失败状态或原因。
+- Hermes 负责在结果写入前执行 JSON contract validation 和必要的语义校验；模型输出不能绕过校验直接写入学习记录。
+- LLM Provider Port 只表达 Hermes 需要的推理能力和调用结果，不暴露特定厂商的请求结构。
+- Provider Adapter 负责凭证、网络调用、厂商协议映射以及将厂商错误转换为 Hermes 可理解的失败原因。
+- Web UI 只消费 Hermes 的任务状态和领域结果，不直接调用模型 Provider，不保存 API Key，也不从模型原始响应推导学习结论。
+
+Provider 独立规则：
+
+- `skill`、领域 contract、存储结构和对外 API 不得依赖 DeepSeek 专有字段或模型名称。
+- `provider`、`model`、`prompt_version`、`skill_version`、`contract_version` 和 `trace_id` 等信息应作为任务或审计 metadata 保存，而不是进入学习语义本身。
+- 不同 Provider 可以使用针对性的请求参数或 Prompt 调优，但不得改变 finding、memory candidate、insight 和 action 的业务含义。
+- `HERMES_JOB_MODE=fixture` 与 `HERMES_JOB_MODE=real` 必须遵守相同的输出 contract；fixture 模式继续用于演示、离线开发和回归测试。
+
+当前范围：
+
+- 2.0 采用确定性任务编排和有边界的 LLM 推理，先跑通 `learning_insight_update`，再扩展 `textbook_summary` 和 `weekly_report`。
+- 当前不引入自由自主的 Agent 循环、通用规划器、动态工具选择或大型通用 Agent 框架。只有真实用例证明固定 job 无法表达必要流程时，才重新评估。
+- 模型只能提出待确定记忆；人工确认和 consolidation 规则继续决定记忆能否升级，不因更换 Provider 而改变。
+
+替换测试：
+
+- 将 DeepSeek 替换为其他云端或本地模型时，Hermes 的任务类型、领域语义、存储、API 和 Web UI 应保持不变；允许调整的范围主要是 Adapter、模型配置和必要的 Prompt 调优。
+- 在 fixture 与真实模型之间切换时，下游校验、存储和 UI 不应增加两套业务逻辑。
+- 当 Provider 超时、限流、鉴权失败或返回无效结构时，任务应以 `failed` 或 `timeout` 结束并保留稳定的失败原因，已有学习数据不得被部分结果污染。
+
+备选方案及取舍：
+
+- **前端直接调用 DeepSeek**：原型速度最快，但会暴露凭证，使业务规则、隐私边界和错误处理散落在 UI 中，不采用。
+- **只有薄后端 LLM Service**：适合隐藏凭证和统一网络调用，但不足以承载学习记忆、consolidation 和可追溯性；保留为 Hermes 的基础设施能力，不作为产品核心。
+- **通用 Agent 框架**：可以提供规划、工具和状态图能力，但当前三个固定任务不需要这类复杂度，暂不采用。
+- **完全规则系统**：适合 contract 校验、状态流转和安全规则，但难以理解非结构化学习材料；作为 Hermes 的确定性部分和失败回退，不替代 LLM 推理。
+
+影响：
+
+- 正面：领域规则与模型供应商解耦，便于测试、替换模型、保护隐私并保持结果可追溯。
+- 代价：需要维护一个清晰但尽量精简的 Provider Port、Adapter、失败映射和调用 metadata。
+- 风险：如果 Hermes 最终只是 `prompt -> model API` 的包装层，这个边界就失去价值；2.0 必须通过真实的 `learning_insight_update` 纵向闭环验证其职责。

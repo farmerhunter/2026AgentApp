@@ -1,6 +1,6 @@
-# Weekly Report Skill 设计
+# Weekly Report Skill 设计（V1）
 
-本文档定义 `weekly_report` skill。该 skill 对应 `design_docs/03_design_brief.md` 的用例 5：生成阶段性学习分析和周报。
+本文档定义 `weekly_report` skill。该 skill 对应 `docs/v1/product/experience-design.md` 的用例 5：生成阶段性学习分析和周报。
 
 ## 1. 目标
 

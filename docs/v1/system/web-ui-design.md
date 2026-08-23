@@ -1,4 +1,4 @@
-# Hermes Web 网站草图设计笔记
+# Web UI 设计记录（V1）
 
 本文档用于记录开发者对 Hermes Web 页面、功能和页面关系的初步设计。它不是最终 UI 规范，而是给 Codex 或前端开发者使用的文本草图。
 
@@ -16,7 +16,7 @@ Hermes Web 第一版不是营销首页，而是一个可操作的学习助手工
 
 ## 2. 用例到页面和视图的映射
 
-本章按照 `design_docs/03_design_brief.md` 第 3 章的第一版核心体验用例组织。Hermes Web 第一版建议采用单页应用，但页面设计应优先服务这些用例，而不是先从页面数量出发。
+本章按照 `docs/v1/product/experience-design.md` 第 3 章的第一版核心体验用例组织。Hermes Web 第一版建议采用单页应用，但页面设计应优先服务这些用例，而不是先从页面数量出发。
 
 顶层导航统一为四项：
 
@@ -64,7 +64,7 @@ english = 英语
 
 ### 2.1 用例 1：学习内容视图
 
-援引 `design_docs/03_design_brief.md`：用例 1 是“上传课本 PDF，建立学习内容理解”。
+援引 `docs/v1/product/experience-design.md`：用例 1 是“上传课本 PDF，建立学习内容理解”。
 
 Web 承载方式：
 
@@ -105,7 +105,7 @@ Web 承载方式：
 
 ### 2.2 用例 2：学习成果视图、上传材料子流程和重点题确认步骤
 
-援引 `design_docs/03_design_brief.md`：用例 2 是“上传学习成果并标注重点题”。
+援引 `docs/v1/product/experience-design.md`：用例 2 是“上传学习成果并标注重点题”。
 
 Web 承载方式：
 
@@ -198,7 +198,7 @@ Web 承载方式：
 
 ### 2.3 用例 3：输入备注视图
 
-援引 `design_docs/03_design_brief.md`：用例 3 是“输入文字形式的知识点和备注”。
+援引 `docs/v1/product/experience-design.md`：用例 3 是“输入文字形式的知识点和备注”。
 
 Web 承载方式：
 
@@ -229,7 +229,7 @@ Web 承载方式：
 
 ### 2.4 用例 4：上传结束页、局部发现和待确定记忆
 
-援引 `design_docs/03_design_brief.md`：用例 4 是“生成重点题记录并更新记忆”。
+援引 `docs/v1/product/experience-design.md`：用例 4 是“生成重点题记录并更新记忆”。
 
 Web 承载方式：
 
@@ -258,7 +258,7 @@ Web 承载方式：
 
 ### 2.5 用例 5：周报生成状态和阶段性分析
 
-援引 `design_docs/03_design_brief.md`：用例 5 是“生成阶段性学习分析和周报”。
+援引 `docs/v1/product/experience-design.md`：用例 5 是“生成阶段性学习分析和周报”。
 
 Web 承载方式：
 
@@ -282,7 +282,7 @@ Web 承载方式：
 
 ### 2.6 用例 6：历史周报视图
 
-援引 `design_docs/03_design_brief.md`：用例 6 是“Web 前端查询和展示周报”。
+援引 `docs/v1/product/experience-design.md`：用例 6 是“Web 前端查询和展示周报”。
 
 Web 承载方式：
 

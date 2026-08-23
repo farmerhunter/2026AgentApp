@@ -21,16 +21,11 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 
 ## 当前进展
 
-- **v1.0 静态演示版已完成**（2026-05）：VPS 本地文件存储 + 静态 JSON + Nginx + Vite/React 前端，无真实 LLM。
-- **v2.0 开发已启动**（2026-08，issue #85 起）：持久化 API、真实 LLM 生成闭环与 VPS 稳定运行为主线，完整计划见 [`docs/roadmap.md`](docs/roadmap.md)。
-- 第一阶段采用演示优先路线：VPS 本地文件存储 + 静态 JSON + Nginx + Vite/React 前端。
-- 前端目录为 `src/web_ui/`，构建产物部署到 `/var/www/hermes-web/`。
-- Demo 数据通过 `src/web_ui/public/data/` 暴露给前端，覆盖周报、question sessions、重点题确认和合成试卷扫描图。
-- `data/contracts/` 已开始定义 Hermes 输出契约，包括 finding、insight、memory、report 等结构。
-- `src/skills/` 已包含教材摘要、学习洞察更新、周报生成等 Hermes skill 设计。
-- `src/prompts/` 已包含与 skill 对齐的 prompt 模板；正式设计说明见 `design_docs/18_prompt_template_design.md`。
-- 试卷图像处理采用“试卷切题/OCR + 学生人工确认 + Hermes 总结”的路线。
-- 第三阶段（v3）计划迁移到腾讯云 COS + PostgreSQL + 多用户数据隔离。
+- **v1.0 静态演示版已完成**（2026-05）：Vite/React Web、静态 JSON、脱敏样例数据和 fixture Hermes job 已展示完整学习闭环，无真实 LLM、真实用户写入、鉴权或多用户隔离。
+- **v2.0 开发已启动**（2026-08，issue #85 起）：以 SQLite + REST API、API-first Web、真实 Hermes Provider 和 VPS 稳定运行为主线，完整计划见 [`docs/roadmap.md`](docs/roadmap.md)。
+- 前端目录为 `src/web_ui/`，构建产物部署到 `/var/www/hermes-web/`；Demo 数据通过 `src/web_ui/public/data/` 暴露给前端。
+- `data/contracts/` 定义 finding、insight、memory、report 等 Hermes 输出契约；`src/skills/` 和 `src/prompts/` 保存可执行的 skill 与 prompt。
+- 工程文档已按 V1 历史基线、V2 当前设计和 V3 未来方向重新分层。
 
 ## 核心演示流程
 
@@ -53,28 +48,15 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 - [`CHANGELOG.md`](CHANGELOG.md)：更新日志（每次开发会话追加，记录改了什么、验证结果与遗留事项）
 - [`docs/roadmap.md`](docs/roadmap.md)：v2 路线图（Epic 一览、依赖顺序、E0 基线验证记录）
 - [`docs/quickstart.md`](docs/quickstart.md)：本地快速开始指南（首次运行 5 步 + 常见问题）
-- `design_docs/01_competition_rules.md`：比赛规则和报名方向整理
-- `design_docs/02_product_brief.md`：产品目标、用户和核心能力
-- `design_docs/03_design_brief.md`：设计简报和第一版用例
-- `design_docs/04_technical_decisions.md`：技术决策记录
-- `design_docs/05_architecture.md`：系统架构
-- `design_docs/06_frontend_technical_route.md`：前端技术路线，包含 Vite/React/Tailwind 和部署决策
-- `design_docs/07_website_design_note.md`：Hermes Web 页面草图、视图关系和页面生成指令模板
-- `design_docs/08_hermes_web_integration.md`：Hermes 周报 JSON 与 Web 前端集成方案
-- `design_docs/09_question_capture_workflow.md`：试卷/错题本上传、切题、重点题确认流程
-- `design_docs/10_storage_design.md`：VPS 本地存储、公开目录、COS 和数据库演进方案
-- `design_docs/11_deployment.md`：部署说明
-- `design_docs/12_demo_script.md`：演示脚本
-- `design_docs/13_reference_links.md`：参考链接
-- `design_docs/14_hermes_agent_runtime.md`：Hermes 智能体运行时、skill、job runner 和 Web 触发设计
-- `design_docs/15_textbook_summary_skill_design.md`：教材摘要 skill 设计
-- `design_docs/16_learning_insight_update_skill_design.md`：学习洞察更新 skill 设计
-- `design_docs/17_weekly_report_skill_design.md`：周报生成 skill 设计
-- `design_docs/18_prompt_template_design.md`：Hermes prompt 模板设计
+- [`docs/README.md`](docs/README.md)：统一文档入口和维护规则
+- [`docs/epic-design-guidelines.md`](docs/epic-design-guidelines.md)：复杂 Epic 独立设计文档的判断和维护规范
+- [`docs/v1/README.md`](docs/v1/README.md)：已完成的 V1 能力边界和历史资料导航
+- [`docs/v2/README.md`](docs/v2/README.md)：当前 V2 目标、架构和实施入口
+- [`docs/decisions/architecture-decisions.md`](docs/decisions/architecture-decisions.md)：长期架构决策记录
 
 ## 仓库结构
 
-- `design_docs/`：产品、架构、前端、部署、比赛和智能体设计文档
+- `docs/`：路线图、版本文档、历史基线和架构决策
 - `scripts/`：部署和运维脚本
 - `src/web_ui/`：Vite + React + Tailwind Web 前端
 - `src/prompts/`：可复用 prompt 模板

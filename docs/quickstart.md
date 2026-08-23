@@ -84,8 +84,8 @@ curl -X POST http://localhost:8000/api/hermes/jobs \
 
 ## 4. 贡献流程
 
-1. 从 GitHub issue 开始：先确认目标、验收标准和相关设计文档；
+1. 从当前 Milestone/Epic 的目标出发；若已有 GitHub Issue，先确认目标、验收标准和相关设计文档；
 2. 改动前跑一遍本指南第 2 节的基线命令，确认环境可用；
 3. 保持 commit 聚焦，一次 commit 只表达一个逻辑变化；
-4. 行为/架构/prompt/skill/demo flow/部署方式变化时，同步更新 `design_docs/`；
+4. 产品边界、跨模块架构、contract、prompt、skill、demo flow 或部署方式发生实质变化时，按 [`docs/README.md`](README.md) 更新相应文档；
 5. Push 后把 GitHub Project 状态移到 `In review`，在 issue 里记录变更和验证结果，等待人工确认后再关闭（见 [CONTRIBUTING.md](../CONTRIBUTING.md)）。

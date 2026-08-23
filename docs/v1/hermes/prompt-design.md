@@ -1,4 +1,4 @@
-# Hermes Prompt 模板设计
+# Hermes Prompt 模板设计（V1）
 
 本文档记录 Hermes prompt 模板的正式设计。`src/prompts/` 目录只保存 job runner 直接读取的 prompt 模板文件；prompt 体系、使用方式和与 skill / contract / job runner 的关系在本文档维护。
 

@@ -4,9 +4,9 @@ Job type: `learning_insight_update`
 
 Design references:
 
-- `design_docs/04_technical_decisions.md`
-- `design_docs/16_learning_insight_update_skill_design.md`
-- `design_docs/14_hermes_agent_runtime.md`
+- `docs/decisions/architecture-decisions.md`
+- `docs/v1/hermes/learning-insight-update-skill.md`
+- `docs/v1/hermes/runtime-design.md`
 - `data/contracts/focus_question_records.contract.json`
 - `data/contracts/learning_findings.contract.json`
 - `data/contracts/learning_memory_snapshot.contract.json`

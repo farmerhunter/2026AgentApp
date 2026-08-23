@@ -46,7 +46,7 @@
 
   <rect class="card" x="95" y="330" width="575" height="110"/>
   <text class="boxTitle" x="120" y="360">本地仓库 2026AgentApp</text>
-  <text class="boxText" x="120" y="386">design_docs/：产品简报、技术决策、API/存储/部署设计</text>
+  <text class="boxText" x="120" y="386">docs/：产品简报、技术决策、API/存储/部署设计</text>
   <text class="boxText" x="120" y="408">src/web_ui/：React Web 工作台</text>
   <text class="boxText" x="120" y="430">src/skills/、src/prompts/、src/agent/jobs/：智能体运行时材料</text>
 

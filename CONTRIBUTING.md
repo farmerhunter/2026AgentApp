@@ -4,13 +4,15 @@
 
 ## 工作流
 
-1. 从一个 GitHub issue 开始工作，先确认目标、验收标准和相关设计文档。
-2. 保持 commit 聚焦，一次 commit 只表达一个清楚的逻辑变化。
-3. 每次会话结束，在 `CHANGELOG.md` 顶部追加一条日期条目（做了什么、改了哪些文件、验证结果、遗留事项）。
-4. 行为、架构、prompt、skill、demo flow 或部署方式变化时，同步更新 `design_docs/`。
-5. 修改 demo 数据时，同时考虑 `data/` 和 `src/web_ui/public/data/` 是否需要保持一致。
-6. Push 后不要自动关闭 issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`。
-7. Push 后把 GitHub Project 状态移到 `In review`，在 issue 里记录变更和验证结果，等待人工确认后再关闭。
+1. 从当前 Milestone/Epic 的用户成果出发；若已有 GitHub Issue，先确认目标、验收标准和相关设计文档，再自主选择实现方式和提交粒度。
+2. 只有独立交付物、阻塞、重要决策或异步协作需要单独创建 Issue；临时编码步骤无需全部建卡。
+3. 保持 commit 聚焦，一次 commit 只表达一个清楚的逻辑变化，并留下足够的验证结果。
+4. 每次会话结束，在 `CHANGELOG.md` 顶部追加一条日期条目（做了什么、改了哪些文件、验证结果、遗留事项）。
+5. 产品边界、跨模块架构、数据/API contract、prompt、skill、demo flow 或部署方式发生实质变化时，按下文规则同步更新 `docs/`。
+6. 保持 `main` 尽量可运行；较长试验可以使用对应的 milestone/feature branch。
+7. 修改 demo 数据时，同时检查 `data/` 和 `src/web_ui/public/data/` 是否需要保持一致。
+8. 只有真实数据或隐私、外部费用、账号权限和不可逆迁移需要产品负责人确认。
+9. Push 后不要自动关闭 Issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`；对需要人工验收的工作，将 Project 状态移到 `In review` 并记录变更和验证结果。
 
 ## 本地验证
 
@@ -69,9 +71,12 @@ npm run dev -- --host 127.0.0.1
 
 ## 文档组织
 
-- 正式设计文档放在 `design_docs/`。
-- Prompt 模板的正式说明放在 `design_docs/18_prompt_template_design.md`。
-- `src/prompts/README.md` 只保留轻量入口和使用说明。
+- `docs/README.md` 是统一文档入口；路线图、当前版本和 ADR 从这里进入。
+- V2 及以后只为产品边界、跨模块架构、数据/API contract、隐私、部署和重大决策维护设计文档。
+- 具有合适复杂度的 Epic 可以由 Epic owner 自主建立独立设计文档，统一遵守 `docs/epic-design-guidelines.md`；这不需要为普通实现增加审批流程。
+- 普通实现细节、局部重构和临时步骤写在代码、测试、Issue 或 PR 中，不新增长篇设计文档。
+- `docs/v1/` 是历史基线；除修复链接或事实错误外，不继续扩写旧阶段计划。
+- `src/prompts/README.md` 只保留轻量入口和使用说明；Prompt 的可执行规则以实际模板、skill 和 contract 为准。
 - 比赛交付材料放在 `deliverables/`，不要混入开发过程草稿。
 
 ## Demo 数据

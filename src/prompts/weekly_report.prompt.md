@@ -4,9 +4,9 @@ Job type: `weekly_report`
 
 Design references:
 
-- `design_docs/04_technical_decisions.md`
-- `design_docs/17_weekly_report_skill_design.md`
-- `design_docs/14_hermes_agent_runtime.md`
+- `docs/decisions/architecture-decisions.md`
+- `docs/v1/hermes/weekly-report-skill.md`
+- `docs/v1/hermes/runtime-design.md`
 - `data/contracts/weekly_report.contract.json`
 - `data/contracts/week_reports_index.contract.json`
 - `data/contracts/insight_consolidation.contract.json`

@@ -1,4 +1,4 @@
-# Hermes Web 前端集成设计
+# Hermes 与 Web 集成设计（V1 时代）
 
 本文档记录 Hermes 输出如何被 Web 前端读取。第一阶段仍以静态 JSON 为主，但集成对象不再只有历史周报，还包括上传结束页需要展示的 `learning_insight_update` 结果。
 

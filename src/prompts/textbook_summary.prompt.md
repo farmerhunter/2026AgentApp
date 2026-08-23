@@ -4,8 +4,8 @@ Job type: `textbook_summary`
 
 Design references:
 
-- `design_docs/15_textbook_summary_skill_design.md`
-- `design_docs/14_hermes_agent_runtime.md`
+- `docs/v1/hermes/textbook-summary-skill.md`
+- `docs/v1/hermes/runtime-design.md`
 - `data/contracts/textbook_content_summary.contract.json`
 
 ## Role

@@ -11,6 +11,18 @@
 
 ---
 
+## 2026-08-23 — 版本化设计文档与 Epic 设计规范（#85）
+
+- 将历史 `design_docs/` 按用途整理到 `docs/v1/`，并增加 V1 能力边界与导航。
+- 初始化 `docs/v2/` 和 `docs/v3/`，分开维护当前架构、实施入口与未来方向。
+- 新增 `docs/README.md` 作为统一文档入口，新增 `docs/epic-design-guidelines.md`，明确复杂 Epic 可以由 owner 自主建立独立设计文档，普通实现无需增加长文档审批。
+- 将长期技术决策迁移到 `docs/decisions/architecture-decisions.md`，同步更新 README、路线图、交付材料、prompt 和 skill 中的旧路径。
+- 合并保留远端最新的 E0 验收记录、Quickstart、seed 幂等修复说明和 AI 上传协议；补充终评提交收尾 Epic #86 与 V3 方向。
+- 验证：Markdown 本地链接检查通过，未发现残留 `design_docs` 路径，`git diff --check` 通过。本次仅调整文档和文档引用，未运行应用构建。
+- 遗留事项：无。
+
+---
+
 ## 2026-08-23 — E0 验收：从零跑通（#85）
 
 按照 `docs/quickstart.md` 模拟新开发者从零执行：在临时目录建立干净仓库副本（无依赖、无产物），逐步验证 Web UI、数据库、API 与页面。

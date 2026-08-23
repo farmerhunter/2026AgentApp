@@ -1,4 +1,4 @@
-# 架构
+# 系统架构基线（V1 时代）
 
 本文档记录 Hermes 第一版演示架构和后续演进方向。当前架构重点不是搭建完整生产级教育平台，而是让 Hermes 能稳定展示“学习证据 -> 局部发现 -> 学习记忆 -> 周报和行动建议”的智能体闭环。
 
@@ -62,6 +62,8 @@ Web UI / API trigger
 
 第一版 job runner 可以先使用 deterministic / fixture-based 方式生成结果，不强制接真实 LLM。关键是把输入、输出、校验和发布路径跑通。
 
+真实 LLM 通过统一 Provider Port 接入，是 Hermes 可替换的推理机制，而不是领域架构中心；具体职责边界、失败状态和替换测试见 `docs/decisions/architecture-decisions.md` 的 ADR-019。
+
 ## 4. 智能体语义模型
 
 Hermes 的核心不是保存错题，而是把学习证据转化为可解释的问题模式和下一步行动。
@@ -85,7 +87,7 @@ Hermes 的核心不是保存错题，而是把学习证据转化为可解释的�
 - `weekly_report`：对一周内的局部发现和记忆进行 consolidation，生成聚合见解、周报和少量下周行动。
 - 长期记忆不直接接受单次局部发现，优先保存重复出现、人工确认或连续周报中出现的可解释问题模式。
 
-该模型的详细决策记录在 `design_docs/04_technical_decisions.md`。
+该模型的详细决策记录在 `docs/decisions/architecture-decisions.md`。
 
 ## 5. 首批 Hermes job 类型
 
@@ -207,7 +209,7 @@ Demo data 必须通过 `src/web_ui/scripts/validate-demo-data.mjs` 和 `data/dem
 - 数据库：保存学生、上传记录、OCR 状态、确认结果、重点题、周报索引、记忆和任务状态。
 - REST API：为 Web UI 和未来微信端提供受控访问。
 
-详细存储设计见 `design_docs/10_storage_design.md`。
+详细存储设计见 `docs/v1/system/storage-design.md`。
 
 ## 8. Web UI
 
