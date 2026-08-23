@@ -184,6 +184,11 @@ function seedFindings(db) {
      (finding_id, action_type, description, priority, target_week, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
+  // action_candidates has no natural unique key; delete per-finding rows before
+  // re-inserting so repeated seed runs stay idempotent (E0 baseline fix).
+  const deleteActionsForFinding = db.prepare(
+    "DELETE FROM action_candidates WHERE finding_id = ?"
+  );
 
   const dir = join(PUBLIC_DATA, "learning_findings");
   const files = listJsonFiles(dir);
@@ -248,6 +253,7 @@ function seedFindings(db) {
       }
 
       // Action candidates
+      deleteActionsForFinding.run(fd.finding_id);
       for (const ac of fd.action_candidates ?? []) {
         insertAction.run(
           fd.finding_id,
