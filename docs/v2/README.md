@@ -30,6 +30,7 @@ V2 的目标是把 V1 的静态演示闭环变成可以真实生成、写入、�
 - [实施计划](implementation-plan.md)：从 V1 基线推进到 V2 的纵向切片顺序。
 - [Epic 设计文档规范](../epic-design-guidelines.md)：复杂 Epic 独立成文的判断、位置、状态和维护规则。
 - [架构决策记录](../decisions/architecture-decisions.md)：长期有效的技术决策，尤其是 ADR-019 的 Hermes/LLM Provider 边界。
+- [E1 设计文档](epics/e1-persistence-api.md)：E1 持久化 API 的边界、实现映射和验收标准。
 - [`data/contracts/`](../../data/contracts/)：机器可校验的数据形状，优先级高于文档中的示例 JSON。
 
 ## 轻量文档规则

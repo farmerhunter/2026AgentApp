@@ -11,6 +11,16 @@
 
 ---
 
+## 2026-08-23 — E1 设计文档按新规范重写（#63）
+
+- 同步远端 `a0ff284`，采用新文档架构：`design_docs/` 已迁入 `docs/v1/`，V2 复杂 Epic 使用 `docs/v2/epics/`。
+- 按 `docs/epic-design-guidelines.md` 新建 `docs/v2/epics/e1-persistence-api.md`，写入 E1 的成果、范围、基线、不变量、失败恢复、实现映射和验收。
+- 将已确认的 6 项 E1 决策落实到新文档：job 状态方案 A、确认结果按 upload 整批覆盖、服务端生成 note/report ID、默认单学生、双 health 端点、先做 API smoke。
+- 更新 `docs/v2/README.md`，增加 E1 设计文档入口。
+- 验证：Markdown 未做构建级检查；本地文件结构符合 `docs/epic-design-guidelines.md` 的位置和命名要求。尚未 commit/push。
+
+---
+
 ## 2026-08-23 — 版本化设计文档与 Epic 设计规范（#85）
 
 - 将历史 `design_docs/` 按用途整理到 `docs/v1/`，并增加 V1 能力边界与导航。
