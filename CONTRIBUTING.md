@@ -37,6 +37,25 @@ npm run dev -- --host 127.0.0.1
 
 本机验证通过后，再同步到 VPS 做部署验证。VPS 验证重点是 `git pull`、依赖安装、构建、Nginx 静态访问和公开数据路径。
 
+## 与 AI 协作的 Git 上传协议
+
+当开发者对 AI 助手说「上传GitHub」（或「提交推送」）时，AI 按以下顺序自动执行：
+
+1. `git status`：检查本地改动与未提交文件；
+2. `git add`：暂存相关改动（跳过 `.gitignore` 覆盖的敏感文件，如密钥、`.env`）；
+3. `git commit`：按项目规范编写提交说明（`feat:` / `fix:` / `docs:` / `data:` / `chore:` + 描述 + `(#issue号)`）；
+4. `git pull`：拉取远端最新内容（fetch + merge），避免覆盖团队其他成员的改动；
+5. 冲突处理：合并冲突时不擅自修改代码，列出冲突文件并询问开发者如何取舍；
+6. `git push`：推送成功后更新 CHANGELOG / issue 记录。
+
+约定：
+
+- 仅在开发者明确说「上传GitHub」时才执行推送；其他时间 AI 不主动推送；
+- 若本地没有新改动，只执行 `pull` 同步远端；
+- 涉及敏感信息（密钥、隐私数据）的改动必须先与开发者确认再提交。
+- 提交身份固定为 `LaoLiuHaHaHaHaXiao <david_coder@outlook.com>`（仓库已配置 git 钩子校验，邮箱不符会自动拒绝提交）；
+- 通过 GitHub API 写入中文内容时，请求体必须使用 UTF-8 编码（Windows PowerShell 需先转成 UTF-8 字节再发送），避免乱码。
+
 ## 代码组织
 
 - Web UI code belongs in `src/web_ui/`.

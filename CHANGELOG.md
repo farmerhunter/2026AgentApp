@@ -22,6 +22,8 @@
 - ⚠️ 已知遗留：完整 job 链路需在 Linux/macOS/WSL 补跑 `smoke_test_jobs.sh` 3/3；8/22 的旧 API 服务（PID 20304）仍占用 8000 端口，需管理员终端结束或重启。
 - 📄 验证详情已记录到 `docs/roadmap.md` 附录 A.5。
 - ✅ GitHub issue 对齐完成：#85 已发布 E0 验证评论；#12/#15/#16 移入 v3.0 里程碑；#17/#18/#19/#23 已确认带 `type:deliverable` 标签；E1–E4 依赖关系已建立（#63 ← #68/#13/#69，见仓库 issue）。
+- ✅ 协作约定：新增「与 AI 协作的 Git 上传协议」（CONTRIBUTING.md）——说「上传GitHub」时自动执行 add/commit/pull/merge/push，冲突时先询问。
+- ✅ 修正两个问题：① 提交作者名统一为 GitHub 用户名 `LaoLiuHaHaHaHaXiao`（历史提交已重写并强推）；② #85 评论乱码已删除并用 UTF-8 重新发布。已加 git 钩子校验提交身份，并在 CONTRIBUTING.md 记录 UTF-8 规则，防止再犯。
 
 ---
 
