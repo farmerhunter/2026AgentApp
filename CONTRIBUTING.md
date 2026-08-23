@@ -6,10 +6,11 @@
 
 1. 从一个 GitHub issue 开始工作，先确认目标、验收标准和相关设计文档。
 2. 保持 commit 聚焦，一次 commit 只表达一个清楚的逻辑变化。
-3. 行为、架构、prompt、skill、demo flow 或部署方式变化时，同步更新 `design_docs/`。
-4. 修改 demo 数据时，同时考虑 `data/` 和 `src/web_ui/public/data/` 是否需要保持一致。
-5. Push 后不要自动关闭 issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`。
-6. Push 后把 GitHub Project 状态移到 `In review`，在 issue 里记录变更和验证结果，等待人工确认后再关闭。
+3. 每次会话结束，在 `CHANGELOG.md` 顶部追加一条日期条目（做了什么、改了哪些文件、验证结果、遗留事项）。
+4. 行为、架构、prompt、skill、demo flow 或部署方式变化时，同步更新 `design_docs/`。
+5. 修改 demo 数据时，同时考虑 `data/` 和 `src/web_ui/public/data/` 是否需要保持一致。
+6. Push 后不要自动关闭 issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`。
+7. Push 后把 GitHub Project 状态移到 `In review`，在 issue 里记录变更和验证结果，等待人工确认后再关闭。
 
 ## 本地验证
 

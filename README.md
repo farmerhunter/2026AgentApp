@@ -21,6 +21,8 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 
 ## 当前进展
 
+- **v1.0 静态演示版已完成**（2026-05）：VPS 本地文件存储 + 静态 JSON + Nginx + Vite/React 前端，无真实 LLM。
+- **v2.0 开发已启动**（2026-08，issue #85 起）：持久化 API、真实 LLM 生成闭环与 VPS 稳定运行为主线，完整计划见 [`docs/roadmap.md`](docs/roadmap.md)。
 - 第一阶段采用演示优先路线：VPS 本地文件存储 + 静态 JSON + Nginx + Vite/React 前端。
 - 前端目录为 `src/web_ui/`，构建产物部署到 `/var/www/hermes-web/`。
 - Demo 数据通过 `src/web_ui/public/data/` 暴露给前端，覆盖周报、question sessions、重点题确认和合成试卷扫描图。
@@ -28,7 +30,7 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 - `src/skills/` 已包含教材摘要、学习洞察更新、周报生成等 Hermes skill 设计。
 - `src/prompts/` 已包含与 skill 对齐的 prompt 模板；正式设计说明见 `design_docs/18_prompt_template_design.md`。
 - 试卷图像处理采用“试卷切题/OCR + 学生人工确认 + Hermes 总结”的路线。
-- 第二阶段计划迁移到腾讯云 COS + database + REST API，支持长期存储、检索和多学生数据管理。
+- 第三阶段（v3）计划迁移到腾讯云 COS + PostgreSQL + 多用户数据隔离。
 
 ## 核心演示流程
 
@@ -48,6 +50,9 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 
 ## 文档入口
 
+- [`CHANGELOG.md`](CHANGELOG.md)：更新日志（每次开发会话追加，记录改了什么、验证结果与遗留事项）
+- [`docs/roadmap.md`](docs/roadmap.md)：v2 路线图（Epic 一览、依赖顺序、E0 基线验证记录）
+- [`docs/quickstart.md`](docs/quickstart.md)：本地快速开始指南（首次运行 5 步 + 常见问题）
 - `design_docs/01_competition_rules.md`：比赛规则和报名方向整理
 - `design_docs/02_product_brief.md`：产品目标、用户和核心能力
 - `design_docs/03_design_brief.md`：设计简报和第一版用例
