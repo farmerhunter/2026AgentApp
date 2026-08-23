@@ -21,6 +21,7 @@
 - ✅ 页面：dev server HTTP 200，React 入口正常加载。
 - ⚠️ 已知遗留：完整 job 链路需在 Linux/macOS/WSL 补跑 `smoke_test_jobs.sh` 3/3；8/22 的旧 API 服务（PID 20304）仍占用 8000 端口，需管理员终端结束或重启。
 - 📄 验证详情已记录到 `docs/roadmap.md` 附录 A.5。
+- ✅ GitHub issue 对齐完成：#85 已发布 E0 验证评论；#12/#15/#16 移入 v3.0 里程碑；#17/#18/#19/#23 已确认带 `type:deliverable` 标签；E1–E4 依赖关系已建立（#63 ← #68/#13/#69，见仓库 issue）。
 
 ---
 
