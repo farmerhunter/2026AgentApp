@@ -1,46 +1,39 @@
-# V2：真实 AI 和 API 版
+# V2：VPS 双线能力展示版
 
-**状态：Current / 文档基线已初始化。**
+**状态：Current。**
 
-V2 的目标是把 V1 的静态演示闭环变成可以真实生成、写入、查询和重复运行的单用户系统：
+V2 的目标不是做生产系统，而是在一台 VPS 上可靠展示两条彼此隔离的路线：
+
+- `/demo`：保留 V1 完整静态流程。只读、脱敏、不依赖 API/OCR/Hermes，是可靠兜底。
+- `/app`：真实能力主线。上传练习图片，经真实 OCR、人工确认错题、Hermes 分析和周报生成，所有结果通过 API/SQLite 保存。
 
 ```text
-真实学习材料
-  -> 持久化 API
-  -> Hermes task-specific job
-  -> 可替换 LLM Provider
-  -> contract 与语义校验
-  -> finding / 待确定记忆 / 周报
-  -> Web UI 查询、确认和降级
+离线教材知识底图
+          +
+练习/试卷图片 -> 腾讯 OCR 切题与识别作答 -> 学生确认错题
+          -> Hermes 分析 -> finding / 待确认记忆 / action
+          -> 学生接受或拒绝记忆 -> 手工触发周报 -> Web 展示/浏览器打印
 ```
 
-## 交付范围
+## 五条不可破坏的边界
 
-- SQLite + REST API 保存学习数据和 Hermes job 状态。
-- Web UI 默认使用 API，并在必要时保留静态数据降级。
-- Hermes 使用真实 LLM 生成可追溯 finding、待确定记忆、行动建议和周报。
-- fixture 与 real 模式共享 contract，用于离线开发、演示和回归。
-- VPS 能稳定运行 API 和 Web，真实数据不进入公开静态目录。
+1. `/demo` 和 `/app` 不混用数据源或写入逻辑。
+2. 腾讯 OCR 负责识别与切题，学生负责确认错题，Hermes 负责学习分析。
+3. 教材知识底图和学生学习记忆是两类数据，不能混为一体。
+4. SQLite 是产品学习记忆的唯一事实来源；Hermes 自带的环境记忆不进入产品逻辑。
+5. 外部服务失败时不写入半份 finding、memory 或 report；密钥和真实材料不进入公开目录。
 
-具体 Epic 和实时状态见 [路线图](../roadmap.md) 与 GitHub Project。
+## 先读什么
 
-## 当前文档
+- [给 David 的 V2 一页开发说明](development-guide.md)：最短的开发入口和优先级。
+- [V2 系统架构](architecture.md)：模块、数据流、失败边界和裁剪范围。
+- [E1–E6 实施计划](implementation-plan.md)：总体 Epic 分工和终评 R1 约束。
+- [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)：Hermes、DeepSeek、profile、CLI bridge 和 Skill 迭代方式。
+- [E1 设计文档](epics/e1-persistence-api.md)：已经完成的持久化 API 基础。
+- [V3 延后能力清单](../v3/deferred-capabilities.md)：V2 明确不做但后续不能遗忘的内容。
 
-- [架构](architecture.md)：V2 的稳定边界、目标数据流和非目标。
-- [实施计划](implementation-plan.md)：从 V1 基线推进到 V2 的纵向切片顺序。
-- [Epic 设计文档规范](../epic-design-guidelines.md)：复杂 Epic 独立成文的判断、位置、状态和维护规则。
-- [架构决策记录](../decisions/architecture-decisions.md)：长期有效的技术决策，尤其是 ADR-019 的 Hermes/LLM Provider 边界。
-- [E1 设计文档](epics/e1-persistence-api.md)：E1 持久化 API 的边界、实现映射和验收标准。
-- [`data/contracts/`](../../data/contracts/)：机器可校验的数据形状，优先级高于文档中的示例 JSON。
-
-## 轻量文档规则
-
-- 当前 Epic 达到跨模块、持久化、migration、contract、重大失败或多人/多 Agent 交接等复杂度时，可以在 `docs/v2/epics/` 建立独立设计文档；默认一份主文档，具体规则见 [Epic 设计文档规范](../epic-design-guidelines.md)。
-- Epic 的实时状态和普通任务仍写在 Issue；设计文档保存稳定边界、关键取舍、失败处理和验收证据，不复制看板。
-- 普通实现步骤、局部重构和低风险功能不要求独立设计文档。
-- 先实现最小纵向闭环，再为已经出现的复杂度增加抽象；不为假设中的多用户或通用 Agent 提前设计。
-- 代码和文档不一致时先确认实际运行行为，再更新过时的一方，不能默默保留冲突。
+实时状态、负责人和具体任务以 GitHub Project、Epic Issue 和 PR 为准。Epic 内部 issue 在该 Epic 启动设计时再拆，不在总体规划阶段提前锁死。
 
 ## 开发自主权
 
-Milestone owner 可以自主选择实现方式、拆分临时任务、提交、合并和部署。只有真实学生数据或隐私、外部费用、账号权限以及不可逆迁移需要产品负责人确认。
+David 可以自主选择低风险实现方式、拆分任务、提交、合并和部署。涉及真实学生隐私、外部付费、账号权限、不可逆迁移或产品方向变化时再与产品负责人确认。

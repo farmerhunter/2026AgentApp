@@ -11,6 +11,18 @@
 
 ---
 
+## 2026-08-25 — V2 E1–E6 架构重基线与终评风险约束
+
+- 将 V2 明确为单 VPS 双线：`/demo` 冻结 V1 静态兜底，`/app` 承载 API-only 真实主线，禁止两条线静默混用。
+- 重排顶层 Epic：E1 保留已完成 API 基础；E2 双线工作台；E3 教材知识底图；E4 练习/试卷 OCR 与错题确认；E5 Hermes 分析/记忆/周报；E6 VPS 部署与端到端验收。
+- 新增 `docs/v2/development-guide.md`，用简洁语言向 David 说明目标、顺序、边界和 MVP。
+- 新增 `docs/v2/hermes-runtime-and-skills.md`，定义 lab/runtime profile、非交互 CLI bridge、SQLite 产品记忆权威和快速 Skill 迭代方式。
+- 新增 V3 延后能力清单，并以 ADR-020 至 ADR-024 记录双线、离线教材、OCR/人工确认、Hermes 和串行 job/R1 决策。
+- GitHub 新增 E3 #87、E4 #88，并重写/重命名 #63/#68/#13/#69/#86 与 Project 属性、依赖关系。
+- 验证：Markdown 本地链接、`git diff --check` 和 GitHub Project/Issue 对齐检查。
+
+---
+
 ## 2026-08-24 — E1 Architect Review 与设计评审门槛（#63）
 
 - 更新 `docs/epic-design-guidelines.md`：复杂 Epic 涉及 contract、持久化或异步状态时，要求接口—contract—版本—验证映射，并区分编码前设计评审与收口前实现一致性评审。

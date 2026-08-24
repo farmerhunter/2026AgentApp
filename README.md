@@ -4,7 +4,7 @@
 
 项目应用名为「学途智伴」。当前智能体内核名为 Hermes。
 
-Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题本，而是把学生日常学习材料中的 `evidence` 逐步加工成可解释的学习问题、学习记忆和后续行动建议。学生上传教材、试卷、作业和备注后，系统完成材料整理、重点题确认、学习分析、周报生成和 Web 展示。
+Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题本，而是把学生日常学习材料中的 `evidence` 逐步加工成可解释的学习问题、学习记忆和后续行动建议。V2 中，教材先在线下整理成知识底图；学生在线上传练习/试卷图片后，系统完成 OCR 切题、错题确认、学习分析、记忆确认、周报生成和 Web 展示。
 
 ## 核心设计
 
@@ -22,7 +22,7 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 ## 当前进展
 
 - **v1.0 静态演示版已完成**（2026-05）：Vite/React Web、静态 JSON、脱敏样例数据和 fixture Hermes job 已展示完整学习闭环，无真实 LLM、真实用户写入、鉴权或多用户隔离。
-- **v2.0 开发已启动**（2026-08，issue #85 起）：以 SQLite + REST API、API-first Web、真实 Hermes Provider 和 VPS 稳定运行为主线，完整计划见 [`docs/roadmap.md`](docs/roadmap.md)。
+- **v2.0 开发进行中**（2026-08）：E1 持久化 API 已完成；当前按 E2–E6 推进 VPS 双线，`/demo` 保留静态兜底，`/app` 接真实 OCR、Hermes、记忆和周报。完整计划见 [`docs/roadmap.md`](docs/roadmap.md)。
 - 前端目录为 `src/web_ui/`，构建产物部署到 `/var/www/hermes-web/`；Demo 数据通过 `src/web_ui/public/data/` 暴露给前端。
 - `data/contracts/` 定义 finding、insight、memory、report 等 Hermes 输出契约；`src/skills/` 和 `src/prompts/` 保存可执行的 skill 与 prompt。
 - 工程文档已按 V1 历史基线、V2 当前设计和 V3 未来方向重新分层。
@@ -30,28 +30,26 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 ## 核心演示流程
 
 ```text
-上传教材、试卷、作业或备注
-  -> Hermes/OCR 读取材料并生成 evidence
-  -> Web 前端展示切题区域和题目列表
-  -> 学生手动选择需要记录的重点题
-  -> 学生补充得分、知识点、错因和备注
-  -> 上传结束页显示 Hermes 分析状态
-  -> Hermes 生成 finding 和 memory candidate
-  -> 学生确认待确定记忆和优先级
-  -> Hermes 整理短期记忆，并在合适时沉淀长期记忆
-  -> Hermes 生成周报 JSON
-  -> Web 前端展示周报、重点问题和行动建议
+离线教材知识底图 + 在线练习/试卷图片
+  -> 腾讯 OCR 切题并识别题干和学生作答
+  -> 学生勾选错题
+  -> Hermes 结合知识节点生成 finding、memory candidate 和 action
+  -> 学生接受或拒绝待确定记忆
+  -> 手工触发 Hermes 周报
+  -> Web 展示周报，并可浏览器打印
 ```
 
 ## 文档入口
 
 - [`CHANGELOG.md`](CHANGELOG.md)：更新日志（每次开发会话追加，记录改了什么、验证结果与遗留事项）
-- [`docs/roadmap.md`](docs/roadmap.md)：v2 路线图（Epic 一览、依赖顺序、E0 基线验证记录）
+- [`docs/v2/development-guide.md`](docs/v2/development-guide.md)：给 David 的 V2 一页开发说明
+- [`docs/roadmap.md`](docs/roadmap.md)：V2 E1–E6 路线图和终评交付约束
 - [`docs/quickstart.md`](docs/quickstart.md)：本地快速开始指南（首次运行 5 步 + 常见问题）
 - [`docs/README.md`](docs/README.md)：统一文档入口和维护规则
 - [`docs/epic-design-guidelines.md`](docs/epic-design-guidelines.md)：复杂 Epic 独立设计文档的判断和维护规范
 - [`docs/v1/README.md`](docs/v1/README.md)：已完成的 V1 能力边界和历史资料导航
-- [`docs/v2/README.md`](docs/v2/README.md)：当前 V2 目标、架构和实施入口
+- [`docs/v2/README.md`](docs/v2/README.md)：当前 V2 双线目标、架构和实施入口
+- [`docs/v2/hermes-runtime-and-skills.md`](docs/v2/hermes-runtime-and-skills.md)：Hermes CLI、profile、产品记忆和 Skill 迭代设计
 - [`docs/decisions/architecture-decisions.md`](docs/decisions/architecture-decisions.md)：长期架构决策记录
 
 ## 仓库结构
