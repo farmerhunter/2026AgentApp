@@ -190,11 +190,19 @@ function seedFindings(db) {
   const deleteActionsForFinding = db.prepare(
     "DELETE FROM action_candidates WHERE finding_id = ?"
   );
+  const insertWeeklyContext = db.prepare(
+    `INSERT INTO weekly_context_candidates
+     (finding_id, relevance, priority, include_in_summary, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)`
+  );
+  const deleteWeeklyContextForFinding = db.prepare(
+    "DELETE FROM weekly_context_candidates WHERE finding_id = ?"
+  );
 
   const dir = join(PUBLIC_DATA, "learning_findings");
   const files = listJsonFiles(dir);
 
-  let batchCount = 0, findingCount = 0, memoryCount = 0, actionCount = 0;
+  let batchCount = 0, findingCount = 0, memoryCount = 0, actionCount = 0, weeklyContextCount = 0;
 
   for (const f of files) {
     const data = readJson(join(dir, f));
@@ -267,6 +275,20 @@ function seedFindings(db) {
         );
         actionCount++;
       }
+
+      // Weekly context candidates
+      deleteWeeklyContextForFinding.run(fd.finding_id);
+      for (const wc of fd.weekly_context_candidates ?? []) {
+        insertWeeklyContext.run(
+          fd.finding_id,
+          wc.relevance,
+          wc.priority,
+          wc.include_in_summary ? 1 : 0,
+          isoNow(),
+          isoNow()
+        );
+        weeklyContextCount++;
+      }
     }
   }
 
@@ -274,6 +296,7 @@ function seedFindings(db) {
   console.log(`  findings: seeded ${findingCount}`);
   console.log(`  memory_decisions: seeded ${memoryCount}`);
   console.log(`  action_candidates: seeded ${actionCount}`);
+  console.log(`  weekly_context_candidates: seeded ${weeklyContextCount}`);
 }
 
 // ── 6. Text Notes ──

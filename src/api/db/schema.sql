@@ -247,3 +247,16 @@ CREATE TABLE IF NOT EXISTS action_candidates (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ac_finding ON action_candidates(finding_id);
+
+-- 14. weekly_context_candidates
+CREATE TABLE IF NOT EXISTS weekly_context_candidates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  finding_id TEXT NOT NULL,
+  relevance TEXT,
+  priority TEXT,
+  include_in_summary INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT (datetime('now', 'localtime')),
+  updated_at TEXT DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_wcc_finding ON weekly_context_candidates(finding_id);

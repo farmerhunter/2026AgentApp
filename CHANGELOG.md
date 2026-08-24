@@ -22,6 +22,15 @@
 
 ---
 
+## 2026-08-24 — E1 Architect Re-review 修正（round 2）
+
+- #66：新增 `weekly_context_candidates` 表与 seed，`GET /api/findings/:batch_id` 返回非空且含关键字段的 weekly-context candidates；`POST /api/memories` 的 student/subject/subject_label/statement 改为服务端从引用 finding/batch 强制派生，忽略客户端覆盖。
+- #67：job reconciliation 现在对带 stale pending/running 状态文件的任务也按文件 mtime 超时；活跃 job poller 会 touch 状态文件避免误杀。
+- smoke：补充 weekly-context 非空/字段断言、memory 对抗性客户端 metadata 断言、带 pending 状态文件的 stale job reconciliation 断言，并让 created job 等待最终态后在重启后校验相同状态。
+- 本地验证：JS 语法检查通过；完整两阶段 API smoke 全部通过。
+
+---
+
 ## 2026-08-24 — E1 Architect Review 修正（#63 / #65 / #66 / #67）
 
 - #65：split/confirmation 对齐 contract 1.1，补齐 `subject`、`subject_label` 与 confirmation item 学科字段；修正 `GET /api/sessions?student_id=` 的统计范围。

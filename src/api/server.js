@@ -1,4 +1,4 @@
-import { readFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, statSync, utimesSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -62,6 +62,13 @@ function readStatus(jobId) {
   const path = resolve(STATUS_DIR, `${jobId}.json`);
   if (!existsSync(path)) return null;
   return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function touchStatus(jobId) {
+  const path = resolve(STATUS_DIR, `${jobId}.json`);
+  if (!existsSync(path)) return;
+  const now = new Date();
+  utimesSync(path, now, now);
 }
 
 function writeStatus(jobId, status) {
@@ -136,17 +143,42 @@ function reconcileJobs() {
   for (const row of rows) {
     const status = readStatus(row.job_id);
     if (status) {
+      const statusPath = resolve(STATUS_DIR, `${row.job_id}.json`);
+      let fileStat = null;
+      try {
+        fileStat = statSync(statusPath);
+      } catch {
+        fileStat = null;
+      }
+
+      if (
+        (status.status === "pending" || status.status === "running") &&
+        fileStat &&
+        now - fileStat.mtimeMs > JOB_STALE_MS
+      ) {
+        writeStatus(row.job_id, {
+          job_type: status.job_type ?? "unknown",
+          status: "timeout",
+          mode: status.mode ?? MODE,
+          error_message: "Job status stale after restart",
+        });
+        syncJobFromStatusFile(row.job_id);
+        continue;
+      }
+
       syncJobFromStatusFile(row.job_id);
       continue;
     }
 
     const createdMs = row.created_at ? Date.parse(row.created_at) : now;
     if (now - createdMs > JOB_STALE_MS) {
-      db.prepare(
-        `UPDATE hermes_jobs
-         SET status = 'timeout', error_message = ?, completed_at = COALESCE(completed_at, ?)
-         WHERE job_id = ?`
-      ).run("Job status not found after restart", new Date().toISOString(), row.job_id);
+      writeStatus(row.job_id, {
+        job_type: "unknown",
+        status: "timeout",
+        mode: MODE,
+        error_message: "Job status not found after restart",
+      });
+      syncJobFromStatusFile(row.job_id);
     }
   }
 }
@@ -193,7 +225,12 @@ function spawnJob(jobType, args, payload) {
   checkInterval = setInterval(() => {
     try {
       const s = readStatus(jobId);
-      if (s) syncJobFromStatusFile(jobId);
+      if (s) {
+        syncJobFromStatusFile(jobId);
+        if (s.status === "pending" || s.status === "running") {
+          touchStatus(jobId);
+        }
+      }
       if (s && (s.status === "completed" || s.status === "failed")) {
         clearInterval(checkInterval);
       }

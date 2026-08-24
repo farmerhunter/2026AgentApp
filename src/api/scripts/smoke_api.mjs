@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, utimesSync } from "node:fs";
 import Database from "better-sqlite3";
 
 const API_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -61,6 +61,18 @@ async function jsonRequest(path, options = {}) {
     }
   }
   return { status: res.status, body };
+}
+
+async function waitForJobTerminal(jobId, timeoutMs = 10000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const res = await jsonRequest(`/api/hermes/jobs/${jobId}`);
+    if (res.status === 200 && ["completed", "failed", "timeout"].includes(res.body.status)) {
+      return res.body.status;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`Job ${jobId} did not reach a terminal state`);
 }
 
 let server = null;
@@ -132,6 +144,23 @@ function seedSyntheticJobs() {
 
   const staleJobId = "job_smoke_stale_pending";
   const staleCreatedAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const staleStatusPath = join(STATUS_DIR, `${staleJobId}.json`);
+  writeFileSync(
+    staleStatusPath,
+    JSON.stringify(
+      {
+        job_id: staleJobId,
+        job_type: "weekly_report",
+        status: "pending",
+        mode: "fixture",
+        created_at: staleCreatedAt,
+      },
+      null,
+      2
+    )
+  );
+  const staleFileTime = new Date(Date.now() - 10 * 60 * 1000);
+  utimesSync(staleStatusPath, staleFileTime, staleFileTime);
 
   const db = openDb();
   const insert = db.prepare(
@@ -244,6 +273,8 @@ async function main() {
   assert(Array.isArray(findingBatch.body.source_refs), "finding source_refs missing");
   assert(findingBatch.body.findings.length >= 2, "expected at least 2 findings");
   assert(findingBatch.body.findings.every((f) => hasKeys(f, ["finding_id", "scope", "finding_type", "statement", "evidence_summary", "concept_links", "mistake_reasons", "confidence", "is_recurring", "memory_candidates", "action_candidates", "weekly_context_candidates"])), "finding required keys missing");
+  assert(findingBatch.body.findings.every((f) => f.weekly_context_candidates.length > 0), "finding weekly_context_candidates should not be empty");
+  assert(hasKeys(findingBatch.body.findings[0].weekly_context_candidates[0], ["relevance", "priority", "include_in_summary"]), "weekly context candidate required keys missing");
   console.log("PASS GET /api/findings/:batch_id");
 
   // Memories
@@ -272,12 +303,21 @@ async function main() {
   const derivedMemory = await jsonRequest("/api/memories", {
     method: "POST",
     body: JSON.stringify({
-      memories: [{ finding_id: "finding_math_001", finding_batch_id: "findings_20260518_math", note: "derived metadata", status: "accepted" }],
+      memories: [{
+        finding_id: "finding_math_001",
+        finding_batch_id: "findings_20260518_math",
+        student_id: "student_wrong",
+        subject: "english",
+        statement: "client-forged statement",
+        note: "derived metadata",
+        status: "accepted",
+      }],
     }),
   });
   assert(derivedMemory.status === 200, `minimal memory POST returned ${derivedMemory.status}`);
   assert(derivedMemory.body.memories[0].subject === "math", "memory subject was not derived from finding");
-  assert(derivedMemory.body.memories[0].statement, "memory statement was not derived from finding");
+  assert(derivedMemory.body.memories[0].statement !== "client-forged statement", "memory statement should ignore client value");
+  assert(derivedMemory.body.memories[0].statement.length > 0, "memory statement was not derived from finding");
   assert(derivedMemory.body.memories[0].student_id === "student_demo", "memory student was not derived from finding");
   console.log("PASS memory metadata derivation");
 
@@ -349,10 +389,8 @@ async function main() {
   assert(createdJob.status === 202, `POST /api/hermes/jobs returned ${createdJob.status}`);
   assert(createdJob.body.job_id, "job_id was not returned");
   const createdJobId = createdJob.body.job_id;
-  const jobStatus = await jsonRequest(`/api/hermes/jobs/${createdJobId}`);
-  assert(jobStatus.status === 200, `GET created job returned ${jobStatus.status}`);
-  assert(["pending", "running", "completed", "failed", "timeout"].includes(jobStatus.body.status), "unexpected job status");
-  console.log("PASS Hermes job creation and status");
+  const createdJobFinalStatus = await waitForJobTerminal(createdJobId);
+  console.log(`PASS Hermes job creation and final status (${createdJobFinalStatus})`);
 
   console.log("\nPhase 1 passed. Restarting API to verify persistence and reconciliation...");
   stopServer();
@@ -380,7 +418,7 @@ async function main() {
 
   const reloadedCreatedJob = await jsonRequest(`/api/hermes/jobs/${createdJobId}`);
   assert(reloadedCreatedJob.status === 200, "created job did not survive restart");
-  assert(["completed", "failed", "timeout", "pending", "running"].includes(reloadedCreatedJob.body.status), "unexpected created job status after restart");
+  assert(reloadedCreatedJob.body.status === createdJobFinalStatus, "created job final status changed after restart");
   console.log("PASS created job state survives restart");
 
   console.log("\nAll API smoke tests passed.");

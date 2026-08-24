@@ -53,7 +53,15 @@ function actionCandidateDto(row) {
   };
 }
 
-function findingDto(row, memoryRows, actionRows) {
+function weeklyContextDto(row) {
+  return {
+    relevance: row.relevance,
+    priority: row.priority,
+    include_in_summary: booleanFromNumber(row.include_in_summary),
+  };
+}
+
+function findingDto(row, memoryRows, actionRows, weeklyContextRows) {
   return {
     finding_id: row.finding_id,
     scope: row.scope,
@@ -66,7 +74,7 @@ function findingDto(row, memoryRows, actionRows) {
     is_recurring: booleanFromNumber(row.is_recurring),
     memory_candidates: memoryRows.map(memoryCandidateDto),
     action_candidates: actionRows.map(actionCandidateDto),
-    weekly_context_candidates: [],
+    weekly_context_candidates: weeklyContextRows.map(weeklyContextDto),
   };
 }
 
@@ -171,6 +179,21 @@ router.get("/findings/:batch_id", (req, res) => {
       actionByFinding.set(row.finding_id, list);
     }
 
+    const weeklyContextByFinding = new Map();
+    for (const row of db
+      .prepare(
+        `SELECT wc.*
+         FROM weekly_context_candidates wc
+         JOIN findings f ON f.finding_id = wc.finding_id
+         WHERE f.finding_batch_id = ?
+         ORDER BY wc.finding_id`
+      )
+      .all(req.params.batch_id)) {
+      const list = weeklyContextByFinding.get(row.finding_id) ?? [];
+      list.push(row);
+      weeklyContextByFinding.set(row.finding_id, list);
+    }
+
     res.json({
       contract: "learning_findings",
       contract_version: "1.0",
@@ -185,7 +208,8 @@ router.get("/findings/:batch_id", (req, res) => {
         findingDto(
           row,
           memoryByFinding.get(row.finding_id) ?? [],
-          actionByFinding.get(row.finding_id) ?? []
+          actionByFinding.get(row.finding_id) ?? [],
+          weeklyContextByFinding.get(row.finding_id) ?? []
         )
       ),
     });
@@ -280,10 +304,10 @@ router.post("/memories", (req, res) => {
         const status = item.status ?? "accepted";
         const acceptedAt = status === "accepted" ? (item.accepted_at ?? nowIso()) : null;
         const existing = findExisting.get(findingId, batchId);
-        const studentId = item.student_id ?? referencedFinding.batch_student_id ?? DEFAULT_STUDENT_ID;
-        const subject = item.subject ?? referencedFinding.batch_subject ?? null;
-        const subjectLabel = item.subject_label ?? referencedFinding.batch_subject_label ?? null;
-        const statement = item.statement ?? referencedFinding.statement ?? null;
+        const studentId = referencedFinding.batch_student_id ?? DEFAULT_STUDENT_ID;
+        const subject = referencedFinding.batch_subject ?? null;
+        const subjectLabel = referencedFinding.batch_subject_label ?? null;
+        const statement = referencedFinding.statement ?? null;
 
         if (existing) {
           update.run(
