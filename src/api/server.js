@@ -6,6 +6,9 @@ import { randomBytes } from "node:crypto";
 import express from "express";
 import sessionsRouter from "./routes/sessions.js";
 import findingsRouter from "./routes/findings.js";
+import notesRouter from "./routes/notes.js";
+import reportsRouter from "./routes/reports.js";
+import { getDb } from "./db/init.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -25,6 +28,9 @@ const JOB_SCRIPTS = {
 
 const SUBJECTS = ["chinese", "math", "english"];
 
+const db = getDb();
+db.defaultSafeIntegers(false);
+
 const app = express();
 app.use(express.json());
 
@@ -39,6 +45,8 @@ app.use((req, res, next) => {
 // E1 persistence routes
 app.use("/api", sessionsRouter);
 app.use("/api", findingsRouter);
+app.use("/api", notesRouter);
+app.use("/api", reportsRouter);
 
 // ── Helpers ──
 
@@ -67,7 +75,55 @@ function writeStatus(jobId, status) {
 
 import { writeFileSync } from "node:fs";
 
-function spawnJob(jobType, args) {
+function readJobDb(jobId) {
+  return db.prepare("SELECT * FROM hermes_jobs WHERE job_id = ?").get(jobId);
+}
+
+function insertJobDb(jobId, jobType, mode, payload) {
+  db.prepare(
+    `INSERT OR REPLACE INTO hermes_jobs
+     (job_id, job_type, status, payload_json, result_json, result_path, error_message, mode, created_at)
+     VALUES (?, ?, 'pending', ?, NULL, NULL, NULL, ?, ?)`
+  ).run(jobId, jobType, JSON.stringify(payload ?? {}), mode, new Date().toISOString());
+}
+
+function syncJobFromStatusFile(jobId) {
+  const status = readStatus(jobId);
+  if (!status) return null;
+
+  db.prepare(
+    `UPDATE hermes_jobs
+     SET status = ?, result_path = ?, error_message = ?, mode = ?,
+         started_at = COALESCE(started_at, ?), completed_at = COALESCE(completed_at, ?)
+     WHERE job_id = ?`
+  ).run(
+    status.status ?? "pending",
+    status.result_path ?? null,
+    status.error_message ?? null,
+    status.mode ?? MODE,
+    status.started_at ?? null,
+    status.completed_at ?? null,
+    jobId
+  );
+
+  return readJobDb(jobId);
+}
+
+function jobDto(row) {
+  return {
+    job_id: row.job_id,
+    job_type: row.job_type,
+    status: row.status,
+    mode: row.mode,
+    result_path: row.result_path,
+    created_at: row.created_at,
+    started_at: row.started_at,
+    completed_at: row.completed_at,
+    error_message: row.error_message,
+  };
+}
+
+function spawnJob(jobType, args, payload) {
   const jobId = generateJobId();
   const scriptName = JOB_SCRIPTS[jobType];
   if (!scriptName) throw new Error(`Unknown job type: ${jobType}`);
@@ -76,6 +132,7 @@ function spawnJob(jobType, args) {
   const env = { ...process.env, HERMES_JOB_MODE: MODE, JOB_ID: jobId };
 
   writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
+  insertJobDb(jobId, jobType, MODE, payload);
 
   const child = spawn("bash", [scriptPath, ...args], {
     cwd: REPO_ROOT,
@@ -84,13 +141,27 @@ function spawnJob(jobType, args) {
     stdio: "ignore",
   });
 
+  let checkInterval = null;
+
+  child.on("error", (err) => {
+    if (checkInterval) clearInterval(checkInterval);
+    writeStatus(jobId, {
+      job_type: jobType,
+      status: "failed",
+      mode: MODE,
+      error_message: err.message,
+    });
+    syncJobFromStatusFile(jobId);
+  });
+
   child.unref();
 
   // Poll for completion in background
-  const checkInterval = setInterval(() => {
+  checkInterval = setInterval(() => {
     try {
       const s = readStatus(jobId);
-      if (s && s.status === "completed") {
+      if (s) syncJobFromStatusFile(jobId);
+      if (s && (s.status === "completed" || s.status === "failed")) {
         clearInterval(checkInterval);
       }
     } catch {
@@ -110,6 +181,7 @@ function spawnJob(jobType, args) {
           mode: MODE,
           error_message: "Job timed out after 5 minutes",
         });
+        syncJobFromStatusFile(jobId);
       }
     } catch {}
   }, 300_000);
@@ -160,7 +232,7 @@ app.post("/api/hermes/jobs", (req, res) => {
       });
     }
 
-    const jobId = spawnJob(job_type, args);
+    const jobId = spawnJob(job_type, args, req.body ?? {});
 
     res.status(202).json({
       job_id: jobId,
@@ -176,11 +248,14 @@ app.post("/api/hermes/jobs", (req, res) => {
 // GET /api/hermes/jobs/:job_id — query job status
 app.get("/api/hermes/jobs/:job_id", (req, res) => {
   try {
-    const status = readStatus(req.params.job_id);
-    if (!status) {
+    const fileStatus = readStatus(req.params.job_id);
+    if (fileStatus) syncJobFromStatusFile(req.params.job_id);
+
+    const job = readJobDb(req.params.job_id);
+    if (!job) {
       return res.status(404).json({ error: "Job not found" });
     }
-    res.json(status);
+    res.json(jobDto(job));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -189,19 +264,22 @@ app.get("/api/hermes/jobs/:job_id", (req, res) => {
 // GET /api/hermes/jobs/:job_id/result — serve result file
 app.get("/api/hermes/jobs/:job_id/result", (req, res) => {
   try {
-    const status = readStatus(req.params.job_id);
-    if (!status) return res.status(404).json({ error: "Job not found" });
-    if (status.status !== "completed") {
+    const fileStatus = readStatus(req.params.job_id);
+    if (fileStatus) syncJobFromStatusFile(req.params.job_id);
+
+    const job = readJobDb(req.params.job_id);
+    if (!job) return res.status(404).json({ error: "Job not found" });
+    if (job.status !== "completed") {
       return res.status(202).json({
-        job_id: status.job_id,
-        status: status.status,
+        job_id: job.job_id,
+        status: job.status,
         message: "Job not yet completed",
       });
     }
-    if (!status.result_path) return res.status(404).json({ error: "No result path" });
+    if (!job.result_path) return res.status(404).json({ error: "No result path" });
 
     // Serve the file; ensure it's under PUBLIC_DIR
-    const absPath = resolve(status.result_path);
+    const absPath = resolve(job.result_path);
     if (!absPath.startsWith(PUBLIC_DIR)) {
       return res.status(403).json({ error: "Result path outside public directory" });
     }

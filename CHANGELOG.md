@@ -11,6 +11,18 @@
 
 ---
 
+## 2026-08-24 — E1 #67 Note/Report API 与 Hermes Job 数据库迁移本地实现（#67）
+
+- 新增 `src/api/routes/notes.js`：笔记列表、单条查询与创建；`note_id` 由服务端生成。
+- 新增 `src/api/routes/reports.js`：周报索引与单份周报查询，单份报告读取公开 demo 文件。
+- 更新 `src/api/server.js`：Hermes job 状态写入 `hermes_jobs` 表，bash 状态文件仍作为桥接，API 轮询后回写数据库；`GET /api/hermes/jobs/:job_id` 以数据库为准。
+- 修复 job 子进程启动失败导致服务器崩溃的问题：`spawn("bash")` 的 `error` 事件会稳定写为 `failed` 状态。
+- 扩展 `src/api/scripts/smoke_api.mjs`，覆盖 notes、reports 与 job 状态查询。
+- 本地验证：JS 语法检查通过；扩展后的 API smoke 全部通过。
+- 遗留事项：尚未 commit/push，等待开发者说“上传 GitHub”。
+
+---
+
 ## 2026-08-24 — E1 #66 Finding/Memory/Action API 本地实现（#66）
 
 - 新增 `src/api/routes/findings.js`：实现 finding batch 列表、单批 findings、memory decisions 查询与批量 upsert。

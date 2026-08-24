@@ -195,6 +195,57 @@ try {
   assert(invalidMemory.status === 400, `invalid memory should return 400, got ${invalidMemory.status}`);
   console.log("PASS invalid memory decision returns 400");
 
+  const notesIndex = await jsonRequest("/api/notes");
+  assert(notesIndex.status === 200, `GET /api/notes returned ${notesIndex.status}`);
+  assert(notesIndex.body.notes.length >= 2, "expected at least 2 seeded notes");
+  console.log(`PASS GET /api/notes (${notesIndex.body.notes.length} notes)`);
+
+  const noteDetail = await jsonRequest("/api/notes/note_20260518_001");
+  assert(noteDetail.status === 200, `GET note detail returned ${noteDetail.status}`);
+  assert(noteDetail.body.note_id === "note_20260518_001", "note detail id mismatch");
+  console.log("PASS GET /api/notes/:note_id");
+
+  const createdNote = await jsonRequest("/api/notes", {
+    method: "POST",
+    body: JSON.stringify({
+      subject: "math",
+      content: "smoke note content",
+      note_type: "学生问题",
+      tags: ["smoke"],
+    }),
+  });
+  assert(createdNote.status === 201, `POST /api/notes returned ${createdNote.status}`);
+  assert(createdNote.body.note_id.startsWith("note_"), "generated note_id has invalid prefix");
+  const createdNoteReload = await jsonRequest(`/api/notes/${createdNote.body.note_id}`);
+  assert(createdNoteReload.status === 200, "created note was not reloadable");
+  assert(createdNoteReload.body.content === "smoke note content", "created note content mismatch");
+  console.log("PASS POST /api/notes and reload");
+
+  const reportsIndex = await jsonRequest("/api/reports");
+  assert(reportsIndex.status === 200, `GET /api/reports returned ${reportsIndex.status}`);
+  assert(reportsIndex.body.reports.length >= 2, "expected at least 2 weekly reports");
+  console.log(`PASS GET /api/reports (${reportsIndex.body.reports.length} reports)`);
+
+  const reportDetail = await jsonRequest("/api/reports/week_20260518_20260524");
+  assert(reportDetail.status === 200, `GET report detail returned ${reportDetail.status}`);
+  assert(reportDetail.body.contract === "weekly_report", "report detail contract mismatch");
+  console.log("PASS GET /api/reports/:report_id");
+
+  const createdJob = await jsonRequest("/api/hermes/jobs", {
+    method: "POST",
+    body: JSON.stringify({
+      job_type: "weekly_report",
+      week_start: "2026-05-18",
+      week_end: "2026-05-24",
+    }),
+  });
+  assert(createdJob.status === 202, `POST /api/hermes/jobs returned ${createdJob.status}`);
+  assert(createdJob.body.job_id, "job_id was not returned");
+  const jobStatus = await jsonRequest(`/api/hermes/jobs/${createdJob.body.job_id}`);
+  assert(jobStatus.status === 200, `GET job status returned ${jobStatus.status}`);
+  assert(["pending", "running", "completed", "failed", "timeout"].includes(jobStatus.body.status), "unexpected job status");
+  console.log("PASS Hermes job status reads from SQLite");
+
   console.log("\nAll API smoke tests passed.");
 } finally {
   if (server) {
