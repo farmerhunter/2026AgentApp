@@ -27,6 +27,8 @@ const JOB_SCRIPTS = {
 };
 
 const SUBJECTS = ["chinese", "math", "english"];
+const JOB_RECONCILE_INTERVAL_MS = 1000;
+const JOB_STALE_MS = 5 * 60 * 1000;
 
 const db = getDb();
 db.defaultSafeIntegers(false);
@@ -123,6 +125,37 @@ function jobDto(row) {
   };
 }
 
+function reconcileJobs() {
+  const rows = db
+    .prepare(
+      "SELECT job_id, created_at FROM hermes_jobs WHERE status NOT IN ('completed', 'failed', 'timeout')"
+    )
+    .all();
+  const now = Date.now();
+
+  for (const row of rows) {
+    const status = readStatus(row.job_id);
+    if (status) {
+      syncJobFromStatusFile(row.job_id);
+      continue;
+    }
+
+    const createdMs = row.created_at ? Date.parse(row.created_at) : now;
+    if (now - createdMs > JOB_STALE_MS) {
+      db.prepare(
+        `UPDATE hermes_jobs
+         SET status = 'timeout', error_message = ?, completed_at = COALESCE(completed_at, ?)
+         WHERE job_id = ?`
+      ).run("Job status not found after restart", new Date().toISOString(), row.job_id);
+    }
+  }
+}
+
+function startJobReconciliation() {
+  reconcileJobs();
+  setInterval(reconcileJobs, JOB_RECONCILE_INTERVAL_MS);
+}
+
 function spawnJob(jobType, args, payload) {
   const jobId = generateJobId();
   const scriptName = JOB_SCRIPTS[jobType];
@@ -215,7 +248,8 @@ app.post("/api/hermes/jobs", (req, res) => {
 
     if (!job_type || !JOB_SCRIPTS[job_type]) {
       return res.status(400).json({
-        error: "Invalid job_type",
+        error: "invalid_job_type",
+        message: "job_type is required and must be supported",
         supported: Object.keys(JOB_SCRIPTS),
       });
     }
@@ -223,7 +257,8 @@ app.post("/api/hermes/jobs", (req, res) => {
     const args = buildArgs(job_type, { textbook_id, source_ids, week_start, week_end });
     if (args.length === 0) {
       return res.status(400).json({
-        error: `Missing required parameters for ${job_type}`,
+        error: "missing_parameters",
+        message: `Missing required parameters for ${job_type}`,
         required: job_type === "textbook_summary"
           ? ["textbook_id"]
           : job_type === "learning_insight_update"
@@ -241,7 +276,7 @@ app.post("/api/hermes/jobs", (req, res) => {
       mode: MODE,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "internal_error", message: err.message });
   }
 });
 
@@ -253,11 +288,11 @@ app.get("/api/hermes/jobs/:job_id", (req, res) => {
 
     const job = readJobDb(req.params.job_id);
     if (!job) {
-      return res.status(404).json({ error: "Job not found" });
+      return res.status(404).json({ error: "job_not_found", message: "Job not found" });
     }
     res.json(jobDto(job));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "internal_error", message: err.message });
   }
 });
 
@@ -268,7 +303,7 @@ app.get("/api/hermes/jobs/:job_id/result", (req, res) => {
     if (fileStatus) syncJobFromStatusFile(req.params.job_id);
 
     const job = readJobDb(req.params.job_id);
-    if (!job) return res.status(404).json({ error: "Job not found" });
+    if (!job) return res.status(404).json({ error: "job_not_found", message: "Job not found" });
     if (job.status !== "completed") {
       return res.status(202).json({
         job_id: job.job_id,
@@ -276,18 +311,18 @@ app.get("/api/hermes/jobs/:job_id/result", (req, res) => {
         message: "Job not yet completed",
       });
     }
-    if (!job.result_path) return res.status(404).json({ error: "No result path" });
+    if (!job.result_path) return res.status(404).json({ error: "no_result_path", message: "No result path" });
 
     // Serve the file; ensure it's under PUBLIC_DIR
     const absPath = resolve(job.result_path);
     if (!absPath.startsWith(PUBLIC_DIR)) {
-      return res.status(403).json({ error: "Result path outside public directory" });
+      return res.status(403).json({ error: "result_path_forbidden", message: "Result path outside public directory" });
     }
-    if (!existsSync(absPath)) return res.status(404).json({ error: "Result file not found" });
+    if (!existsSync(absPath)) return res.status(404).json({ error: "result_file_not_found", message: "Result file not found" });
 
     res.sendFile(absPath);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "internal_error", message: err.message });
   }
 });
 
@@ -314,6 +349,7 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start ──
+startJobReconciliation();
 app.listen(PORT, () => {
   console.log(`Hermes API server running on http://localhost:${PORT}`);
   console.log(`Mode: ${MODE}`);

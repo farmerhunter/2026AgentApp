@@ -22,6 +22,17 @@
 
 ---
 
+## 2026-08-24 — E1 Architect Review 修正（#63 / #65 / #66 / #67）
+
+- #65：split/confirmation 对齐 contract 1.1，补齐 `subject`、`subject_label` 与 confirmation item 学科字段；修正 `GET /api/sessions?student_id=` 的统计范围。
+- #66：finding detail 补齐 `weekly_context_candidates`；`POST /api/memories` 从被引用 finding/batch 派生 student/subject/statement metadata。
+- #67：新建 note 默认 `visibility=private`，并校验允许值；新增 Hermes job 启动 reconciliation，未终止且过期 job 会进入 `timeout`。
+- 更新 `src/api/scripts/smoke_api.mjs`：增加 endpoint-specific contract/version/required-key 断言、atomic failure 断言、API 重启持久化验证、synthetic completed job/result 验证和 stale job reconciliation 验证。
+- 统一 Hermes job 错误响应为稳定 `error` + 人类可读 `message`。
+- 本地验证：JS 语法检查通过；完整两阶段 API smoke 全部通过。
+
+---
+
 ## 2026-08-24 — E1 #67 Note/Report API 与 Hermes Job 数据库迁移本地实现（#67）
 
 - 新增 `src/api/routes/notes.js`：笔记列表、单条查询与创建；`note_id` 由服务端生成。

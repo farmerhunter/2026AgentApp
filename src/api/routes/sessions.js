@@ -63,10 +63,12 @@ function toQuestionDto(row) {
   };
 }
 
-function toConfirmationDto(row) {
+function toConfirmationDto(row, upload) {
   return {
     question_id: row.question_id,
     selected: booleanFromNumber(row.selected),
+    subject: upload.subject,
+    subject_label: upload.subject_label,
     student_mark: row.student_mark,
     teacher_score: row.teacher_score,
     full_score: row.full_score,
@@ -89,7 +91,15 @@ router.get("/sessions", (req, res) => {
       .all(studentId);
 
     const questionCounts = new Map();
-    for (const row of db.prepare("SELECT upload_id, COUNT(*) AS count FROM questions GROUP BY upload_id").all()) {
+    for (const row of db
+      .prepare(
+        `SELECT q.upload_id, COUNT(*) AS count
+         FROM questions q
+         JOIN uploads u ON u.upload_id = q.upload_id
+         WHERE u.student_id = ?
+         GROUP BY q.upload_id`
+      )
+      .all(studentId)) {
       questionCounts.set(row.upload_id, row.count);
     }
 
@@ -99,9 +109,11 @@ router.get("/sessions", (req, res) => {
         `SELECT q.upload_id, COUNT(c.id) AS count
          FROM question_confirmations c
          JOIN questions q ON q.question_id = c.question_id
+         JOIN uploads u ON u.upload_id = q.upload_id
+         WHERE u.student_id = ?
          GROUP BY q.upload_id`
       )
-      .all()) {
+      .all(studentId)) {
       confirmedCounts.set(row.upload_id, row.count);
     }
 
@@ -169,9 +181,11 @@ router.get("/sessions/:upload_id/split", (req, res) => {
 
     res.json({
       contract: "question_split_result",
-      contract_version: "1.0",
+      contract_version: "1.1",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
+      subject: upload.subject,
+      subject_label: upload.subject_label,
       ocr_provider: null,
       ocr_status: upload.ocr_status,
       processed_at: null,
@@ -203,12 +217,14 @@ router.get("/sessions/:upload_id/confirmation", (req, res) => {
 
     res.json({
       contract: "question_confirmation_result",
-      contract_version: "1.0",
+      contract_version: "1.1",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
+      subject: upload.subject,
+      subject_label: upload.subject_label,
       confirmed_at: null,
       confirmed_by: "student",
-      confirmations: rows.map(toConfirmationDto),
+      confirmations: rows.map((row) => toConfirmationDto(row, upload)),
     });
   } catch (err) {
     console.error("GET /api/sessions/:upload_id/confirmation failed:", err);
@@ -297,12 +313,14 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
 
     res.json({
       contract: "question_confirmation_result",
-      contract_version: "1.0",
+      contract_version: "1.1",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
+      subject: upload.subject,
+      subject_label: upload.subject_label,
       confirmed_at: new Date().toISOString(),
       confirmed_by: "student",
-      confirmations: savedRows.map(toConfirmationDto),
+      confirmations: savedRows.map((row) => toConfirmationDto(row, upload)),
     });
   } catch (err) {
     console.error("POST /api/sessions/:upload_id/confirmation failed:", err);

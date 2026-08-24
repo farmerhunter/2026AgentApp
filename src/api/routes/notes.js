@@ -9,6 +9,7 @@ const SUBJECT_LABELS = {
   math: "数学",
   english: "英语",
 };
+const ALLOWED_VISIBILITY = new Set(["private", "演示公开"]);
 
 const db = getDb();
 db.defaultSafeIntegers(false);
@@ -99,6 +100,13 @@ router.post("/notes", (req, res) => {
         message: "`subject` and `content` are required",
       });
     }
+    const visibility = body.visibility ?? "private";
+    if (!ALLOWED_VISIBILITY.has(visibility)) {
+      return res.status(400).json({
+        error: "invalid_visibility",
+        message: "visibility must be one of: private, 演示公开",
+      });
+    }
 
     const noteId = generateNoteId();
     const studentId = body.student_id ?? DEFAULT_STUDENT_ID;
@@ -125,7 +133,7 @@ router.post("/notes", (req, res) => {
       body.content,
       body.student_confidence ?? null,
       tags.length > 0 ? JSON.stringify(tags) : null,
-      body.visibility ?? "演示公开"
+      visibility
     );
 
     const row = db.prepare("SELECT * FROM text_notes WHERE note_id = ?").get(noteId);

@@ -66,6 +66,7 @@ function findingDto(row, memoryRows, actionRows) {
     is_recurring: booleanFromNumber(row.is_recurring),
     memory_candidates: memoryRows.map(memoryCandidateDto),
     action_candidates: actionRows.map(actionCandidateDto),
+    weekly_context_candidates: [],
   };
 }
 
@@ -239,7 +240,13 @@ router.post("/memories", (req, res) => {
     }
 
     const findFinding = db.prepare(
-      "SELECT finding_id FROM findings WHERE finding_id = ? AND finding_batch_id = ?"
+      `SELECT f.finding_id, f.statement,
+              b.student_id AS batch_student_id,
+              b.subject AS batch_subject,
+              b.subject_label AS batch_subject_label
+       FROM findings f
+       JOIN learning_findings b ON b.finding_batch_id = f.finding_batch_id
+       WHERE f.finding_id = ? AND f.finding_batch_id = ?`
     );
     const findExisting = db.prepare(
       "SELECT memory_id FROM memory_decisions WHERE finding_id = ? AND finding_batch_id = ?"
@@ -265,20 +272,25 @@ router.post("/memories", (req, res) => {
         if (!findingId || !batchId) {
           throw new Error("finding_id and finding_batch_id are required");
         }
-        if (!findFinding.get(findingId, batchId)) {
+        const referencedFinding = findFinding.get(findingId, batchId);
+        if (!referencedFinding) {
           throw new Error(`Finding ${findingId} in batch ${batchId} not found`);
         }
 
         const status = item.status ?? "accepted";
         const acceptedAt = status === "accepted" ? (item.accepted_at ?? nowIso()) : null;
         const existing = findExisting.get(findingId, batchId);
+        const studentId = item.student_id ?? referencedFinding.batch_student_id ?? DEFAULT_STUDENT_ID;
+        const subject = item.subject ?? referencedFinding.batch_subject ?? null;
+        const subjectLabel = item.subject_label ?? referencedFinding.batch_subject_label ?? null;
+        const statement = item.statement ?? referencedFinding.statement ?? null;
 
         if (existing) {
           update.run(
-            item.student_id ?? DEFAULT_STUDENT_ID,
-            item.subject ?? null,
-            item.subject_label ?? null,
-            item.statement ?? null,
+            studentId,
+            subject,
+            subjectLabel,
+            statement,
             item.reason ?? null,
             item.candidate_type ?? "short_term",
             item.priority ?? "中",
@@ -294,10 +306,10 @@ router.post("/memories", (req, res) => {
             `mem_${batchId}_${findingId}`,
             findingId,
             batchId,
-            item.student_id ?? DEFAULT_STUDENT_ID,
-            item.subject ?? null,
-            item.subject_label ?? null,
-            item.statement ?? null,
+            studentId,
+            subject,
+            subjectLabel,
+            statement,
             item.reason ?? null,
             item.candidate_type ?? "short_term",
             item.priority ?? "中",
