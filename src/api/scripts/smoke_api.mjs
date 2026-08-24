@@ -135,6 +135,66 @@ try {
   assert(missing.status === 404, `missing upload should return 404, got ${missing.status}`);
   console.log("PASS missing upload returns 404");
 
+  const findingIndex = await jsonRequest("/api/findings");
+  assert(findingIndex.status === 200, `GET /api/findings returned ${findingIndex.status}`);
+  assert(findingIndex.body.batches.length >= 2, "expected at least 2 finding batches");
+  console.log(`PASS GET /api/findings (${findingIndex.body.batches.length} batches)`);
+
+  const findingBatch = await jsonRequest("/api/findings/findings_20260518_math");
+  assert(findingBatch.status === 200, `GET finding batch returned ${findingBatch.status}`);
+  assert(findingBatch.body.findings.length >= 2, "expected at least 2 findings");
+  assert(
+    findingBatch.body.findings.every((item) => Array.isArray(item.memory_candidates)),
+    "finding memory_candidates should be an array"
+  );
+  assert(
+    findingBatch.body.findings.some((item) => item.action_candidates.length > 0),
+    "expected action candidates in findings"
+  );
+  console.log("PASS GET /api/findings/:batch_id");
+
+  const memoriesBefore = await jsonRequest("/api/memories?subject=math");
+  assert(memoriesBefore.status === 200, `GET /api/memories returned ${memoriesBefore.status}`);
+  assert(memoriesBefore.body.memories.length >= 2, "expected at least 2 math memories");
+  console.log("PASS GET /api/memories");
+
+  const firstMemory = memoriesBefore.body.memories[0];
+  const memoryUpdate = await jsonRequest("/api/memories", {
+    method: "POST",
+    body: JSON.stringify({
+      memories: [
+        {
+          ...firstMemory,
+          note: "smoke memory update",
+          priority: "高",
+          status: "accepted",
+        },
+      ],
+    }),
+  });
+  assert(memoryUpdate.status === 200, `POST /api/memories returned ${memoryUpdate.status}`);
+  assert(
+    memoryUpdate.body.memories[0]?.note === "smoke memory update",
+    "memory decision note was not persisted"
+  );
+  console.log("PASS POST /api/memories");
+
+  const memoriesAfter = await jsonRequest("/api/memories?subject=math");
+  assert(
+    memoriesAfter.body.memories.some((item) => item.note === "smoke memory update"),
+    "reloaded memory decision note mismatch"
+  );
+  console.log("PASS memory decision persists after reload");
+
+  const invalidMemory = await jsonRequest("/api/memories", {
+    method: "POST",
+    body: JSON.stringify({
+      memories: [{ finding_id: "finding_not_found", finding_batch_id: "findings_20260518_math" }],
+    }),
+  });
+  assert(invalidMemory.status === 400, `invalid memory should return 400, got ${invalidMemory.status}`);
+  console.log("PASS invalid memory decision returns 400");
+
   console.log("\nAll API smoke tests passed.");
 } finally {
   if (server) {

@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import express from "express";
 import sessionsRouter from "./routes/sessions.js";
+import findingsRouter from "./routes/findings.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -37,6 +38,7 @@ app.use((req, res, next) => {
 
 // E1 persistence routes
 app.use("/api", sessionsRouter);
+app.use("/api", findingsRouter);
 
 // ── Helpers ──
 
