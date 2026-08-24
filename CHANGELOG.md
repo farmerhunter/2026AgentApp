@@ -22,6 +22,15 @@
 
 ---
 
+## 2026-08-24 — E1 完成收尾（#63 / #65 / #66 / #67）
+
+- Architect Re-review round 3 接受 E1 技术实现 gate（commit `a587ccd`）。
+- 更新 `docs/v2/epics/e1-persistence-api.md`：状态改为 `Implemented`，补充最终能力说明和代表证据。
+- 待推送后关闭 #65/#66/#67，最后关闭 #63，并将 GitHub Project 状态改为 Done。
+- 清理本地 API smoke 产生的临时 SQLite 文件和 runtime 测试产物。
+
+---
+
 ## 2026-08-24 — E1 Architect Re-review 修正（round 2）
 
 - #66：新增 `weekly_context_candidates` 表与 seed，`GET /api/findings/:batch_id` 返回非空且含关键字段的 weekly-context candidates；`POST /api/memories` 的 student/subject/subject_label/statement 改为服务端从引用 finding/batch 强制派生，忽略客户端覆盖。

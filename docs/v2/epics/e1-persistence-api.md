@@ -1,6 +1,6 @@
 # E1 持久化学习数据 API 设计
 
-Status: Implementing
+Status: Implemented
 Epic: E1 / GitHub Issue #63
 Owner: David (LaoLiuHaHaHaHaXiao)
 Updated: 2026-08-24
@@ -205,3 +205,21 @@ E1 验收至少覆盖：
 ## 10. 需要 ADR 的决定
 
 E1 不新增长期 ADR。SQLite + Express + 原生 SQL 的选择已由 ADR-017 覆盖；API 错误约定、服务端生成 ID 和 job 状态迁移属于 E1 实现细节。若未来这些约定需要跨版本长期保持，再提炼为新的 ADR。
+
+## 11. 实现证据与最终能力说明
+
+实现 gate 已通过 Architect Re-review（round 3，commit `a587ccd`）。
+
+代表证据：
+
+- endpoint-specific contract/version/required-key 断言通过；
+- confirmation 与 memory 混合合法/非法批次均回滚，无部分写入；
+- memory 的 student/subject/subject_label/statement 由服务端从引用 finding/batch 派生，客户端伪造值被忽略；
+- confirmation、memory、note、completed job 与 result 跨 API 重启后保持；
+- 带 stale pending 状态文件的 job 进入 `timeout`，正常 fixture job 进入 `completed`。
+
+接受的残余：
+
+- `data/contracts` 仍为 example-shaped JSON，未升级严格 JSON Schema；
+- 完整 bash job 链路仍以 Linux/macOS/WSL/VPS 为最终验证环境；
+- 前端 API-first、真实 LLM、多用户、PostgreSQL/COS 和 VPS 生产部署按 Roadmap 延后。
