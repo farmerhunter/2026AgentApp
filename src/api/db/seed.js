@@ -5,6 +5,7 @@ import { getDb, closeDb } from "./init.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const PUBLIC_DATA = resolve(__dirname, "..", "..", "..", "src", "web_ui", "public", "data");
+const DEMO_STUDENT_ID = "student_demo";
 
 function readJson(path) {
   try {
@@ -59,7 +60,7 @@ function seedUploads(db) {
 
     insert.run(
       s.upload_id,
-      meta?.student_id ?? "student_demo",
+      DEMO_STUDENT_ID,
       s.subject,
       s.subject_label ?? meta?.subject_label,
       s.source_type ?? meta?.source_type,
@@ -201,7 +202,7 @@ function seedFindings(db) {
 
     insertBatch.run(
       data.finding_batch_id,
-      data.student_id,
+      DEMO_STUDENT_ID,
       data.subject,
       data.subject_label,
       data.generated_by,
@@ -236,7 +237,7 @@ function seedFindings(db) {
           `mem_${data.finding_batch_id}_${fd.finding_id}_${idx}`,
           fd.finding_id,
           data.finding_batch_id,
-          data.student_id,
+          DEMO_STUDENT_ID,
           data.subject,
           data.subject_label,
           fd.statement,
@@ -295,7 +296,7 @@ function seedNotes(db) {
 
     insert.run(
       n.note_id,
-      n.student_id,
+      DEMO_STUDENT_ID,
       n.subject,
       n.subject_label,
       n.note_type,
@@ -330,7 +331,7 @@ function seedReports(db) {
   for (const r of index?.reports ?? []) {
     insert.run(
       r.weekly_report_id,
-      index?.student_id ?? "student_demo",
+      DEMO_STUDENT_ID,
       r.week_start,
       r.week_end,
       r.title,
@@ -370,7 +371,7 @@ function seedFocusQuestions(db) {
         r.focus_question_id,
         r.question_id,
         r.upload_id,
-        r.student_id,
+        DEMO_STUDENT_ID,
         r.subject,
         r.subject_label,
         r.related_textbook_id,

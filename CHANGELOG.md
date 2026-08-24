@@ -11,6 +11,18 @@
 
 ---
 
+## 2026-08-24 — E1 #65 Session/Question/Confirmation API 本地实现（#65）
+
+- 新增 `src/api/routes/sessions.js`：实现 session 索引、upload 元数据、split、confirmation 查询与确认结果批量覆盖写入。
+- 更新 `src/api/server.js`：挂载 `/api` 路由，并新增通用 `/api/health`。
+- 更新 `src/api/db/seed.js`：demo 数据内部 `student_id` 统一规范为 `student_demo`，与 E1 设计文档一致。
+- 新增 `src/api/scripts/smoke_api.mjs`：覆盖 health、sessions、split、confirmation 写入/回读、400 与 404 错误路径。
+- 本地验证：JS 语法检查通过；`npm ci` 安装 API 依赖；smoke 全部通过。
+- 验证结果：`GET /api/sessions` 返回 2 个 session；confirmation 写入后重新读取仍存在；非法 question_id 返回 400；不存在 upload 返回 404。
+- 遗留事项：尚未 commit/push，等待开发者说“上传 GitHub”。
+
+---
+
 ## 2026-08-23 — E1 设计文档按新规范重写（#63）
 
 - 同步远端 `a0ff284`，采用新文档架构：`design_docs/` 已迁入 `docs/v1/`，V2 复杂 Epic 使用 `docs/v2/epics/`。

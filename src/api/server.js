@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import express from "express";
+import sessionsRouter from "./routes/sessions.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -33,6 +34,9 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
+
+// E1 persistence routes
+app.use("/api", sessionsRouter);
 
 // ── Helpers ──
 
@@ -210,6 +214,17 @@ app.get("/api/hermes/jobs/:job_id/result", (req, res) => {
 // GET /api/hermes/health — health check
 app.get("/api/hermes/health", (req, res) => {
   res.json({ status: "ok", mode: MODE, supported_jobs: Object.keys(JOB_SCRIPTS) });
+});
+
+// GET /api/health — general health check
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    mode: MODE,
+    supported_jobs: Object.keys(JOB_SCRIPTS),
+    database: "sqlite",
+    version: "0.1.0",
+  });
 });
 
 // ── Error handler ──
