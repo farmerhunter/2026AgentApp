@@ -11,6 +11,16 @@
 
 ---
 
+## 2026-08-24 — E1 Architect Review 与设计评审门槛（#63）
+
+- 更新 `docs/epic-design-guidelines.md`：复杂 Epic 涉及 contract、持久化或异步状态时，要求接口—contract—版本—验证映射，并区分编码前设计评审与收口前实现一致性评审。
+- 更新 E1 主设计文档：状态调整为 `Implementing`，补充 contract 权威映射、跨进程持久化、原子失败和 job 最终状态的验收矩阵。
+- Architect review 结论采用 Epic 总评 + Child Issue 分项反馈：#63 保存整体不变量和收口 gate，#65/#66/#67 保存各自可执行修正。
+- 本次只更新设计与 review 记录，不修改 David 的 E1 实现，不关闭 Issue，不改变 Project `In review` 状态。
+- 验证：Markdown 本地链接检查与 `git diff --check` 通过。
+
+---
+
 ## 2026-08-24 — E1 #67 Note/Report API 与 Hermes Job 数据库迁移本地实现（#67）
 
 - 新增 `src/api/routes/notes.js`：笔记列表、单条查询与创建；`note_id` 由服务端生成。

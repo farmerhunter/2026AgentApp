@@ -1,9 +1,9 @@
 # E1 持久化学习数据 API 设计
 
-Status: Proposed
+Status: Implementing
 Epic: E1 / GitHub Issue #63
 Owner: David (LaoLiuHaHaHaHaXiao)
-Updated: 2026-08-23
+Updated: 2026-08-24
 
 > 本文遵循 `docs/epic-design-guidelines.md`，只记录 E1 的跨模块边界、关键取舍、失败处理和实现映射。实时负责人、状态和任务清单以 #63 及其子 Issue #65/#66/#67 为准。
 
@@ -34,9 +34,9 @@ E1 不负责真实 LLM 生成，也不负责前端 API 适配；它负责建立�
 - 不迁移 PostgreSQL/COS；E1 固定使用 SQLite + 本地文件，符合 ADR-017。
 - 不实现真实文件上传和 OCR 调用；E1 只处理已有 session/题目的结构化读写。
 
-## 3. 已验证基线
+## 3. 设计开始时的已验证基线
 
-以下事实来自 E0 验证和当前代码，不是设计假设：
+以下事实是 2026-08-23 开始 E1 设计时的基线，不是对当前实现状态的持续描述：
 
 - `src/api/db/schema.sql` 已建 13 张表，覆盖 students、uploads、questions、confirmations、findings、memories、notes、reports、jobs 和 action_candidates。
 - `src/api/db/seed.js` 可从 `src/web_ui/public/data/` 导入样例，重复执行幂等。
@@ -52,6 +52,27 @@ E1 不负责真实 LLM 生成，也不负责前端 API 适配；它负责建立�
 3. 所有业务写入默认属于单学生 `student_demo`（显示名「小明」），并支持 `?student_id=` 显式过滤。
 4. 客户端不得提供 `note_id` 或 `report_id`；这些 ID 由服务端生成。
 5. Hermes job 对外状态集合保持 `pending/running/completed/failed/timeout`；API 查询时以数据库记录为准。
+
+### 4.1 Contract 权威与兼容映射
+
+`data/contracts/*.contract.json` 当前是 example-shaped contract，不是严格 JSON Schema。E1 不因此把样例值当成 schema，但必须显式验证 contract 名称、版本、必需字段、嵌套结构和现有消费者依赖的语义。仅验证 HTTP 200 或数组非空不构成 contract 一致性证据。
+
+| 接口 | 权威 contract / envelope | 版本 | E1 必须保持的内容 |
+| --- | --- | --- | --- |
+| `GET /api/sessions` | `src/web_ui/public/data/question_sessions/_index.json` | 1.0 | 顶层统计字段与 session summary 字段 |
+| `GET /api/sessions/:upload_id` | `data/contracts/upload_meta.contract.json` | 1.1 | 全部顶层字段；暂无持久化数据可以返回 `null` 或空集合，但不能删键 |
+| `GET /api/sessions/:upload_id/split` | `data/contracts/question_split_result.contract.json` | 1.1 | 顶层学科/处理字段、question 字段和 `errors` |
+| `GET/POST /api/sessions/:upload_id/confirmation` | `data/contracts/question_confirmation_result.contract.json` | 1.1 | 顶层学科/确认字段和每条 confirmation 的完整字段 |
+| `GET /api/findings/:batch_id` | `data/contracts/learning_findings.contract.json` | 1.0 | `source_refs`、finding 语义、memory/action/weekly-context candidates |
+| `GET /api/findings` | E1 `learning_findings_index` envelope | 1.0 | `total`、`batches[]`，每批包含 id、student、subject、generator、time、count |
+| `GET/POST /api/memories` | E1 `memory_decisions` envelope | 1.0 | `total`、`memories[]`，每条包含 identity、finding/batch、student/subject、decision、status/time |
+| `GET /api/notes/:note_id`、`POST /api/notes` | `data/contracts/text_note.contract.json` | 1.1 | 完整 text-note 字段；ID 由服务端生成 |
+| `GET /api/notes` | E1 `text_notes` envelope | 1.1 | `total` 和符合 `text_note` 的 `notes[]` |
+| `GET /api/reports` | `data/contracts/week_reports_index.contract.json` | 1.1 | index 顶层字段和 report summary |
+| `GET /api/reports/:report_id` | `data/contracts/weekly_report.contract.json` | 1.1 | 完整周报领域结果 |
+| Hermes job 三个端点 | 现有 Hermes job API | 当前兼容版本 | job identity/type/status/mode/time/error；completed 时 result 可读取 |
+
+E1 的最低可执行验证是在 smoke 中为上述响应增加 endpoint-specific 字段、版本和嵌套断言。是否把 example-shaped contract 转换为严格 JSON Schema 属于后续增强；在转换前不能声称已经完成 schema validation。
 
 ## 5. 边界和数据流
 
@@ -158,6 +179,18 @@ E1 验收至少覆盖：
 - 确认结果写入后重新查询或重启 API 仍存在；
 - 无效输入返回稳定错误，不产生半完成记录；
 - job 状态文件变化能回写 `hermes_jobs` 并通过 `GET` 查询。
+
+评审要求把“能调用”和“符合设计”分开：
+
+| 不变量 | 代表性证据 |
+| --- | --- |
+| Contract 兼容 | 对映射表逐 endpoint 检查 contract/version、必需字段和关键嵌套字段 |
+| 持久化 | 写入 confirmation、memory、note，停止并重新启动 API 后读取相同值 |
+| 原子写入 | 在同一批提交中混合合法与非法记录，确认响应失败且数据库无部分变化 |
+| Job 数据库事实 | 创建 fixture job，等待 `completed`，确认状态文件回写 SQLite，重启 API 后状态与 result 仍可读取 |
+| 稳定失败 | 覆盖 400、404、冲突/非法归属、job failed/timeout 中至少一个可控路径 |
+
+`Proposed -> Implementing` 的设计 gate 由 #63 Architect review 记录。`Implementing -> Implemented` 需要 #65/#66/#67 的阻塞意见全部修复、上述证据通过，并在 #63 发布 E1 面向开发者的最终能力说明。
 
 正式 `node --test` 回归测试不在 E1 引入，留到后续需要更细粒度回归时再加。
 
