@@ -30,3 +30,5 @@ V3 的方向是把 V2 的单用户真实闭环扩展为可承载真实家庭或�
 - 运行、备份和灾难恢复手册。
 
 V3 实现必须保持 V2 已验证的 Hermes 领域语义；更换存储、认证或模型 Provider 不应重写 finding、memory candidate、insight 和 action 的业务含义。
+
+V2 为控制复杂度和终评风险而明确延后的内容，统一记录在 [从 V2 延后到 V3 的能力清单](deferred-capabilities.md)。该清单用于防遗漏，不代表已经确定 V3 的优先级或技术方案。

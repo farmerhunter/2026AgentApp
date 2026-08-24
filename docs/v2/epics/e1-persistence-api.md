@@ -28,7 +28,7 @@ E1 不负责真实 LLM 生成，也不负责前端 API 适配；它负责建立�
 
 ### 非目标
 
-- 不接入真实 LLM、不生成真实 finding；这些属于 E3。
+- 不接入真实 Hermes、不生成真实 finding；这些属于 E5。
 - 不改造 Web UI 为 API-first；这属于 E2。
 - 不实现多用户、鉴权、角色和数据隔离；这属于 V3。
 - 不迁移 PostgreSQL/COS；E1 固定使用 SQLite + 本地文件，符合 ADR-017。
@@ -82,7 +82,7 @@ Web UI（E2 才切换）
   -> SQLite schema
   -> 领域 JSON 响应
 
-Hermes bash job（E3 前仍为 fixture）
+Hermes bash job（E5 前仍为 fixture）
   -> runtime/public/job_status/<job_id>.json
   -> API poller
   -> hermes_jobs 表
@@ -126,7 +126,7 @@ Hermes bash job（E3 前仍为 fixture）
 
 Memory decision 采用 `(finding_id, finding_batch_id)` 唯一约束：重复提交更新而非插入。
 
-E1 的 action candidates 先作为 finding 详情中的嵌套只读数据返回，与现有 `learning_findings/*.json` 结构一致；不单独提供 action 写接口，E3 再做行动建议的生成与确认。
+E1 的 action candidates 先作为 finding 详情中的嵌套只读数据返回，与现有 `learning_findings/*.json` 结构一致；不单独提供 action 写接口，E5 再做行动建议的生成与确认。
 
 ### 6.4 Note / Report / Job（#67）
 
@@ -197,8 +197,8 @@ E1 验收至少覆盖：
 ## 9. 接受的残余与延后能力
 
 - 完整 bash job 链路仍在 Linux/macOS/WSL/VPS 验证，Windows 受 POSIX 路径限制。
-- 前端继续使用静态 JSON；E2 才切换 API-first 和 static fallback。
-- 真实 LLM 生成、Provider Adapter、trace metadata 由 E3 处理。
+- 前端继续使用静态 JSON；E2 才建立隔离的 `/demo` 静态线与 `/app` API-only 真实线。早期 E1 设想的同页面 static fallback 已被 V2 双线设计替代。
+- 真实 Hermes 生成、CLI bridge 和 trace metadata 由 E5 处理。
 - 多学生隔离、鉴权、审计和对象存储由 V3 处理。
 - 真实文件上传和 OCR 不在 E1 范围内。
 

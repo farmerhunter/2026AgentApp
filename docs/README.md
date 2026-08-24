@@ -4,18 +4,19 @@
 
 ## 当前阅读顺序
 
-1. [路线图](roadmap.md)：了解版本、Epic 和当前交付方向。
-2. [V2 入口](v2/README.md)：了解当前版本目标、文档边界和开发入口。
-3. [V2 架构](v2/architecture.md)：了解目标数据流、Hermes 边界和失败状态。
-4. [Epic 设计文档规范](epic-design-guidelines.md)：判断当前 Epic 是否应独立成文，以及如何维护。
-5. [架构决策记录](decisions/architecture-decisions.md)：了解需要长期保持的技术选择。
-6. [V2 实施计划](v2/implementation-plan.md)：了解端到端切片顺序；实时状态仍以 GitHub Project 和 Issue 为准。
+1. [给 David 的 V2 一页开发说明](v2/development-guide.md)：最快理解 V2 要做什么、先后顺序和 MVP 门槛。
+2. [路线图](roadmap.md)：了解版本、E1–E6 和当前交付方向。
+3. [V2 架构](v2/architecture.md)：了解双线数据流、模块职责和失败边界。
+4. [Hermes 运行与 Skill 设计](v2/hermes-runtime-and-skills.md)：了解 Hermes/DeepSeek 边界和 Skill 迭代方法。
+5. [V2 实施计划](v2/implementation-plan.md)：了解 Epic 依赖和终评 R1 约束。
+6. [架构决策记录](decisions/architecture-decisions.md)：了解需要长期保持的技术选择。
+7. [Epic 设计文档规范](epic-design-guidelines.md)：Epic 启动后判断是否需要独立设计文档。
 
 ## 版本文档
 
 - [V1：静态全链路演示版](v1/README.md)——已完成。保留 V1 时代的产品、系统、Hermes 和终评材料，作为历史基线。
-- [V2：真实 AI 和 API 版](v2/README.md)——当前开发方向。保留精简的公共基线，并允许合适复杂度的 Epic 形成独立设计文档。
-- [V3：多用户真实场景版](v3/README.md)——未来方向。当前只记录启动条件和必要边界，不预先设计实现。
+- [V2：VPS 双线能力展示版](v2/README.md)——当前开发方向。真实主线与静态兜底隔离运行。
+- [V3：多用户真实场景版](v3/README.md)——未来方向，并明确记录 V2 裁剪的能力。
 
 ## 文档状态约定
 

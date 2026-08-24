@@ -471,3 +471,47 @@ Provider 独立规则：
 - 正面：领域规则与模型供应商解耦，便于测试、替换模型、保护隐私并保持结果可追溯。
 - 代价：需要维护一个清晰但尽量精简的 Provider Port、Adapter、失败映射和调用 metadata。
 - 风险：如果 Hermes 最终只是 `prompt -> model API` 的包装层，这个边界就失去价值；2.0 必须通过真实的 `learning_insight_update` 纵向闭环验证其职责。
+
+## ADR-020：V2 采用 `/demo` 与 `/app` 隔离双线，并重排为 E1–E6
+
+决策：V2 在同一 VPS 提供两条隔离路线。`/demo` 冻结 V1 脱敏静态完整流程，不依赖 API/OCR/Hermes；`/app` 是 API-only 真实主线，失败时明确报错，不在同一页面静默 fallback。V2 顶层工作按 E1–E6 管理：持久化基础、双线工作台、教材知识底图、练习导入与确认、Hermes 能力、VPS 部署验收。
+
+原因：真实外部服务具有演示风险，但把 fallback 混入真实页面会产生状态歧义和 bug。两条线隔离后，真实系统边界清楚，V1 又能作为可靠兜底。
+
+影响：ADR-018 中“前端 API fallback 到静态 JSON 直到 3.0”的要求对 V2 被本 ADR 取代；历史 V1 行为和 E1 已实现 API 保持不变。R1 终评约束叠加在 E1–E6 上，不替代这些 Epic。
+
+## ADR-021：V2 教材采用单科离线知识底图
+
+决策：V2 只支持人教版八年级下册数学。教材 PDF 在开发阶段线下处理一次，经人工抽查后形成仓库内版本化、只读的知识地图 JSON；SQLite 只保存 map/version/node 引用。
+
+原因：教材知识能帮助 Hermes 将错题关联到稳定知识点，但在线 PDF 处理不是 V2 要展示的智能能力，且会引入上传、OCR、分页、进度、重试和管理后台等大量非核心复杂度。
+
+影响：在线教材导入、多教材和多学科延后到 V3；V2 数据仍保留 `subject`、教材和版本边界，避免以后无法扩展。
+
+## ADR-022：腾讯 OCR 识别题目与作答，用户确认错题
+
+决策：V2 一次接收一张不超过 10 MB 的 JPG/PNG，用腾讯云官方 Node SDK 调用 QuestionSplitOCR，保存题干、学生作答和 bbox。用户勾选错题；系统不自动判错。原图进入 VPS 私有目录，前端按 bbox 显示，不保存每题裁图。
+
+原因：OCR/切题是获得真实输入的基础设施，错题判断需要可靠性且最适合保留一个简单人工确认点。这个分工还能避免让 Hermes 同时承担视觉识别、判错和学习分析。
+
+影响：只维护一个 OCR adapter，密钥来自环境变量。PDF 试卷、批量图片、多 Provider、自动判错和复杂人工校正延后。
+
+## ADR-023：应用通过 Hermes CLI bridge 调用固定 Skill，SQLite 管理产品记忆
+
+决策：应用不直接调用 DeepSeek，也不驱动 tmux/TUI。`HermesBridge` 使用 `studyv2-runtime` profile 启动非交互 CLI 子进程，以 JSON stdin/stdout 交换数据；`studyv2-lab` profile 和 TUI 仅用于开发者快速试验。两个 profile 共享仓库 Skill，但会话、配置和运行数据隔离。每个 runtime job 使用新会话并关闭 ambient memory；产品只显式传入 SQLite 中已接受的记忆。
+
+V2 使用三个粗粒度 Skill：离线 `textbook-knowledge-map`、在线 `confirmed-mistake-analysis`、在线 `weekly-learning-report`。实验修改不要求每次先建 issue；进入 runtime 或锁定展示结果前必须提交 Skill，并记录版本或 content hash。
+
+原因：这样既能利用 Hermes 的 Skill、受控上下文和 Provider 配置，又保持产品记忆可确认、可追溯，不让一次 one-shot 调用退化为散落的 Prompt，也不让不可见的 Agent memory 影响学生画像。
+
+影响：ADR-019 的“Provider Adapter”在系统边界上仍成立，但 DeepSeek adapter 位于 Hermes 内部，不由学途智伴应用重复实现。详细设计见 `docs/v2/hermes-runtime-and-skills.md`。
+
+## ADR-024：V2 使用串行 SQLite job，并把终评 R1 作为交付约束
+
+决策：V2 只支持 `exercise_ocr`、`mistake_analysis`、`weekly_report` 三种 job，由 API 进程内串行执行器运行，前端轮询，失败后人工重试。目标状态为 `queued/running/succeeded/failed`；E1 现有状态先保持兼容，迁移或映射在相关 Epic 设计时完成。进程重启后遗留 `running` job 进入 `failed/interrupted`，外部失败不得部分写入领域结果。
+
+R1 要求尽早冻结四页真实 UI，并准备 PPT、独立 `/demo`、`/app` 已保存真实结果和 60–90 秒真实端到端录屏四层兜底。现场不强求重新生成已经真实生成并保存的记忆和周报。
+
+原因：单用户终评展示不需要 Redis、独立 worker、并发调度或 production 级恢复；串行执行最容易由当前团队理解、验证和演示。R1 降低现场风险，但不改变 E1–E6 的架构分工。
+
+影响：自动重试、进度、取消、优先级、任务历史、定时报告、并行 worker 和高可用延后到 V3。

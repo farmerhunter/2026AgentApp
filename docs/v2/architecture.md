@@ -1,106 +1,113 @@
 # V2 系统架构
 
-**状态：Planned。** 本文定义 V2 实现需要保持的稳定边界；具体模块是否已经完成，应以代码、验证结果和 GitHub 状态为准。
+**状态：Current design / 部分待实现。** E1 已完成，其余能力以 GitHub Epic 状态为准。
 
-## 稳定目标
+## 1. 最终能力倒推
 
-V2 要把学习证据可靠地转化为可解释、可确认、可持续积累的学习结果：
+终评时系统必须能解释并展示：学生上传一张有作答内容的数学练习图片，系统识别题目，学生确认错题，系统结合教材知识分析错误、形成可确认的学习记忆，并生成一份有代表性的周报。
 
-```text
-evidence
-  -> finding
-  -> memory candidate
-  -> short-term memory
-  -> consolidation
-  -> insight / long-term memory
-  -> report / action
-```
-
-单次模型输出不能直接成为长期学习画像。finding 必须保留来源和置信度；memory candidate 必须经过人工确认或后续 consolidation。
-
-## 目标分层
+为了让这条真实路径的风险不拖垮展示，V2 在同一 VPS 上保留完全隔离的静态演示线。
 
 ```text
-Web UI
-  -> REST API
-  -> Application Service / Hermes Job Runner
-  -> Task-specific Skill + Context Assembly
-  -> LLM Provider Port
-  -> DeepSeek 或其他 Provider Adapter
-  -> Contract + Semantic Validation
-  -> SQLite + Private File Storage
-  -> Domain Result / Job Status
-  -> Web UI
+                         ┌─ /demo：V1 静态数据，只读完整流程
+浏览器 -> Nginx ────────┤
+                         └─ /app：真实 UI -> REST API -> SQLite/私有文件
+                                                   │
+            教材知识地图 JSON ─────────────────────┤
+            腾讯 QuestionSplitOCR <── exercise 图 ┤
+            Hermes CLI bridge <── 3 个固定 Skill ─┘
+                     └── DeepSeek（Hermes 内已配置的推理 Provider）
 ```
 
-### Web UI
+## 2. 两条展示线
 
-- 负责输入、展示、确认和重试交互。
-- 只消费 API 返回的 job 状态和领域结果，不解析模型原始响应。
-- 不保存模型 API Key，不直接调用模型 Provider。
-- API 不可用时可以降级到 V1 静态样例，但降级数据不得伪装成真实写入结果。
+### `/demo`：冻结的可靠兜底
 
-### REST API 与持久化
+- 使用 V1 脱敏静态 JSON，保留完整页面流程。
+- 不调用 API、OCR 或 Hermes，不产生真实写入。
+- V2 开发不得把真实链路的 loading、错误或数据状态塞回 `/demo`。
 
-- API 是 Web 与领域运行时之间的稳定边界。
-- SQLite 保存结构化业务数据和 job metadata；原始文件保存在私有文件目录。
-- 公开静态目录只保存脱敏 demo data，不保存真实学生材料。
-- 存储实现未来可以替换，但 API 和领域 contract 不应随之重写。
+### `/app`：真实能力主线
 
-### Hermes Runtime
+- 只通过 API 读取和写入；API 不可用时明确报错，不自动切换静态数据。
+- V2 只需一个共享展示密码，不建设多用户账号系统。
+- 早期稳定为四个页面：本周概览、练习导入与确认、分析与记忆、周报与打印。
 
-Hermes 是领域智能运行时，不是另一个模型名称。它负责：
+## 3. 模块职责
 
-- 选择 `textbook_summary`、`learning_insight_update` 或 `weekly_report` 任务；
-- 组装允许使用的证据、历史 finding 和已确认记忆；
-- 维护学习语义、记忆升级规则和少量可执行行动；
-- 管理 job 生命周期、结果校验和原子写入；
-- 向 UI 返回稳定的领域结果与失败状态。
+### 教材知识底图
 
-V2 使用确定性任务编排和有边界的 LLM 推理，不引入自由自主 Agent 循环、通用规划器或动态工具市场。
+- V2 只支持人教版八年级下册数学。
+- 原始 PDF 在线下用 Codex/Hermes TUI 和人工检查处理一次，产出仓库内版本化的只读 JSON。
+- SQLite 只保存知识地图版本和节点引用。
+- 在线 PDF 上传、OCR、切页、进度、重试、教材后台和多教材管理延后到 V3。
 
-### LLM Provider
+### Exercise 输入与 OCR
 
-- Provider Port 只表达 Hermes 需要的推理能力。
-- DeepSeek 是首个可选 Adapter，而不是领域架构中心。
-- Provider 专有参数、鉴权和错误映射留在 Adapter 内。
-- fixture 和 real Provider 必须产生相同 contract 的输出。
+- 产品文案统一使用“练习/试卷图片”，数据域可使用 `exercise`，不把普通作业强行叫 quiz。
+- 单次一张 JPG/PNG，最大 10 MB；原图保存到 VPS 私有目录。
+- 腾讯云官方 Node SDK 封装为一个 QuestionSplitOCR adapter，使用 Base64 直传和环境变量密钥。
+- `UseNewModel` 等厂商开关不凭印象写死：E4 用一份脱敏图片做真实探测后固定配置和字段映射。
+- OCR 保存题干、学生作答、bbox 和原始响应必要元数据；前端按 bbox 显示区域，不生成每题裁图文件。
+- 学生勾选错题。V2 不自动判错；只有 OCR 缺失时才补录答案文本。
 
-完整决策和替换测试见 [ADR-019](../decisions/architecture-decisions.md#adr-019hermes-是领域智能运行时llm-是可替换的推理-provider)。
+### API、SQLite 与私有文件
 
-## Job 与失败状态
+- E1 已提供 Session、Finding、Memory、Note、Report 和 Job 的持久化 API 基础。
+- 后续 Epic 只做必要扩展：文件 `storage_key`、OCR 作答/bbox、知识节点引用和新 job 类型。
+- SQLite 保存结构化数据；私有目录保存真实原图；公开目录只允许脱敏 demo 数据。
 
-标准生命周期至少包括：
+### 简单任务执行
+
+V2 只有三类 job：
 
 ```text
-pending -> running -> completed
-                   -> failed
-                   -> timeout
+exercise_ocr | mistake_analysis | weekly_report
+queued -> running -> succeeded
+                 └-> failed
 ```
 
-Provider 超时、限流、鉴权失败、网络错误、无效 JSON、contract 不匹配和语义校验失败都必须映射为稳定原因。失败任务不得部分写入 finding、记忆或周报；重试必须可以复用原始输入或明确创建新任务。
+- 一个 API 进程内的串行执行器，前端轮询状态，失败后人工重试。
+- 进程重启时遗留的 `running` job 标记为 `failed/interrupted`。
+- 任何外部失败都不能部分写入领域结果。
+- 不做 Redis、独立 worker、并发队列、百分比进度、取消、优先级、自动重试和历史版本管理。
 
-## V2 主路径
+E1 现有 `pending/running/completed/failed/timeout` 是已实现兼容词汇。目标词汇的迁移或兼容映射应在相关 Epic 设计时处理，不能未经迁移直接破坏 E1 API。
 
-第一条真实纵向闭环优先选择 `learning_insight_update`：
+### Hermes
 
-```text
-已确认学习材料
-  -> 创建 Hermes job
-  -> 调用真实 Provider
-  -> 校验 learning_findings contract
-  -> 原子写入 finding / memory candidate / action candidate
-  -> 用户确认或忽略待确定记忆
-```
+- 应用不直接调用 DeepSeek；DeepSeek 是 VPS 上 Hermes 已配置的模型 Provider。
+- 应用通过 `HermesBridge` 启动本地、非交互 Hermes CLI 子进程，stdin/stdout 传 JSON，stderr 只作诊断，并检查退出码、超时和输出 contract。
+- 产品不通过 tmux `send-keys` 驱动 TUI。TUI 只用于人类快速试验 Skill。
+- 产品学习记忆以 SQLite 为准，显式传给 Hermes；不读取 Hermes 的 ambient memory。
 
-这条路径验证后，再扩展教材摘要和周报 consolidation。
+详见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。
 
-## 非目标
+## 4. 真实业务流
 
-- 多用户鉴权和家庭/学校角色模型；
-- 云数据库和对象存储迁移；
-- 自主长循环 Agent 或多 Agent 协作；
-- 模型自动写入长期记忆；
-- 为所有未来输入源预先建立通用框架。
+1. 系统加载版本化教材知识地图。
+2. 学生上传一张练习/试卷图片。
+3. OCR 切题并识别题干与学生作答。
+4. 学生查看结果并勾选错题，单批最多 10 题。
+5. 一次确认批次创建一个 `mistake_analysis` job。
+6. Hermes 结合错题、知识节点和已接受记忆，返回 findings、memory candidates 和 actions。
+7. 服务端校验成功后原子保存；学生接受或拒绝 memory candidate。只有接受的记忆会在以后复用。
+8. 用户在本自然周有数据时手工触发周报。系统只保留最新成功结果，通过 Web 展示并用浏览器打印。
 
-这些能力属于 V3 或真实需求出现后的新决策。
+V2 不实现 memory 编辑、合并、去重或自动 consolidation，也不自动定时生成周报。
+
+## 5. 代表性展示数据
+
+展示数据保持简单：约 3 批、每批 2 题，共 6 题；覆盖 2 个知识区域，包含一次重复错误和一次改善，最多 2 条已接受记忆。具体知识点和故事由终评内容设计确定，不写死在系统架构中。
+
+## 6. 失败边界
+
+- OCR 失败：保留原图和失败 job，可人工重试；不创建已确认题目。
+- Hermes 失败或无效 JSON：job 失败，不写 finding/memory/action。
+- 周报失败：保留上一份成功周报，不产生半份新报告。
+- 页面或 API 故障：切换到独立 `/demo` 或已保存真实结果，而不是在同一流程中静默 fallback。
+- 所有密钥来自环境变量；真实学生材料不得提交 Git 或公开静态目录。
+
+## 7. V2 明确裁剪
+
+V2 是中学生可维护的展示系统，不追求 production 级安全、弹性和通用性。完整延后清单见 [V3 延后能力](../v3/deferred-capabilities.md)。
