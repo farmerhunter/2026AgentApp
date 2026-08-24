@@ -42,7 +42,7 @@ E0 基线与协作启用
   - Finding、memory decision 与 action candidate（#66）；
   - 备注、周报与 Hermes job 状态的数据库化（#67）。
 - **完成标准**：保存确认、备注和记忆决策后刷新不丢失；API 响应兼容既有 JSON contract。
-- **子 Issue 状态**：#64 数据库 schema 与样例 seed ✅ 已完成；#65/#66/#67 🔄 待开发。
+- **当前状态（2026-08-24）**：#64 数据库 schema 与样例 seed ✅ 已完成；#65/#66/#67 主体实现已提交并处于 `In review`。Architect review 结论为 `REVISE`，待完成 contract 一致性、跨进程持久化、失败原子性和 job 最终态证据后收口。
 
 ### E2：Web API 优先与静态降级（#68）
 
