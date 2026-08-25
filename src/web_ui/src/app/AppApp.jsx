@@ -190,55 +190,90 @@ function AnalysisView() {
   if (findings.isLoading) return <LoadingState label="正在读取分析数据..." />;
   if (findings.error) return <ErrorState error={findings.error} label="分析数据读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
+  const findingsSection =
+    findings.data?.batches?.length > 0 ? (
+      <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="space-y-2">
+          {findings.data.batches.map((batch) => (
+            <button
+              key={batch.finding_batch_id}
+              type="button"
+              onClick={() => setSelectedBatchId(batch.finding_batch_id)}
+              className={[
+                "w-full rounded-xl border px-3 py-2 text-left text-sm",
+                batch.finding_batch_id === selectedId
+                  ? "border-aurora/40 bg-aurora/10"
+                  : "border-slate-200 bg-white hover:border-aurora/25",
+              ].join(" ")}
+            >
+              <span className="font-semibold">{batch.subject_label}</span>
+              <span className="block truncate text-xs text-slate-500">{batch.finding_batch_id}</span>
+            </button>
+          ))}
+        </div>
+        <div>
+          {detail.isLoading ? (
+            <LoadingState label="正在读取发现详情..." />
+          ) : detail.error ? (
+            <ErrorState
+              error={detail.error}
+              label="发现详情读取失败"
+              onRetry={() => setReloadKey((k) => k + 1)}
+            />
+          ) : (
+            <div className="space-y-2 text-sm text-slate-600">
+              <p>发现详情：{detail.data?.findings?.length ?? 0} 条</p>
+            </div>
+          )}
+        </div>
+      </div>
+    ) : (
+      <EmptyState label="暂无分析数据。" />
+    );
+
+  const memoriesSection = memories.isLoading ? (
+    <LoadingState label="正在读取记忆决策..." />
+  ) : memories.error ? (
+    <ErrorState
+      error={memories.error}
+      label="记忆决策读取失败"
+      onRetry={() => setReloadKey((k) => k + 1)}
+    />
+  ) : memories.data?.memories?.length > 0 ? (
+    <div className="space-y-2">
+      <p className="text-sm font-semibold text-ink">
+        待确定记忆：{memories.data.total ?? memories.data.memories.length} 条
+      </p>
+      <ul className="space-y-2">
+        {memories.data.memories.map((memory) => (
+          <li
+            key={memory.memory_id}
+            className="rounded-xl border border-slate-200 bg-white p-3 text-sm"
+          >
+            <span className="font-medium">{memory.statement}</span>
+            <span className="block text-xs text-slate-500">
+              {memory.subject_label} · {memory.status}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : (
+    <EmptyState label="暂无待确定的记忆记录。" />
+  );
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">分析与记忆</h2>
-      {findings.data?.batches?.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="space-y-2">
-            {findings.data.batches.map((batch) => (
-              <button
-                key={batch.finding_batch_id}
-                type="button"
-                onClick={() => setSelectedBatchId(batch.finding_batch_id)}
-                className={[
-                  "w-full rounded-xl border px-3 py-2 text-left text-sm",
-                  batch.finding_batch_id === selectedId
-                    ? "border-aurora/40 bg-aurora/10"
-                    : "border-slate-200 bg-white hover:border-aurora/25",
-                ].join(" ")}
-              >
-                <span className="font-semibold">{batch.subject_label}</span>
-                <span className="block truncate text-xs text-slate-500">{batch.finding_batch_id}</span>
-              </button>
-            ))}
-          </div>
-          <div>
-            {detail.isLoading || memories.isLoading ? (
-              <LoadingState label="正在读取发现和记忆..." />
-            ) : detail.error || memories.error ? (
-              <ErrorState
-                error={detail.error ?? memories.error}
-                label="发现或记忆读取失败"
-                onRetry={() => setReloadKey((k) => k + 1)}
-              />
-            ) : (
-              <div className="space-y-2 text-sm text-slate-600">
-                <p>发现详情：{detail.data?.findings?.length ?? 0} 条</p>
-                <p>记忆决策：{memories.data?.total ?? 0} 条</p>
-              </div>
-            )}
-            <div className="mt-4">
-              <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <EmptyState label="暂无分析数据。" />
-          <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
-        </>
-      )}
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">发现</h3>
+        {findingsSection}
+      </section>
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">待确定记忆</h3>
+        {memoriesSection}
+      </section>
+      <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
     </div>
   );
 }

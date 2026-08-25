@@ -15,8 +15,6 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
-    "@esbuild/win32-x64": "^0.25.12",
-    "@rollup/rollup-win32-x64-msvc": "^4.60.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
