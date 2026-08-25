@@ -34,6 +34,15 @@
 
 ---
 
+## 2026-08-25 — E2 设计文档（#68）
+
+- 按 `docs/epic-design-guidelines.md` 新建 `docs/v2/epics/e2-dual-entry-ui.md`。
+- 设计 `/demo` 与 `/app` 双路由、四页真实工作台骨架、demoApi/appApi 数据访问边界和失败状态。
+- 更新 `docs/v2/README.md`，加入 E2 设计文档入口。
+- 按 Architect Gate 意见补齐 transport 边界、四页 E1 endpoint 映射、状态语义和路由/Network 验收证据，并提交到 Epic 分支待复审。
+
+---
+
 ## 2026-08-24 — E1 完成收尾（#63 / #65 / #66 / #67）
 
 - Architect Re-review round 3 接受 E1 技术实现 gate（commit `a587ccd`）。
