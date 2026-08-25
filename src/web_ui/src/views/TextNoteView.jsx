@@ -3,7 +3,7 @@ import { ErrorState, LoadingState } from "../components/DataState.jsx";
 import SubjectFilter, {
   matchesSubject,
 } from "../components/SubjectFilter.jsx";
-import { fetchTextNote } from "../lib/api.js";
+import { fetchTextNote } from "../lib/demoApi.js";
 import { defaultSubjects, demoNoteIds } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
 

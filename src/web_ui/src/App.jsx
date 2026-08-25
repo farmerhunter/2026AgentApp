@@ -1,26 +1,25 @@
-import { useMemo, useState } from "react";
-import AppShell from "./components/AppShell.jsx";
-import LearningContentView from "./views/LearningContentView.jsx";
-import LearningResultsView from "./views/LearningResultsView.jsx";
-import TextNoteView from "./views/TextNoteView.jsx";
-import WeeklyReportsView from "./views/WeeklyReportsView.jsx";
-import HomeView from "./views/HomeView.jsx";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import DemoApp from "./demo/DemoApp.jsx";
+import AppApp from "./app/AppApp.jsx";
+import { ErrorState } from "./components/DataState.jsx";
 
-const views = {
-  home: HomeView,
-  results: LearningResultsView,
-  notes: TextNoteView,
-  reports: WeeklyReportsView,
-  content: LearningContentView,
-};
+function NotFound() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-16">
+      <ErrorState error={{ message: "当前路径不存在。" }} label="页面未找到" />
+    </div>
+  );
+}
 
 export default function App() {
-  const [activeView, setActiveView] = useState("home");
-  const ActiveView = useMemo(() => views[activeView], [activeView]);
-
   return (
-    <AppShell activeView={activeView} onViewChange={setActiveView}>
-      <ActiveView onNavigate={setActiveView} />
-    </AppShell>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/demo" replace />} />
+        <Route path="/demo/*" element={<DemoApp />} />
+        <Route path="/app/*" element={<AppApp />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

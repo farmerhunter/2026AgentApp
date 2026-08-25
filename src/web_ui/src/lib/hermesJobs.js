@@ -1,4 +1,4 @@
-import { createHermesJob, pollHermesJob, fetchHermesJobResult } from "./api.js";
+import { createHermesJob, pollHermesJob, fetchHermesJobResult } from "./appApi.js";
 import { getHermesExecutionMode } from "./hermesExecutionMode.js";
 
 const DATA_BASE_URL = "/data";

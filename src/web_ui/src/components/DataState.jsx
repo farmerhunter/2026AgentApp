@@ -22,3 +22,20 @@ export function EmptyState({ label = "暂无数据" }) {
     </div>
   );
 }
+
+export function NotReadyState({ label = "该能力尚未接入" }) {
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+      <p className="font-semibold">尚未接入</p>
+      <p className="mt-1">{label}</p>
+    </div>
+  );
+}
+
+export function SavedState({ label = "已保存" }) {
+  return (
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+      {label}
+    </div>
+  );
+}

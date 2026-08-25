@@ -34,6 +34,18 @@
 
 ---
 
+## 2026-08-25 — E2 实现进行中（#68）
+
+- Architect Gate `accepted`，开始在 `epic/68-dual-entry-ui` 实现 E2。
+- 引入 `react-router-dom`，建立 `/demo` 与 `/app` 双路由树。
+- 拆分 `demoApi.js` 与 `appApi.js`，删除混合数据层 `api.js`。
+- `/demo` 移除 Hermes mode switch，保持 static-only。
+- 新增 `/app` 四页骨架：overview、import、analysis、report。
+- 新增 `NotReadyState`、`SavedState` 状态组件。
+- 本地验证：`npm run validate:data` 120/120；`npm run build` 通过；Vite dev server 各路由返回 200。
+
+---
+
 ## 2026-08-25 — E2 设计文档（#68）
 
 - 按 `docs/epic-design-guidelines.md` 新建 `docs/v2/epics/e2-dual-entry-ui.md`。

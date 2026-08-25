@@ -4,7 +4,7 @@ import SubjectFilter, {
   matchesSubject,
 } from "../components/SubjectFilter.jsx";
 import JobTrigger from "../components/JobTrigger.jsx";
-import { fetchWeekReportsIndex, fetchWeeklyReport } from "../lib/api.js";
+import { fetchWeekReportsIndex, fetchWeeklyReport } from "../lib/demoApi.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 export default function WeeklyReportsView() {
