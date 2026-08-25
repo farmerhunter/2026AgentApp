@@ -47,6 +47,7 @@ Hermes 的目标不是做一个普通聊天机器人，也不是只替代错题�
 - [`docs/quickstart.md`](docs/quickstart.md)：本地快速开始指南（首次运行 5 步 + 常见问题）
 - [`docs/README.md`](docs/README.md)：统一文档入口和维护规则
 - [`docs/epic-design-guidelines.md`](docs/epic-design-guidelines.md)：复杂 Epic 独立设计文档的判断和维护规范
+- [`docs/epic-collaboration-protocol.md`](docs/epic-collaboration-protocol.md)：David 端到端交付时的 Architect Gate 与最终合并 Gate
 - [`docs/v1/README.md`](docs/v1/README.md)：已完成的 V1 能力边界和历史资料导航
 - [`docs/v2/README.md`](docs/v2/README.md)：当前 V2 双线目标、架构和实施入口
 - [`docs/v2/hermes-runtime-and-skills.md`](docs/v2/hermes-runtime-and-skills.md)：Hermes CLI、profile、产品记忆和 Skill 迭代设计
