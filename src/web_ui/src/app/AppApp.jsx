@@ -74,16 +74,17 @@ function AppNotFound() {
 }
 
 function OverviewView() {
-  const sessions = useAsyncData(() => fetchSessions());
-  const findings = useAsyncData(() => fetchFindings());
-  const memories = useAsyncData(() => fetchMemories({ status: "accepted" }));
-  const reports = useAsyncData(() => fetchReports());
+  const [reloadKey, setReloadKey] = useState(0);
+  const sessions = useAsyncData(() => fetchSessions(), [reloadKey]);
+  const findings = useAsyncData(() => fetchFindings(), [reloadKey]);
+  const memories = useAsyncData(() => fetchMemories({ status: "accepted" }), [reloadKey]);
+  const reports = useAsyncData(() => fetchReports(), [reloadKey]);
 
   if (sessions.isLoading || findings.isLoading || memories.isLoading || reports.isLoading) {
     return <LoadingState label="正在读取本周概览..." />;
   }
   if (sessions.error || findings.error || memories.error || reports.error) {
-    return <ErrorState error={sessions.error ?? findings.error ?? memories.error ?? reports.error} label="本周概览读取失败" />;
+    return <ErrorState error={sessions.error ?? findings.error ?? memories.error ?? reports.error} label="本周概览读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
   }
 
   const sessionCount = sessions.data?.total_sessions ?? 0;
@@ -110,25 +111,26 @@ function OverviewView() {
 }
 
 function ImportView() {
-  const sessions = useAsyncData(() => fetchSessions());
+  const [reloadKey, setReloadKey] = useState(0);
+  const sessions = useAsyncData(() => fetchSessions(), [reloadKey]);
   const [selectedId, setSelectedId] = useState(null);
   const selectedIdValue = selectedId ?? sessions.data?.sessions?.[0]?.upload_id ?? null;
   const split = useAsyncData(
     () => (selectedIdValue ? fetchSessionSplit(selectedIdValue) : Promise.resolve(null)),
-    [selectedIdValue],
+    [selectedIdValue, reloadKey],
   );
   const confirmation = useAsyncData(
     () => (selectedIdValue ? fetchSessionConfirmation(selectedIdValue) : Promise.resolve(null)),
-    [selectedIdValue],
+    [selectedIdValue, reloadKey],
   );
 
   if (sessions.isLoading) return <LoadingState label="正在读取练习批次..." />;
-  if (sessions.error) return <ErrorState error={sessions.error} label="练习批次读取失败" />;
+  if (sessions.error) return <ErrorState error={sessions.error} label="练习批次读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">练习导入与确认</h2>
-      {sessions.data?.sessions?.length > 0 ? (
+      {sessions.data?.sessions?.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
           <div className="space-y-2">
             {sessions.data.sessions.map((session) => (
@@ -149,35 +151,44 @@ function ImportView() {
             ))}
           </div>
           <div>
-            {split.data ? (
-              <p className="text-sm text-slate-600">已读取切题结果：{split.data.questions?.length ?? 0} 题</p>
+            {split.isLoading || confirmation.isLoading ? (
+              <LoadingState label="正在读取切题和确认结果..." />
+            ) : split.error || confirmation.error ? (
+              <ErrorState
+                error={split.error ?? confirmation.error}
+                label="切题或确认结果读取失败"
+                onRetry={() => setReloadKey((k) => k + 1)}
+              />
+            ) : selectedIdValue ? (
+              <div className="space-y-2 text-sm text-slate-600">
+                <p>切题结果：{split.data?.questions?.length ?? 0} 题</p>
+                <p>确认结果：{confirmation.data?.confirmations?.length ?? 0} 条</p>
+              </div>
             ) : (
-              <EmptyState label="暂无切题结果。" />
+              <EmptyState label="请选择一个练习批次。" />
             )}
-            <div className="mt-4">
-              <NotReadyState label="E4 真实图片上传和 OCR 尚未接入，暂不能创建新的练习导入。" />
-            </div>
           </div>
         </div>
-      ) : (
-        <EmptyState label="暂无练习批次。" />
       )}
+      {sessions.data?.sessions?.length === 0 && <EmptyState label="暂无练习批次。" />}
+      <NotReadyState label="E4 真实图片上传和 OCR 尚未接入，暂不能创建新的练习导入。" />
     </div>
   );
 }
 
 function AnalysisView() {
-  const findings = useAsyncData(() => fetchFindings());
+  const [reloadKey, setReloadKey] = useState(0);
+  const findings = useAsyncData(() => fetchFindings(), [reloadKey]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const selectedId = selectedBatchId ?? findings.data?.batches?.[0]?.finding_batch_id ?? null;
   const detail = useAsyncData(
     () => (selectedId ? fetchFindingBatch(selectedId) : Promise.resolve(null)),
-    [selectedId],
+    [selectedId, reloadKey],
   );
-  const memories = useAsyncData(() => fetchMemories());
+  const memories = useAsyncData(() => fetchMemories(), [reloadKey]);
 
   if (findings.isLoading) return <LoadingState label="正在读取分析数据..." />;
-  if (findings.error) return <ErrorState error={findings.error} label="分析数据读取失败" />;
+  if (findings.error) return <ErrorState error={findings.error} label="分析数据读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
   return (
     <div className="space-y-4">
@@ -203,10 +214,19 @@ function AnalysisView() {
             ))}
           </div>
           <div>
-            {detail.data ? (
-              <p className="text-sm text-slate-600">已读取 {detail.data.findings?.length ?? 0} 条发现。</p>
+            {detail.isLoading || memories.isLoading ? (
+              <LoadingState label="正在读取发现和记忆..." />
+            ) : detail.error || memories.error ? (
+              <ErrorState
+                error={detail.error ?? memories.error}
+                label="发现或记忆读取失败"
+                onRetry={() => setReloadKey((k) => k + 1)}
+              />
             ) : (
-              <EmptyState label="暂无发现详情。" />
+              <div className="space-y-2 text-sm text-slate-600">
+                <p>发现详情：{detail.data?.findings?.length ?? 0} 条</p>
+                <p>记忆决策：{memories.data?.total ?? 0} 条</p>
+              </div>
             )}
             <div className="mt-4">
               <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
@@ -214,23 +234,27 @@ function AnalysisView() {
           </div>
         </div>
       ) : (
-        <EmptyState label="暂无分析数据。" />
+        <>
+          <EmptyState label="暂无分析数据。" />
+          <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
+        </>
       )}
     </div>
   );
 }
 
 function ReportView() {
-  const reports = useAsyncData(() => fetchReports());
+  const [reloadKey, setReloadKey] = useState(0);
+  const reports = useAsyncData(() => fetchReports(), [reloadKey]);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const selectedId = selectedReportId ?? reports.data?.reports?.[0]?.weekly_report_id ?? null;
   const detail = useAsyncData(
     () => (selectedId ? fetchReport(selectedId) : Promise.resolve(null)),
-    [selectedId],
+    [selectedId, reloadKey],
   );
 
   if (reports.isLoading) return <LoadingState label="正在读取周报..." />;
-  if (reports.error) return <ErrorState error={reports.error} label="周报读取失败" />;
+  if (reports.error) return <ErrorState error={reports.error} label="周报读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
   return (
     <div className="space-y-4">
@@ -256,7 +280,11 @@ function ReportView() {
             ))}
           </div>
           <div>
-            {detail.data ? (
+            {detail.isLoading ? (
+              <LoadingState label="正在读取周报详情..." />
+            ) : detail.error ? (
+              <ErrorState error={detail.error} label="周报详情读取失败" onRetry={() => setReloadKey((k) => k + 1)} />
+            ) : detail.data ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                 <h3 className="font-semibold text-ink">{detail.data.week?.title ?? detail.data.weekly_report_id}</h3>
                 <p className="mt-2">{detail.data.analysis?.overall_summary ?? "暂无周报摘要"}</p>

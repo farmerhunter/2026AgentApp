@@ -6,11 +6,20 @@ export function LoadingState({ label = "正在加载数据..." }) {
   );
 }
 
-export function ErrorState({ error, label = "数据读取失败" }) {
+export function ErrorState({ error, label = "数据读取失败", onRetry }) {
   return (
     <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
       <p className="font-semibold">{label}</p>
       <p className="mt-1 break-words">{error?.message ?? "未知错误"}</p>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+        >
+          重试
+        </button>
+      )}
     </div>
   );
 }
