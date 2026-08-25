@@ -52,7 +52,7 @@ E4 的 OCR、E5 的 Hermes 后续只需填入对应 ViewModel 和交互槽位，
 
 ## 4. 核心不变量
 
-1. `/demo` 只读取 `/data`，不发起任何 `/api` 请求。
+1. `/demo` 是 static-only 路线，只读取 `/data`，不提供任何可触达 `/api` 的交互。
 2. `/app` 只读取 `/api`，不读取 `/data`；失败时返回明确错误状态。
 3. 两条线可以复用视觉组件和布局，但不能共享可变数据源或写入逻辑。
 4. E2 不实现 OCR、Hermes 或部署；对应位置只保留明确的 `not_ready` 状态。
@@ -106,9 +106,10 @@ E2 将现有 `api.js` 拆成两个互不 import 的模块：
 
 ### 6.1 Demo 线冻结
 
-- 将现有 V1 view、`Navigation`、`HermesModeSwitch` 和 demo 数据读取逻辑归入 `/demo` 路径。
+- 将现有 V1 view、`Navigation` 和 demo 数据读取逻辑归入 `/demo` 路径。
 - 保持当前视觉和行为，不在此次改造中重做 demo 页面。
-- `HermesModeSwitch` 仅出现在 `/demo`，不得出现在 `/app`。
+- `/demo` 必须 static-only：移除 `HermesModeSwitch`，或将其替换为不可交互的“静态演示模式”标识；任何用户路径都不得发起 `/api`。
+- `HermesModeSwitch` 不得出现在 `/app`。
 
 ### 6.2 App 四页与 E1 endpoint 映射
 
@@ -119,7 +120,100 @@ E2 将现有 `api.js` 拆成两个互不 import 的模块：
 | 分析与记忆 | `/app/analysis` | `GET /api/findings`、`GET /api/findings/:batch_id`、`GET /api/memories` | E5 未交付，显示 `not_ready`；已有 E1 数据可读取 | 伪造 Hermes 分析结果 |
 | 周报与打印 | `/app/report` | `GET /api/reports`、`GET /api/reports/:report_id` | 只显示 API 返回的 report；无数据显示 `empty` | 读取 `/data/week_reports/*` |
 
-### 6.3 统一状态语义
+### 6.3 四页最小 ViewModel 与状态组合规则
+
+#### Overview
+
+- 页面 ViewModel：
+
+  ```text
+  OverviewViewModel {
+    session_count
+    recent_sessions: SessionSummary[]
+    finding_batch_count
+    accepted_memory_count
+    latest_report: ReportSummary | null
+  }
+  ```
+
+- 数据来源：
+  - `GET /api/sessions` -> `session_count`、`recent_sessions`
+  - `GET /api/findings` -> `finding_batch_count`
+  - `GET /api/memories?status=accepted` -> `accepted_memory_count`
+  - `GET /api/reports` -> `latest_report`
+- 规则：
+  - 任一接口非 2xx 时页面进入 `failed`。
+  - 所有接口成功但汇总字段均为零/空时进入 `empty`。
+  - E4/E5 尚未交付不影响 overview；它只展示 E1 已有数据。
+
+#### Import
+
+- 页面 ViewModel：
+
+  ```text
+  ImportViewModel {
+    sessions: SessionSummary[]
+    selected_session_id: string | null
+    selected_split: QuestionSplitResult | null
+    selected_confirmation: QuestionConfirmationResult | null
+    import_action_state: not_ready | ready
+  }
+  ```
+
+- 数据来源：
+  - `GET /api/sessions`
+  - `GET /api/sessions/:upload_id/split`
+  - `GET /api/sessions/:upload_id/confirmation`
+- 规则：
+  - E1 已有 session 可列出；选中 session 后可读取 split/confirmation。
+  - E4 的真实上传/OCR 动作未交付，`import_action_state = not_ready`，页面显示 `NotReadyState`，不得伪造上传成功。
+  - `saved` 只有在 E4 后续调用真实上传/OCR API 并返回成功后出现，E2 不触发该写入。
+
+#### Analysis
+
+- 页面 ViewModel：
+
+  ```text
+  AnalysisViewModel {
+    finding_batches: FindingBatchSummary[]
+    selected_batch_id: string | null
+    selected_findings: Finding[]
+    memories: MemoryDecision[]
+    analysis_action_state: not_ready | ready
+  }
+  ```
+
+- 数据来源：
+  - `GET /api/findings`
+  - `GET /api/findings/:batch_id`
+  - `GET /api/memories`
+- 规则：
+  - E1 已有 finding/memory 可显示。
+  - E5 的真实 Hermes 生成动作未交付，`analysis_action_state = not_ready`，显示 `NotReadyState`，不得伪造 Hermes 分析。
+  - `saved` 只在 E5 后续真实分析成功写入后出现。
+
+#### Report
+
+- 页面 ViewModel：
+
+  ```text
+  ReportViewModel {
+    reports: ReportSummary[]
+    selected_report_id: string | null
+    selected_report: WeeklyReport | null
+    printable: boolean
+  }
+  ```
+
+- 数据来源：
+  - `GET /api/reports`
+  - `GET /api/reports/:report_id`
+- 规则：
+  - 只读取 API 返回的 report；`/data/week_reports/*` 被禁止。
+  - API 成功且 reports 为空时进入 `empty`。
+  - `printable = selected_report !== null`；只有加载到真实 report 后才允许打印。
+
+### 6.4 统一状态语义
 
 - `loading`：已发出 app API 请求，尚未完成。
 - `empty`：API 成功，但没有领域数据。
@@ -127,14 +221,26 @@ E2 将现有 `api.js` 拆成两个互不 import 的模块：
 - `failed`：网络、timeout 或非 2xx；保留用户已输入但未成功提交的内容，不读取 `/data` 回退。
 - `saved`：只有现有 API 已确认写入时才出现；E2 若不引入写入动作，不得用 demo 状态模拟 saved。
 
-### 6.4 共享状态组件
+### 6.5 共享状态组件
 
 复用现有 `DataState`，并补充：
 
 - `ApiUnavailableState`：仅在 `/app` 使用，显示真实错误，不 fallback。
 - `SavedState`：表示 API 写入已成功。
-- `EmptyState`：表示没有数据或当前模块尚未接通。
-- `NotReadyState`：表示 E4/E5 能力尚未交付。
+- `EmptyState`：API/能力已可用，但查询结果为空。
+- `NotReadyState`：依赖的 E4/E5 能力尚未交付。
+
+页面级状态优先级：
+
+```text
+loading
+  -> failed（任一必要请求非 2xx）
+  -> not_ready（能力未交付）
+  -> empty（能力已可用但无数据）
+  -> ready（存在可展示数据）
+```
+
+`saved` 不是页面级初始状态，只在真实 API 写入成功后作为区块反馈出现。
 
 ## 7. 失败与恢复
 
@@ -148,7 +254,7 @@ E2 将现有 `api.js` 拆成两个互不 import 的模块：
 - `cd src/web_ui && npm run build` 通过。
 - `cd src/web_ui && npm run validate:data` 仍 120/120。
 - 本地启动前端：
-  - 打开 `/demo`，完成 V1 主要页面浏览，浏览器 Network 无 `/api` 请求。
+  - 打开 `/demo`，完成 V1 主要页面浏览，浏览器 Network 无 `/api` 请求，且没有可切换 API mode 的交互。
   - 打开 `/app`，浏览器 Network 无 `/data` 请求。
   - 关闭 API 后，`/app` 显示 `failed` 或 `not_ready`，不是 V1 内容。
 - 手工检查 `/app` 四页均可导航，URL 可刷新、可分享。
@@ -163,7 +269,7 @@ E2 将现有 `api.js` 拆成两个互不 import 的模块：
 ## 10. 需要 Architect 或项目负责人决定的问题
 
 1. 单 Vite 应用 + 双路由树：已接受。
-2. `/demo` 保留 `HermesModeSwitch`，`/app` 不出现：已接受。
+2. `/demo` 必须 static-only：移除或禁用 `HermesModeSwitch`，`/app` 不出现该组件：已接受。
 3. 客户端共享密码：已拒绝，改由 E6 部署层处理。
 4. 四页命名与默认路由：接受 `/app/overview`、`/app/import`、`/app/analysis`、`/app/report`，`/app` 默认进入 overview。
 
