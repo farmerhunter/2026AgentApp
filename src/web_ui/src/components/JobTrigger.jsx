@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { runHermesJob } from "../lib/hermesJobs.js";
+import { runHermesJob } from "../lib/demoJobs.js";
 import { getHermesExecutionMode } from "../lib/hermesExecutionMode.js";
 
 const STATUS_STYLES = {

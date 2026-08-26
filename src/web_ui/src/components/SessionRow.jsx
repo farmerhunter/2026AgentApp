@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ErrorState, LoadingState } from "./DataState.jsx";
 import QuestionReviewView from "../views/QuestionReviewView.jsx";
-import { fetchQuestionSession } from "../lib/api.js";
+import { fetchQuestionSession } from "../lib/demoApi.js";
 
 export default function SessionRow({ session }) {
   const [expanded, setExpanded] = useState(false);

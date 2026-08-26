@@ -4,8 +4,8 @@ import SubjectFilter, {
   matchesSubject,
 } from "../components/SubjectFilter.jsx";
 import JobTrigger from "../components/JobTrigger.jsx";
-import { fetchTextbookSummary } from "../lib/api.js";
-import { runHermesJob } from "../lib/hermesJobs.js";
+import { fetchTextbookSummary } from "../lib/demoApi.js";
+import { runHermesJob } from "../lib/demoJobs.js";
 import { defaultSubjects, demoTextbookIds } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
 

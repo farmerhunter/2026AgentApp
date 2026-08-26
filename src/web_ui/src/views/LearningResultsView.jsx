@@ -3,7 +3,7 @@ import UploadMaterialFlow from "../components/UploadMaterialFlow.jsx";
 import SessionRow from "../components/SessionRow.jsx";
 import { ErrorState, LoadingState } from "../components/DataState.jsx";
 import SubjectFilter, { matchesSubject } from "../components/SubjectFilter.jsx";
-import { fetchSessionIndex } from "../lib/api.js";
+import { fetchSessionIndex } from "../lib/demoApi.js";
 import { defaultSubjects, learningResultSteps } from "../lib/demoData.js";
 import useAsyncData from "../lib/useAsyncData.js";
 

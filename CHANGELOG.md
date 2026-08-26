@@ -41,6 +41,37 @@
 
 ---
 
+## 2026-08-25 — E2 Final Gate 修正（#68）
+
+- 重新生成 `src/web_ui/package-lock.json` 并加入 Windows Rollup/ESBuild 原生依赖；`npm ci --ignore-scripts` 与 `npm run build` 均通过。
+- 新增 `src/web_ui/src/lib/demoJobs.js`，将 demo job runner 与 appApi 完全解耦；demo 相关组件不再 import `appApi.js` 或 `hermesJobs.js`。
+- `/app` 四个页面补充子请求 loading/error/retry：import 的 split/confirmation、analysis 的 finding detail/memories、report detail 均会进入 failed，并提供重试。
+- 修复 empty 时隐藏 E4/E5 `not_ready` 的问题；action-level not_ready 与列表 empty 独立展示。
+- 本地验证：`npm ci --ignore-scripts` 通过；`npm run build` 通过；`npm run validate:data` 120/120；Vite 路由 200。
+
+---
+
+## 2026-08-25 — E2 实现进行中（#68）
+
+- Architect Gate `accepted`，开始在 `epic/68-dual-entry-ui` 实现 E2。
+- 引入 `react-router-dom`，建立 `/demo` 与 `/app` 双路由树。
+- 拆分 `demoApi.js` 与 `appApi.js`，删除混合数据层 `api.js`。
+- `/demo` 移除 Hermes mode switch，保持 static-only。
+- 新增 `/app` 四页骨架：overview、import、analysis、report。
+- 新增 `NotReadyState`、`SavedState` 状态组件。
+- 本地验证：`npm run validate:data` 120/120；`npm run build` 通过；Vite dev server 各路由返回 200。
+
+---
+
+## 2026-08-25 — E2 设计文档（#68）
+
+- 按 `docs/epic-design-guidelines.md` 新建 `docs/v2/epics/e2-dual-entry-ui.md`。
+- 设计 `/demo` 与 `/app` 双路由、四页真实工作台骨架、demoApi/appApi 数据访问边界和失败状态。
+- 更新 `docs/v2/README.md`，加入 E2 设计文档入口。
+- 按 Architect Gate 意见补齐 transport 边界、四页 E1 endpoint 映射、状态语义和路由/Network 验收证据，并提交到 Epic 分支待复审。
+
+---
+
 ## 2026-08-24 — E1 完成收尾（#63 / #65 / #66 / #67）
 
 - Architect Re-review round 3 接受 E1 技术实现 gate（commit `a587ccd`）。

@@ -6,8 +6,8 @@ import AnalysisStatusBadge from "./AnalysisStatusBadge.jsx";
 import FindingCard from "./FindingCard.jsx";
 import MemoryCandidateCard from "./MemoryCandidateCard.jsx";
 import ActionCandidateItem from "./ActionCandidateItem.jsx";
-import { fetchQuestionSession } from "../lib/api.js";
-import { runHermesJob } from "../lib/hermesJobs.js";
+import { fetchQuestionSession } from "../lib/demoApi.js";
+import { runHermesJob } from "../lib/demoJobs.js";
 import useAsyncData from "../lib/useAsyncData.js";
 
 const STEPS = [

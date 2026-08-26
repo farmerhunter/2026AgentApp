@@ -1,5 +1,4 @@
 import Navigation from "./Navigation.jsx";
-import HermesModeSwitch from "./HermesModeSwitch.jsx";
 import { studentSnapshot } from "../lib/demoData.js";
 
 export default function AppShell({ activeView, onViewChange, children }) {
@@ -16,7 +15,6 @@ export default function AppShell({ activeView, onViewChange, children }) {
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <HermesModeSwitch />
             <span className="rounded-full border border-aurora/20 bg-aurora/10 px-3 py-1 font-medium text-aurora">
               {studentSnapshot.displayName}
             </span>

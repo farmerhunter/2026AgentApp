@@ -2,7 +2,7 @@
  * Dashboard data aggregation for HomeView.
  * All data comes from existing /data/ static JSON — no API dependency.
  */
-import { fetchJson } from "./api.js";
+import { fetchJson } from "./demoApi.js";
 import { demoNoteIds, demoTextbookIds } from "./demoData.js";
 
 const DATA_BASE_URL = "/data";
