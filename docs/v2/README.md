@@ -31,6 +31,7 @@ V2 的目标不是做生产系统，而是在一台 VPS 上可靠展示两条彼
 - [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)：Hermes、DeepSeek、profile、CLI bridge 和 Skill 迭代方式。
 - [E1 设计文档](epics/e1-persistence-api.md)：已经完成的持久化 API 基础。
 - [E2 设计文档](epics/e2-dual-entry-ui.md)：`/demo` 与 `/app` 双入口、四页真实工作台骨架和失败边界。
+- [E3 设计文档](epics/e3-textbook-knowledge-map.md)：人教版八年级下册数学知识底图、只读查询 API 和扩展边界。
 - [V3 延后能力清单](../v3/deferred-capabilities.md)：V2 明确不做但后续不能遗忘的内容。
 
 实时状态、负责人和具体任务以 GitHub Project、Epic Issue 和 PR 为准。Epic 内部 issue 在该 Epic 启动设计时再拆，不在总体规划阶段提前锁死。
