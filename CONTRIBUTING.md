@@ -12,7 +12,7 @@
 6. 保持 `main` 尽量可运行；较长试验可以使用对应的 milestone/feature branch。
 7. 修改 demo 数据时，同时检查 `data/` 和 `src/web_ui/public/data/` 是否需要保持一致。
 8. 只有真实数据或隐私、外部费用、账号权限和不可逆迁移需要产品负责人确认。
-9. Push 后不要自动关闭 Issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`；对需要人工验收的工作，将 Project 状态移到 `In review` 并记录变更和验证结果。
+9. Push 后不要仅凭作者 self-review 自动关闭 Issue，也不要在 commit 或评论里使用 `Closes #N` / `Fixes #N`。由 `docs/epic-collaboration-protocol.md` 管理的普通 Epic，在独立 Final Gate 绑定 exact head 并通过后，按该规范完成受控 merge、远端核验和 closure；需要 Human trial 或高风险决定的工作仍停在 `In review`。
 
 ## 本地验证
 
@@ -52,7 +52,7 @@ npm run dev -- --host 127.0.0.1
 
 约定：
 
-- 仅在开发者明确说「上传GitHub」时才执行推送；其他时间 AI 不主动推送；
+- 仅在开发者明确说「上传GitHub」或任务已进入授权的 issue/branch/PR 流程时执行推送；其他时间 AI 不主动推送。Final Gate 后的受控合并与收尾以 `docs/epic-collaboration-protocol.md` 的站立授权为准；
 - 若本地没有新改动，只执行 `pull` 同步远端；
 - 涉及敏感信息（密钥、隐私数据）的改动必须先与开发者确认再提交。
 - 提交身份固定为 `LaoLiuHaHaHaHaXiao <david_coder@outlook.com>`（仓库已配置 git 钩子校验，邮箱不符会自动拒绝提交）；

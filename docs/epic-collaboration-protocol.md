@@ -1,14 +1,14 @@
 # Epic 协作与质量 Gate 规范
 
-本文档适用于项目负责人指定由 David 端到端交付的复杂 Epic。它在 [Epic 设计文档规范](epic-design-guidelines.md) 与 [贡献规则](../CONTRIBUTING.md) 之上，增加独立 Architect Gate 和最终合并 Gate；不要求 David 安装或理解 Agent Foundry。
+本文档适用于项目负责人指定由 David 端到端交付的复杂 Epic。它在 [Epic 设计文档规范](epic-design-guidelines.md) 与 [贡献规则](../CONTRIBUTING.md) 之上，增加独立 Architect Gate 和 Final Gate；不要求 David 安装或理解 Agent Foundry。项目负责人通过本文一次性授权普通 Epic 在 Final Gate 通过后完成受控合并与收尾，不再逐个重复批准机械性的 merge 和 closure。
 
 ## 角色与授权
 
 | 角色 | 承担者 | 职责 | 不承担的职责 |
 | --- | --- | --- | --- |
-| Human Product & Merge Authority | 项目负责人 | 决定产品范围、取舍、隐私、发布风险和 `main` 合并 | 不必亲自完成每个 Epic 的设计或实现 |
-| Architect | 项目负责人指定的 Codex Sol 级别独立审查者 | 在实现前审查目标、核心不变量、module boundary、API/data contract、失败处理和验收策略 | 不实现 Epic；不代替项目负责人合并 `main` |
-| Implementer / Epic Delivery Owner | David 及其使用的 Codex app、DeepSeek 或其他 agent | 对一个 Epic 的设计提案、实现、self-review、测试和 PR 提交承担端到端责任 | 不绕过 Architect Gate；不自行合并 `main` |
+| Human Product & Release Authority | 项目负责人 | 决定产品范围、取舍、隐私、安全、外部费用、生产部署和发布风险；处理 Final Gate 明确保留的 Human decision | 不必亲自执行普通 Epic 的 merge、状态整理或 closure |
+| Architect | 项目负责人指定的 Codex Sol 级别独立审查者 | 在实现前审查目标、核心不变量、module boundary、API/data contract、失败处理和验收策略 | 不实现 Epic；不执行生产部署或替代仍需 Human judgment 的决定 |
+| Implementer / Epic Delivery Owner | David 及其使用的 Codex app、DeepSeek 或其他 agent | 对一个 Epic 的设计提案、实现、self-review、测试、PR 提交以及通过 Final Gate 后的受控合并与收尾承担端到端责任 | 不绕过 Architect/Final Gate；不在例外条件下自行合并或关闭 Epic |
 | Final Gate Reviewer | 项目负责人或指定的独立 Codex reviewer | 对照接受的设计审查最终 PR、验证证据与残余风险 | 不把作者 self-review 当成独立审查 |
 
 这些是工作角色，不要求 David 使用 role thread。David 可以在同一个 delivery thread 中完成设计、实现、自检和测试；Architect 与 Final Gate Reviewer 必须使用独立上下文审查。
@@ -33,7 +33,8 @@ Epic issue
   -> implementation + self-review + test
   -> Epic PR
   -> Final Gate
-  -> Human merge decision
+  -> controlled merge + remote verification + Epic closeout
+  -> Human decision only for named exceptions
 ```
 
 ### 1. Design Proposal 与 Architect Gate
@@ -65,15 +66,35 @@ Architect 接受后，Implementer 在同一个 delivery thread 中完成实现�
 
 不得因为 agent 可以一次性生成代码，就跳过 Design Proposal 或将“代码完成”表述为“Epic 已被接收”。
 
-### 3. Final Gate 与合并
+### 3. Final Gate、合并与收尾
 
 Final Gate Reviewer 用独立上下文审查 issue、接受的设计、PR diff 和验证证据，不重新发明架构。结论只能是：
 
 - `changes required`：列出阻塞合并的具体问题；
 - `accepted with follow-ups`：可合并，并明确非阻塞 follow-up；
-- `recommend merge`：验证足以支持合并建议。
+- `approved`：验证足以支持合并，并绑定审查通过的完整 commit SHA。
 
-最终 `main` 合并只由 Human Product & Merge Authority 决定。
+普通 Epic 获得 `approved` 或明确可合并的 `accepted with follow-ups` 后，Implementer / Epic Delivery Owner 获得以下站立授权，无需再次等待项目负责人发送 merge prompt：
+
+1. 在合并前重新读取远端 PR，确认 head 仍等于 Final Gate 绑定的完整 SHA；
+2. 确认 PR 仍为 approved、mergeable/clean，要求的 checks 和验证仍通过，且不存在新的 hold；
+3. 按仓库允许的方式将 Epic PR 合并到 `main`；
+4. 读取远端 `main`，确认合并结果真实存在；
+5. 在 PR 和 Epic issue 记录 merge commit、能力摘要、验证结果、未完成范围和残余风险；
+6. 同步需要维护的设计文档状态、Issue/Project 状态，并在完成证据齐全后关闭 Epic；
+7. 向项目负责人报告最终结果和建议的下一 Epic。
+
+任何一步出现 head 漂移、冲突、检查失败、review 失效、证据不完整或范围变化，都必须停止并回到 Final Gate，不得靠 rebase、force、跳过检查或自行解释来继续。
+
+以下事项不在站立授权内，必须取得项目负责人针对具体事项的明确决定：
+
+- Final Gate 明确要求 Human trial 或保留产品取舍；
+- 隐私、安全、secret、外部费用、账号权限或数据迁移边界变化；
+- 生产部署、DNS/HTTPS、Nginx/systemd、VPS 运行状态、release/tag 或公开发布；
+- force push、reset、删除数据或其他难以恢复的操作；
+- E6、终评发布或被 Epic contract 明确标记为 Human-gated 的收口。
+
+删除远端 Epic branch 不是完成 Epic 的必要条件；如无明确授权，保留 branch，不把清理动作混入自动收尾。
 
 ## 给 David agent 的最小启动指令
 
