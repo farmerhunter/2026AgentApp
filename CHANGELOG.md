@@ -11,6 +11,13 @@
 
 ---
 
+## 2026-08-26 — Final Gate 后的 Epic 端到端收尾授权
+
+- 更新 `docs/epic-collaboration-protocol.md`：普通 Epic 在独立 Final Gate 绑定 exact head 并通过后，由 David 完成 merge、远端核验、状态整理和 Epic closure，不再逐次等待项目负责人批准机械收尾。
+- 保留 Human Gate：产品取舍、Human trial、隐私/安全、secret、外部费用、数据迁移、生产部署、release、E6/终评收口以及 destructive operation 仍需明确决定。
+- 更新 `CONTRIBUTING.md`，使 Git push/Issue closure 规则与上述受控站立授权一致。
+- 验证：Markdown diff 和 `git diff --check`；E2 #68 / PR #95 将作为首个按新规则交由 David 收尾的 Epic。
+
 ## 2026-08-25 — V2 E1–E6 架构重基线与终评风险约束
 
 - 将 V2 明确为单 VPS 双线：`/demo` 冻结 V1 静态兜底，`/app` 承载 API-only 真实主线，禁止两条线静默混用。
