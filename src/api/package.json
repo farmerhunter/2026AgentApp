@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "validate:knowledge-map": "node scripts/validate-knowledge-map.mjs",
+    "promote:knowledge-map": "node scripts/promote-knowledge-map.mjs",
+    "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",

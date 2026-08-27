@@ -13,6 +13,7 @@ The files are example-shaped contracts rather than strict JSON Schema files. The
 ## First-Version Contracts
 
 - `textbook_content_summary.contract.json`: Hermes understanding of a textbook, chapter, or prepared textbook summary.
+- `textbook_knowledge_map.contract.json`: versioned, read-only knowledge map artifact for math textbook knowledge points, chapters, sections, prerequisites, and lifecycle references.
 - `text_note.contract.json`: free-form student notes, knowledge points, reminders, or questions.
 - `upload_meta.contract.json`: metadata for a material upload.
 - `question_split_result.contract.json`: normalized result from question splitting/OCR.

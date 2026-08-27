@@ -260,3 +260,27 @@ CREATE TABLE IF NOT EXISTS weekly_context_candidates (
 );
 
 CREATE INDEX IF NOT EXISTS idx_wcc_finding ON weekly_context_candidates(finding_id);
+
+-- 15. knowledge map registry (version identity only; no content cache)
+CREATE TABLE IF NOT EXISTS knowledge_map_registry (
+  map_id TEXT NOT NULL,
+  map_version TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  artifact_path TEXT NOT NULL,
+  artifact_sha256 TEXT NOT NULL,
+  status TEXT NOT NULL,
+  textbook_title TEXT,
+  publisher TEXT,
+  grade TEXT,
+  semester TEXT,
+  edition TEXT,
+  isbn TEXT,
+  activated_at TEXT,
+  created_at TEXT DEFAULT (datetime('now', 'localtime')),
+  updated_at TEXT DEFAULT (datetime('now', 'localtime')),
+  PRIMARY KEY (map_id, map_version)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_current_knowledge_map
+  ON knowledge_map_registry(subject)
+  WHERE status = 'current';

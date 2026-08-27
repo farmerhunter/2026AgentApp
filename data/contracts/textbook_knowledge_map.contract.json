@@ -1,0 +1,44 @@
+{
+  "contract": "textbook_knowledge_map",
+  "contract_version": "1.0",
+  "map_id": "renjiao_math_grade8_v2",
+  "map_version": "1.0.0",
+  "subject": "math",
+  "subject_label": "数学",
+  "textbook": {
+    "title": "义务教育教科书 数学 八年级下册",
+    "publisher": "人民教育出版社",
+    "grade": "八年级",
+    "semester": "下册",
+    "edition": "2013 版",
+    "isbn": null
+  },
+  "generated_by": "offline-textbook-knowledge-map",
+  "generated_at": "2026-08-27T00:00:00+08:00",
+  "review_status": "proposed",
+  "chapters": [
+    {
+      "chapter_id": "ch16_quadratic_radical",
+      "chapter_number": 16,
+      "title": "二次根式",
+      "sections": [
+        {
+          "section_id": "sec_8b_ch16_1",
+          "section_number": "16.1",
+          "title": "二次根式",
+          "knowledge_points": [
+            {
+              "knowledge_point_id": "kp_8b_ch16_radical_concept",
+              "name": "二次根式的概念",
+              "description": "识别二次根式，并理解被开方数的非负条件。",
+              "prerequisite_point_ids": [],
+              "coverage": "detailed",
+              "status": "active",
+              "superseded_by": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
