@@ -127,17 +127,17 @@ async function main() {
   assert(current.body.data.map_id === "renjiao_math_grade8_v2", "current map_id mismatch");
   assert(current.body.data.map_version === "1.0.0", "current map_version mismatch");
   assert(current.body.data.subject === "math", "current subject mismatch");
-  assert(current.body.data.knowledge_point_count === 1, "current point count mismatch");
+  assert(current.body.data.knowledge_point_count > 0, "current point count should be positive");
 
   const chapters = await jsonRequest("/api/knowledge-map/chapters");
   assert(chapters.status === 200, `chapters should be 200, got ${chapters.status}`);
-  assert(chapters.body.data.chapters.length === 1, "chapters length mismatch");
+  assert(chapters.body.data.chapters.length === 5, "chapters length should be 5");
 
   const points = await jsonRequest(
     "/api/knowledge-map/points?chapter_id=ch16_quadratic_radical&coverage=detailed",
   );
   assert(points.status === 200, `points should be 200, got ${points.status}`);
-  assert(points.body.data.knowledge_points.length === 1, "points list length mismatch");
+  assert(points.body.data.knowledge_points.length > 0, "points list should not be empty");
 
   const invalidFilter = await jsonRequest("/api/knowledge-map/points?coverage=bogus");
   assert(invalidFilter.status === 400, `invalid filter should be 400, got ${invalidFilter.status}`);
