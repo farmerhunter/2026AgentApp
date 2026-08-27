@@ -11,6 +11,18 @@
 
 ---
 
+## 2026-08-27 — E3 教材知识底图实现（#87）
+
+- 新增 `data/contracts/textbook_knowledge_map.contract.json`，定义版本化 `(map_id, map_version)` 知识地图契约。
+- 新增结构样例 `data/knowledge_maps/renjiao_math_grade8_v2/1.0.0.json`；最终教材内容仍等待 Human Ready condition。
+- 新增 `src/api/scripts/validate-knowledge-map.mjs`，校验必填字段、ID 唯一性、版本路径、状态/coverage 和悬空引用。
+- 在 `src/api/db/schema.sql` 新增 `knowledge_map_registry`，只保存版本身份、artifact 定位、hash 和 current 状态，不复制节点内容。
+- 新增 `src/api/scripts/promote-knowledge-map.mjs`，按 `BEGIN IMMEDIATE -> 降旧 current -> upsert 新 current -> commit` 顺序原子切换。
+- 新增 `src/api/routes/knowledgeMap.js` 并注册，提供 current/chapters/points 四类只读 API。
+- 新增 `src/api/scripts/smoke-knowledge-map.mjs` 和 E4/E5 consumer fixtures，验证正确引用成功、错误版本/未知 ID 被拒绝、非法 filter 返回 400。
+- 验证：`validate:knowledge-map` 17/17；`smoke:knowledge-map` 通过；`npm run build` 通过；`npm run validate:data` 120/120；`node --check` 通过。
+- 遗留：最终知识地图内容、重点两章和人工抽查需项目负责人确认教材来源与终评故事后再收口。
+
 ## 2026-08-26 — Final Gate 后的 Epic 端到端收尾授权
 
 - 更新 `docs/epic-collaboration-protocol.md`：普通 Epic 在独立 Final Gate 绑定 exact head 并通过后，由 David 完成 merge、远端核验、状态整理和 Epic closure，不再逐次等待项目负责人批准机械收尾。

@@ -1,0 +1,10 @@
+{
+  "contract": "knowledge_map_consumer_fixture",
+  "knowledge_map_ref": {
+    "map_id": "renjiao_math_grade8_v2",
+    "map_version": "1.0.0"
+  },
+  "knowledge_point_ids": [
+    "kp_8b_does_not_exist"
+  ]
+}

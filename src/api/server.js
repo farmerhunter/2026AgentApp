@@ -8,6 +8,7 @@ import sessionsRouter from "./routes/sessions.js";
 import findingsRouter from "./routes/findings.js";
 import notesRouter from "./routes/notes.js";
 import reportsRouter from "./routes/reports.js";
+import knowledgeMapRouter from "./routes/knowledgeMap.js";
 import { getDb } from "./db/init.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -49,6 +50,7 @@ app.use("/api", sessionsRouter);
 app.use("/api", findingsRouter);
 app.use("/api", notesRouter);
 app.use("/api", reportsRouter);
+app.use("/api", knowledgeMapRouter);
 
 // ── Helpers ──
 
