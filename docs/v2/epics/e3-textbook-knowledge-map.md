@@ -1,6 +1,6 @@
 # E3 教材知识底图与扩展边界设计
 
-Status: Proposed
+Status: Implementing
 Epic: E3 / GitHub Issue #87
 Owner: David (LaoLiuHaHaHaHaXiao)
 Updated: 2026-08-26
@@ -142,7 +142,7 @@ E5 错题分析：提出并写入经服务端验证的 knowledge_point_ids
 - 对演示要使用的重点章节，为知识点补充 `description` 和 `prerequisite_point_ids`。
 - 未细化的节点使用 `coverage: "catalog"`；重点节点使用 `coverage: "detailed"`。
 
-重点章节在项目负责人确认终评故事和合法教材来源前不写入最终 map。
+重点章节已确定为第 16 章“二次根式”和第 19 章“一次函数”，并由项目负责人确认教材来源与终评故事。
 
 ### 5.4 ID 规则
 
@@ -422,17 +422,25 @@ E3 暂不新增长期 ADR。ADR-021 已经覆盖“单科离线知识底图”�
 
 ## 12. Ready condition 与待 Architect / 项目负责人决定的问题
 
-实际知识地图内容开始制作前，必须先满足：
+实际知识地图内容开始制作前已经满足：
 
-1. 项目负责人提供或确认合法可用的教材来源及准确版本。
-2. 项目负责人确认终评故事对应的重点两章。
+1. 项目负责人已提供并确认合法可用的教材来源及准确版本。
+2. 项目负责人已确认终评故事对应的重点两章：第 16 章、第 19 章。
 3. 设计确认不在仓库保存教材原文、扫描页或加工中间文本。
 4. 人工抽查范围包含来源身份、目录对应、重点知识点含义和前置引用悬空检查。
 
-待 Architect / 项目负责人确认：
+已确认并实施：
 
-1. 重点细化章节选哪两章。
-2. 源教材 PDF/文本由谁提供，并确认线下加工中间产物不提交。
-3. 上述 registry + 只读 API 方案是否接受。
-4. 首版 `map_version` 是否固定为 `1.0.0`。
-5. 是否接受沿用 `knowledge_point_id(s)`，章节/小节使用 `chapter_id / section_id`。
+1. 重点细化章节为第 16、19 章。
+2. 源教材 PDF/文本由项目负责人提供，中间产物不提交。
+3. registry + 只读 API 方案已接受。
+4. 首版 `map_version = 1.0.0` 已接受。
+5. 沿用 `knowledge_point_id(s)`，章节/小节使用 `chapter_id / section_id`。
+
+当前进入 Final Gate review：`review_status` 暂保持 `proposed`，待复审通过后再声明完成。
+
+Final Gate 首轮已确认全册目录、第 16/19 章详细节点、ID 唯一性和前置引用；仍待修正项为：
+
+1. 第 19 章函数概念和一次函数与方程/不等式两个摘要需按教材收紧。
+2. API smoke 需增加第 19 章重点覆盖断言。
+3. 设计文档与 Project 状态需同步为已决策和 `In review`。

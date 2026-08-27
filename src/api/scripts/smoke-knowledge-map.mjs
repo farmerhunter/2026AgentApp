@@ -146,6 +146,16 @@ async function main() {
   assert(detail.status === 200, `point detail should be 200, got ${detail.status}`);
   assert(detail.body.data.name === "二次根式的概念", "point detail name mismatch");
 
+  const ch19Points = await jsonRequest(
+    "/api/knowledge-map/points?chapter_id=ch19_linear_function&coverage=detailed",
+  );
+  assert(ch19Points.status === 200, `ch19 points should be 200, got ${ch19Points.status}`);
+  const ch19Ids = new Set(ch19Points.body.data.knowledge_points.map((point) => point.knowledge_point_id));
+  assert(ch19Ids.has("kp_8b_ch19_function_concept"), "ch19 function concept should be present");
+  assert(ch19Ids.has("kp_8b_ch19_scheme_selection"), "ch19 scheme selection should be present");
+  const ch19Detail = await jsonRequest("/api/knowledge-map/points/kp_8b_ch19_function_concept");
+  assert(ch19Detail.status === 200, `ch19 point detail should be 200, got ${ch19Detail.status}`);
+
   const unknownPoint = await jsonRequest("/api/knowledge-map/points/kp_8b_does_not_exist");
   assert(unknownPoint.status === 404, `unknown point should be 404, got ${unknownPoint.status}`);
 

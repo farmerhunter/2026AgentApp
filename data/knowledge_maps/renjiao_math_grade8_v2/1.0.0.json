@@ -284,7 +284,7 @@
             {
               "knowledge_point_id": "kp_8b_ch19_function_concept",
               "name": "函数的概念",
-              "description": "理解函数是两个变量之间的对应关系，能判断一个关系是否为函数。",
+              "description": "理解自变量每取一个确定值，函数都有唯一确定值与之对应；能据此判断一个关系是否为函数。",
               "prerequisite_point_ids": ["kp_8b_ch19_variable_constant"],
               "coverage": "detailed",
               "status": "active",
@@ -354,7 +354,7 @@
             {
               "knowledge_point_id": "kp_8b_ch19_linear_function_equation_inequality",
               "name": "一次函数与方程、不等式",
-              "description": "从函数观点理解一次函数与一元一次方程、一元一次不等式的关系。",
+              "description": "从函数观点理解一次函数与一元一次方程、一元一次不等式的关系，以及二元一次方程组与两条一次函数图象交点的关系。",
               "prerequisite_point_ids": ["kp_8b_ch19_linear_function_image"],
               "coverage": "detailed",
               "status": "active",
