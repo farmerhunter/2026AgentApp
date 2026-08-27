@@ -21,7 +21,7 @@
 - 新增 `src/api/routes/knowledgeMap.js` 并注册，提供 current/chapters/points 四类只读 API。
 - 新增 `src/api/scripts/smoke-knowledge-map.mjs` 和 E4/E5 consumer fixtures，验证正确引用成功、错误版本/未知 ID 被拒绝、非法 filter 返回 400。
 - 验证：`validate:knowledge-map` 208/208；`smoke:knowledge-map` 通过；`npm run build` 通过；`npm run validate:data` 120/120；`node --check` 通过。
-- 遗留：最终知识地图仍需项目负责人完成人工抽样，核对教材身份、全册目录、第 16/19 章知识点含义、层级关系和悬空 prerequisite。
+- 首版 `1.0.0` 已完成人工抽样，`review_status=reviewed`；未来新版本仍需抽样。
 
 ## 2026-08-26 — Final Gate 后的 Epic 端到端收尾授权
 

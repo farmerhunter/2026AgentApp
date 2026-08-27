@@ -1,9 +1,9 @@
 # E3 教材知识底图与扩展边界设计
 
-Status: Implementing
+Status: In Review
 Epic: E3 / GitHub Issue #87
 Owner: David (LaoLiuHaHaHaHaXiao)
-Updated: 2026-08-26
+Updated: 2026-08-27
 
 > 本文遵循 `docs/epic-design-guidelines.md` 与 `docs/epic-collaboration-protocol.md`。它只记录 E3 的跨模块边界、数据契约、失败处理和验收策略；实时任务与状态以 #87 和 GitHub Project 为准。
 
@@ -411,7 +411,7 @@ API 进程启动或首次请求时从 current registry 读取 artifact path/hash
 - 在线教材导入、PDF OCR、切页、进度和教材后台延后到 V3。
 - 多教材、多学科、知识地图编辑 UI 延后到 V3。
 - 知识点的完整课程大纲、例题和教师讲义不属于 V2。
-- 知识地图内容仍需要一次人工抽查；抽查结果在 Epic Issue 记录，不单独建设后台。
+- 首版 `1.0.0` 已完成人工抽样；抽查结果在 Epic Issue 记录，不单独建设后台。未来新版本仍需抽样。
 - 不建立复制知识地图内容的 `knowledge_nodes` 表；若未来出现 JSON/内存索引无法满足的查询需求，再单独回到 Architect 讨论。
 
 ## 11. 需要 ADR 的决定
@@ -437,10 +437,10 @@ E3 暂不新增长期 ADR。ADR-021 已经覆盖“单科离线知识底图”�
 4. 首版 `map_version = 1.0.0` 已接受。
 5. 沿用 `knowledge_point_id(s)`，章节/小节使用 `chapter_id / section_id`。
 
-当前进入 Final Gate review：`review_status` 暂保持 `proposed`，待复审通过后再声明完成。
+当前进入 Final Gate review：首版 `review_status` 已改为 `reviewed`，表示教材身份、全册目录、第 16/19 章知识点含义、层级关系和前置引用已经人工抽样确认。
 
-Final Gate 首轮已确认全册目录、第 16/19 章详细节点、ID 唯一性和前置引用；仍待修正项为：
+Final Gate 首轮确认了全册目录、第 16/19 章详细节点、ID 唯一性和前置引用；首轮三项修正已全部完成并复验通过：
 
-1. 第 19 章函数概念和一次函数与方程/不等式两个摘要需按教材收紧。
-2. API smoke 需增加第 19 章重点覆盖断言。
-3. 设计文档与 Project 状态需同步为已决策和 `In review`。
+1. 第 19 章函数概念和一次函数与方程/不等式两个摘要已按教材收紧。
+2. API smoke 已增加第 19 章重点覆盖断言。
+3. 设计文档与 Project 状态已同步为已决策和 `In review`。
