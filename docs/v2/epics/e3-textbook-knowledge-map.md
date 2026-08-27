@@ -200,11 +200,16 @@ registry 只描述 artifact 身份、位置、hash 和当前状态；节点名�
 
 - `status = 'current'` 的行是唯一 current pointer。
 - 每个 `subject` 最多只能有一个 current map，由上面的部分唯一索引保证。
-- 切换脚本在一个事务中：
-  1. 校验新 artifact 通过。
-  2. 写入新 `(map_id, map_version)` 为 `current`。
-  3. 把同一 subject 的旧 current 改为 `superseded`。
-- 任一步失败则回滚，旧 current 继续有效。
+- `status` 的允许集合固定为 `proposed | current | superseded`。
+- 切换脚本的可执行顺序：
+  1. 在事务外读取新 artifact，并完成 contract 校验和 `artifact_sha256` 校验。
+  2. `BEGIN IMMEDIATE`。
+  3. 将同一 `subject` 的旧 `current` 降为 `superseded`。
+  4. `INSERT ... ON CONFLICT(map_id, map_version) DO UPDATE` 写入新 `(map_id, map_version)` 为 `current`。
+  5. `COMMIT`。
+- 任一步失败则 `ROLLBACK`，旧 current 自动恢复为当前版本。
+- 重复 promote 同一个 `(map_id, map_version)` 是幂等成功，不产生重复 current。
+- `artifact_sha256` 只用于检测“已 promote 的版本文件后来被改写”，不用于证明教材内容正确性、安全来源或权威性。
 
 ### 6.3 只读 API
 
@@ -229,6 +234,79 @@ registry 只描述 artifact 身份、位置、hash 和当前状态；节点名�
 
 API 进程启动或首次请求时从 current registry 读取 artifact path/hash，校验通过后构建只读内存索引；节点列表和详情都来自同一份已校验 artifact。
 
+#### current summary 的最小 `data` shape
+
+```json
+{
+  "map_id": "renjiao_math_grade8_v2",
+  "map_version": "1.0.0",
+  "subject": "math",
+  "subject_label": "数学",
+  "textbook": {
+    "title": "义务教育教科书 数学 八年级下册",
+    "publisher": "人民教育出版社",
+    "grade": "八年级",
+    "semester": "下册",
+    "edition": "2013 版",
+    "isbn": null
+  },
+  "chapter_count": 5,
+  "knowledge_point_count": 0
+}
+```
+
+#### chapter/section list 的最小 `data` shape
+
+```json
+{
+  "chapters": [
+    {
+      "chapter_id": "ch16_quadratic_radical",
+      "chapter_number": 16,
+      "title": "二次根式",
+      "sections": [
+        {
+          "section_id": "sec_8b_ch16_1",
+          "section_number": "16.1",
+          "title": "二次根式"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### point list 的最小 `data` shape
+
+```json
+{
+  "knowledge_points": [
+    {
+      "knowledge_point_id": "kp_8b_ch16_radical_concept",
+      "name": "二次根式的概念",
+      "status": "active",
+      "coverage": "detailed"
+    }
+  ]
+}
+```
+
+#### point detail 的最小 `data` shape
+
+```json
+{
+  "knowledge_point_id": "kp_8b_ch16_radical_concept",
+  "name": "二次根式的概念",
+  "description": "识别二次根式，并理解被开方数的非负条件。",
+  "prerequisite_point_ids": [],
+  "chapter_id": "ch16_quadratic_radical",
+  "section_id": "sec_8b_ch16_1",
+  "coverage": "detailed",
+  "status": "active",
+  "superseded_by": null
+}
+```
+
 ### 6.4 接口与 contract 映射
 
 | 接口或输出 | 权威 contract | 版本与兼容规则 | 验证方式 |
@@ -239,11 +317,30 @@ API 进程启动或首次请求时从 current registry 读取 artifact path/hash
 
 ### 6.5 E4/E5 consumer mapping
 
-| 消费方 | 现有字段 | E3 后的要求 | owner | 允许为空 | 失败语义 |
+跨 Epic 最小兼容形状固定为：
+
+```json
+{
+  "knowledge_map_ref": {
+    "map_id": "renjiao_math_grade8_v2",
+    "map_version": "1.0.0"
+  },
+  "knowledge_point_ids": ["kp_8b_ch16_radical_concept"]
+}
+```
+
+规则：
+
+- 只要知识 ID 列表非空，`knowledge_map_ref` 必须存在。
+- 知识 ID 为空时，`knowledge_map_ref` 可以为空或省略。
+- 现有单数 `knowledge_point_id` 和复数 `related_knowledge_point_ids` 字段不改名，继续保留。
+- E3 只冻结这个跨 Epic contract；具体 schema migration 由实际写入 owner 的 E4/E5 完成。
+
+| 消费方 | `knowledge_map_ref` 所在层级 | 现有知识 ID 字段 | 何时 required | owner | 未知版本/ID 行为 |
 | --- | --- | --- | --- | --- | --- |
-| E4 question confirmation | `knowledge_point_ids_json` | 保存人工确认结果，可为空 | E4 | 是 | 不伪造引用；OCR 不能生成知识点 |
-| E5 finding/action | `concept_links`、`related_knowledge_point_ids` | 写入前由服务端验证引用存在 | E5 | 否 | 未知 `(map_id,map_version,knowledge_point_id)` 拒绝 |
-| weekly report | `knowledge_point_id`、`related_knowledge_point_ids` | 沿用现有字段，引用当前 map 版本 | E5 | 视报告数据而定 | 引用不存在时报告不保存 |
+| E4 question confirmation | confirmation 或 batch 顶层 | `knowledge_point_ids` / `knowledge_point_ids_json` | ID 列表非空时 required | E4 | E4 阶段可留空，不伪造；OCR 不生成知识点 |
+| E5 finding/action | finding batch 顶层 | `concept_links`、`related_knowledge_point_ids` | 写入知识引用时 required | E5 | 写入前服务端验证 `(map_id,map_version,knowledge_point_id)`，未知则拒绝 |
+| weekly report | report 或 subject 分区顶层 | `knowledge_point_id`、`related_knowledge_point_ids` | 报告出现知识引用时 required | E5 | 引用不存在时整份报告不保存 |
 
 ## 7. 失败与恢复
 
@@ -301,7 +398,9 @@ API 进程启动或首次请求时从 current registry 读取 artifact path/hash
 - 非法 `map_version`：校验失败。
 - 悬空 `prerequisite_point_ids` 或 `superseded_by`：校验失败。
 - current artifact 缺失或损坏：API 返回 503。
-- current 切换失败：旧 current 仍可用。
+- 存在旧 current 时切换新版本：成功，且旧 current 变为 `superseded`。
+- 新版本写入失败：rollback 后旧 current 仍为 `current`。
+- 重复 promote 同一版本：幂等成功，current 不重复增加。
 - 非法 filter 参数：400。
 - 合法但无匹配：空数组。
 - 未知 `knowledge_point_id`：404。
