@@ -11,10 +11,11 @@ export class ApiUnavailableError extends Error {
 async function apiFetch(path, options = {}) {
   let response;
   try {
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
     response = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(options.headers ?? {}),
       },
     });
@@ -63,6 +64,26 @@ export function saveSessionConfirmation(uploadId, confirmations) {
   return apiFetch(`/sessions/${uploadId}/confirmation`, {
     method: "POST",
     body: JSON.stringify({ confirmations }),
+  });
+}
+
+export function uploadExerciseImage(file) {
+  const form = new FormData();
+  form.append("file", file);
+  return apiFetch("/uploads", {
+    method: "POST",
+    body: form,
+    headers: {},
+  });
+}
+
+export function fetchUploadOcr(uploadId) {
+  return apiFetch(`/uploads/${uploadId}/ocr`);
+}
+
+export function retryUploadOcr(uploadId) {
+  return apiFetch(`/uploads/${uploadId}/ocr/retry`, {
+    method: "POST",
   });
 }
 

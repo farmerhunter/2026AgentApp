@@ -1,6 +1,6 @@
 # E4 练习/试卷图片导入与错题确认设计
 
-Status: Proposed
+Status: Implementing
 Epic: E4 / GitHub Issue #88
 Owner: David (LaoLiuHaHaHaHaXiao)
 Updated: 2026-08-28

@@ -8,10 +8,12 @@
     "dev": "node --watch server.js",
     "validate:knowledge-map": "node scripts/validate-knowledge-map.mjs",
     "promote:knowledge-map": "node scripts/promote-knowledge-map.mjs",
-    "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs"
+    "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs",
+    "smoke:e4": "node scripts/smoke-e4.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "multer": "^2.0.2"
   }
 }

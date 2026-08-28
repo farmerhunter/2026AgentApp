@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Routes, Route, NavLink, Navigate, Outlet } from "react-router-dom";
-import { ErrorState, LoadingState, EmptyState, NotReadyState } from "../components/DataState.jsx";
+import { ErrorState, LoadingState, EmptyState, NotReadyState, SavedState } from "../components/DataState.jsx";
 import {
   fetchSessions,
   fetchSessionSplit,
   fetchSessionConfirmation,
+  uploadExerciseImage,
+  fetchUploadOcr,
+  retryUploadOcr,
+  saveSessionConfirmation,
   fetchFindings,
   fetchFindingBatch,
   fetchMemories,
@@ -114,6 +118,12 @@ function ImportView() {
   const [reloadKey, setReloadKey] = useState(0);
   const sessions = useAsyncData(() => fetchSessions(), [reloadKey]);
   const [selectedId, setSelectedId] = useState(null);
+  const [uploadState, setUploadState] = useState("idle");
+  const [uploadError, setUploadError] = useState(null);
+  const [ocrState, setOcrState] = useState(null);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState(new Set());
+  const [notes, setNotes] = useState({});
+  const [answerOverrides, setAnswerOverrides] = useState({});
   const selectedIdValue = selectedId ?? sessions.data?.sessions?.[0]?.upload_id ?? null;
   const split = useAsyncData(
     () => (selectedIdValue ? fetchSessionSplit(selectedIdValue) : Promise.resolve(null)),
@@ -124,12 +134,122 @@ function ImportView() {
     [selectedIdValue, reloadKey],
   );
 
+  async function pollUpload(uploadId) {
+    let latest = { status: "queued", upload_id: uploadId };
+    for (let i = 0; i < 60; i += 1) {
+      latest = await fetchUploadOcr(uploadId);
+      setOcrState(latest);
+      if (["succeeded", "failed", "interrupted"].includes(latest.status)) break;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    return latest;
+  }
+
+  async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadState("uploading");
+    setUploadError(null);
+    try {
+      const uploaded = await uploadExerciseImage(file);
+      setUploadState("polling");
+      setOcrState({ upload_id: uploaded.upload_id, status: "queued" });
+      const latest = await pollUpload(uploaded.upload_id);
+      if (latest.status === "succeeded") {
+        setSelectedId(uploaded.upload_id);
+        setUploadState("ready");
+        setReloadKey((key) => key + 1);
+      } else {
+        setUploadState("failed");
+        setUploadError({ message: latest.error_message ?? "OCR 处理失败" });
+      }
+    } catch (error) {
+      setUploadState("failed");
+      setUploadError(error);
+    }
+  }
+
+  async function handleRetry() {
+    if (!ocrState?.upload_id) return;
+    setUploadState("polling");
+    setUploadError(null);
+    try {
+      await retryUploadOcr(ocrState.upload_id);
+      const latest = await pollUpload(ocrState.upload_id);
+      if (latest.status === "succeeded") {
+        setSelectedId(ocrState.upload_id);
+        setUploadState("ready");
+        setReloadKey((key) => key + 1);
+      } else {
+        setUploadState("failed");
+        setUploadError({ message: latest.error_message ?? "OCR 处理失败" });
+      }
+    } catch (error) {
+      setUploadState("failed");
+      setUploadError(error);
+    }
+  }
+
+  function toggleQuestion(questionId) {
+    setSelectedQuestionIds((current) => {
+      const next = new Set(current);
+      if (next.has(questionId)) {
+        next.delete(questionId);
+      } else if (next.size < 10) {
+        next.add(questionId);
+      }
+      return next;
+    });
+  }
+
+  async function handleSaveConfirmation() {
+    if (!selectedIdValue || selectedQuestionIds.size > 10) return;
+    setUploadState("saving");
+    setUploadError(null);
+    try {
+      const confirmations = (split.data?.questions ?? [])
+        .filter((question) => selectedQuestionIds.has(question.question_id))
+        .map((question) => {
+          const override = answerOverrides[question.question_id]?.trim();
+          return {
+            question_id: question.question_id,
+            selected: true,
+            note: notes[question.question_id] ?? "",
+            student_answer_text: override && !question.student_answer_text ? override : undefined,
+          };
+        });
+      await saveSessionConfirmation(selectedIdValue, confirmations);
+      setUploadState("saved");
+      setReloadKey((key) => key + 1);
+    } catch (error) {
+      setUploadState("ready");
+      setUploadError(error);
+    }
+  }
+
   if (sessions.isLoading) return <LoadingState label="正在读取练习批次..." />;
   if (sessions.error) return <ErrorState error={sessions.error} label="练习批次读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">练习导入与确认</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <label className="block text-sm font-semibold text-ink">上传一张练习或试卷图片</label>
+        <input
+          type="file"
+          accept="image/jpeg,image/png"
+          onChange={handleFileChange}
+          disabled={uploadState === "uploading" || uploadState === "polling" || uploadState === "saving"}
+          className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-aurora/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-aurora"
+        />
+        {uploadState === "uploading" || uploadState === "polling" ? (
+          <LoadingState label="正在上传并处理 OCR..." />
+        ) : null}
+        {uploadState === "failed" ? (
+          <ErrorState error={uploadError} label="上传或 OCR 失败" onRetry={handleRetry} />
+        ) : null}
+        {uploadState === "saved" ? <SavedState label="错题确认已保存。" /> : null}
+      </div>
       {sessions.data?.sessions?.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
           <div className="space-y-2">
@@ -160,9 +280,77 @@ function ImportView() {
                 onRetry={() => setReloadKey((k) => k + 1)}
               />
             ) : selectedIdValue ? (
-              <div className="space-y-2 text-sm text-slate-600">
-                <p>切题结果：{split.data?.questions?.length ?? 0} 题</p>
-                <p>确认结果：{confirmation.data?.confirmations?.length ?? 0} 条</p>
+              <div className="space-y-4">
+                {split.data?.questions?.length > 0 ? (
+                  <ImageBboxViewer uploadId={selectedIdValue} questions={split.data.questions} />
+                ) : (
+                  <EmptyState label="暂无切题结果。" />
+                )}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-ink">请勾选错题</p>
+                    <span className="rounded-full bg-aurora/10 px-3 py-1 text-sm font-medium text-aurora">
+                      已选 {selectedQuestionIds.size}/10
+                    </span>
+                  </div>
+                  {(split.data?.questions ?? []).map((question) => (
+                    <div
+                      key={question.question_id}
+                      className="rounded-xl border border-slate-200 bg-white p-3"
+                    >
+                      <label className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedQuestionIds.has(question.question_id)}
+                          onChange={() => toggleQuestion(question.question_id)}
+                          disabled={!selectedQuestionIds.has(question.question_id) && selectedQuestionIds.size >= 10}
+                        />
+                        <div className="min-w-0 flex-1 text-sm">
+                          <p className="font-medium text-ink">
+                            {question.question_index}. {question.question_text}
+                          </p>
+                          <p className="mt-1 text-slate-500">
+                            作答：{question.student_answer_text || "未识别到学生作答"}
+                          </p>
+                          {!question.student_answer_text ? (
+                            <input
+                              type="text"
+                              value={answerOverrides[question.question_id] ?? ""}
+                              onChange={(event) =>
+                                setAnswerOverrides((current) => ({
+                                  ...current,
+                                  [question.question_id]: event.target.value,
+                                }))
+                              }
+                              placeholder="补录学生作答（可选）"
+                              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            />
+                          ) : null}
+                          <input
+                            type="text"
+                            value={notes[question.question_id] ?? ""}
+                            onChange={(event) =>
+                              setNotes((current) => ({
+                                ...current,
+                                [question.question_id]: event.target.value,
+                              }))
+                            }
+                            placeholder="备注（可选）"
+                            className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                          />
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveConfirmation}
+                  disabled={selectedQuestionIds.size === 0 || selectedQuestionIds.size > 10 || uploadState === "saving"}
+                  className="rounded-xl bg-aurora px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  保存错题确认
+                </button>
               </div>
             ) : (
               <EmptyState label="请选择一个练习批次。" />
@@ -171,7 +359,43 @@ function ImportView() {
         </div>
       )}
       {sessions.data?.sessions?.length === 0 && <EmptyState label="暂无练习批次。" />}
-      <NotReadyState label="E4 真实图片上传和 OCR 尚未接入，暂不能创建新的练习导入。" />
+    </div>
+  );
+}
+
+function ImageBboxViewer({ uploadId, questions }) {
+  const [size, setSize] = useState(null);
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <img
+        src={`/api/uploads/${uploadId}/image`}
+        alt="练习原图"
+        onLoad={(event) => {
+          setSize({
+            width: event.currentTarget.naturalWidth,
+            height: event.currentTarget.naturalHeight,
+          });
+        }}
+        className="block w-full"
+      />
+      {size
+        ? questions.map((question) => {
+            if (!question.bbox) return null;
+            return (
+              <div
+                key={question.question_id}
+                className="pointer-events-none absolute border-2 border-aurora/80 bg-aurora/5"
+                style={{
+                  left: `${(question.bbox.x / size.width) * 100}%`,
+                  top: `${(question.bbox.y / size.height) * 100}%`,
+                  width: `${(question.bbox.width / size.width) * 100}%`,
+                  height: `${(question.bbox.height / size.height) * 100}%`,
+                }}
+              />
+            );
+          })
+        : null}
     </div>
   );
 }

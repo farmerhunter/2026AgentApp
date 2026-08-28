@@ -9,7 +9,9 @@ import findingsRouter from "./routes/findings.js";
 import notesRouter from "./routes/notes.js";
 import reportsRouter from "./routes/reports.js";
 import knowledgeMapRouter from "./routes/knowledgeMap.js";
+import uploadsRouter, { recoverOcrJobs } from "./routes/uploads.js";
 import { getDb } from "./db/init.js";
+import { runE4Migrations } from "./db/migrate-e4.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -33,6 +35,8 @@ const JOB_STALE_MS = 5 * 60 * 1000;
 
 const db = getDb();
 db.defaultSafeIntegers(false);
+runE4Migrations(db);
+recoverOcrJobs();
 
 const app = express();
 app.use(express.json());
@@ -51,6 +55,7 @@ app.use("/api", findingsRouter);
 app.use("/api", notesRouter);
 app.use("/api", reportsRouter);
 app.use("/api", knowledgeMapRouter);
+app.use("/api", uploadsRouter);
 
 // ── Helpers ──
 
