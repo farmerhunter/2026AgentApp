@@ -75,14 +75,23 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
   const questions = [];
   let index = 0;
   for (const page of raw.QuestionInfo) {
+    if (Math.abs(page.Angle ?? 0) > 0.5) {
+      throw new Error("OCR result with non-zero rotation is not supported until rotation normalization is implemented");
+    }
     for (const item of page.ResultList ?? []) {
+      const bbox = coordToBbox(item.Coord);
+      const widthLimit = imageMeta.image_width ?? raw.ImageWidth ?? page.Width;
+      const heightLimit = imageMeta.image_height ?? raw.ImageHeight ?? page.Height;
+      if (widthLimit != null && (bbox.x < 0 || bbox.y < 0 || bbox.x + bbox.width > widthLimit + 1 || bbox.y + bbox.height > heightLimit + 1)) {
+        throw new Error("OCR result bbox is outside source image bounds");
+      }
       questions.push({
         question_index: index + 1,
         question_text: joinText(item.Question),
         student_answer_text: joinText(item.Answer),
         question_type: null,
         ocr_confidence: null,
-        bbox: coordToBbox(item.Coord),
+        bbox,
       });
       index += 1;
     }
@@ -103,9 +112,15 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
 }
 
 export async function runOcrAdapter(buffer, meta) {
-  const mode = process.env.OCR_PROVIDER_MODE ?? "fixture";
+  const mode = process.env.OCR_PROVIDER_MODE;
+  if (!mode) {
+    throw new Error("OCR_PROVIDER_MODE is not configured; set fixture or real explicitly");
+  }
   if (mode === "real") {
     throw new Error("real OCR adapter is gated by #93 and not implemented until signed probe is complete");
+  }
+  if (mode !== "fixture") {
+    throw new Error(`Unsupported OCR_PROVIDER_MODE: ${mode}`);
   }
   return normalizeOcrResult(FIXTURE_RAW, meta);
 }

@@ -54,7 +54,6 @@ function toQuestionDto(row) {
     question_type: row.question_type ?? null,
     ocr_confidence: row.ocr_confidence ?? null,
     question_image_url: row.question_image_url,
-    ocr_confidence: null,
     related_knowledge_point_ids: [],
     raw_ocr_ref: row.raw_ocr_json_url
       ? {
@@ -256,6 +255,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
         .map((row) => row.question_id)
     );
 
+    const seenQuestionIds = new Set();
     for (const item of confirmations) {
       if (!item || typeof item.question_id !== "string") {
         return res.status(400).json({
@@ -263,10 +263,38 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           message: "Each confirmation requires a string `question_id`",
         });
       }
+      if (seenQuestionIds.has(item.question_id)) {
+        return res.status(400).json({
+          error: "duplicate_confirmation_item",
+          message: `Duplicate question_id ${item.question_id}`,
+        });
+      }
+      seenQuestionIds.add(item.question_id);
       if (!uploadQuestionIds.has(item.question_id)) {
         return res.status(400).json({
           error: "question_not_in_upload",
           message: `Question ${item.question_id} does not belong to upload ${req.params.upload_id}`,
+        });
+      }
+      if (typeof item.selected !== "boolean") {
+        return res.status(400).json({
+          error: "invalid_selected",
+          message: "`selected` must be a boolean",
+        });
+      }
+      const allowedKeys = ["question_id", "selected", "student_answer_text", "note"];
+      for (const key of Object.keys(item)) {
+        if (!allowedKeys.includes(key)) {
+          return res.status(400).json({
+            error: "unsupported_confirmation_field",
+            message: `Field ${key} is not accepted by E4 confirmation`,
+          });
+        }
+      }
+      if (item.student_answer_text != null && !item.selected) {
+        return res.status(400).json({
+          error: "answer_without_selection",
+          message: "student_answer_text can only be provided for a selected wrong question",
         });
       }
       if (item.student_answer_text != null && item.student_answer_text !== "") {

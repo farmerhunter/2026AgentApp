@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, NavLink, Navigate, Outlet } from "react-router-dom";
 import { ErrorState, LoadingState, EmptyState, NotReadyState, SavedState } from "../components/DataState.jsx";
 import {
@@ -133,6 +133,25 @@ function ImportView() {
     () => (selectedIdValue ? fetchSessionConfirmation(selectedIdValue) : Promise.resolve(null)),
     [selectedIdValue, reloadKey],
   );
+
+  useEffect(() => {
+    setSelectedQuestionIds(new Set());
+    setNotes({});
+    setAnswerOverrides({});
+    const saved = confirmation.data?.confirmations ?? [];
+    if (saved.length === 0) return;
+    const selected = new Set();
+    const nextNotes = {};
+    const nextAnswers = {};
+    for (const item of saved) {
+      if (item.selected) selected.add(item.question_id);
+      if (item.note) nextNotes[item.question_id] = item.note;
+      if (item.student_answer_text) nextAnswers[item.question_id] = item.student_answer_text;
+    }
+    setSelectedQuestionIds(selected);
+    setNotes(nextNotes);
+    setAnswerOverrides(nextAnswers);
+  }, [selectedIdValue, confirmation.data]);
 
   async function pollUpload(uploadId) {
     let latest = { status: "queued", upload_id: uploadId };

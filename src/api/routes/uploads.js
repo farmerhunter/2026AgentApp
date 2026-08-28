@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { readFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
-import { resolve, dirname, join, extname } from "node:path";
+import { resolve, dirname, join, extname, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { getDb } from "../db/init.js";
@@ -14,6 +14,7 @@ const PRIVATE_ROOT =
   process.env.HERMES_PRIVATE_UPLOADS_DIR ?? resolve(REPO_ROOT, "runtime", "private", "uploads");
 const MAX_FILE_SIZE = 7 * 1024 * 1024;
 const DEFAULT_STUDENT_ID = "student_demo";
+const OCR_TIMEOUT_MS = Number(process.env.OCR_TIMEOUT_MS ?? 30000);
 
 const db = getDb();
 db.defaultSafeIntegers(false);
@@ -129,12 +130,26 @@ function markLatestFailed(uploadId, reason) {
   );
 }
 
+function markLatestInterrupted(uploadId) {
+  const job = latestJob(uploadId);
+  if (!job) return;
+  db.prepare(
+    `UPDATE ocr_jobs
+     SET status = 'interrupted', error_message = 'interrupted', updated_at = ?
+     WHERE id = ?`,
+  ).run(new Date().toISOString(), job.id);
+  db.prepare(`UPDATE uploads SET ocr_status = 'interrupted', updated_at = ? WHERE upload_id = ?`).run(
+    new Date().toISOString(),
+    uploadId,
+  );
+}
+
 export function recoverOcrJobs() {
   const rows = db
     .prepare(`SELECT upload_id FROM ocr_jobs WHERE is_latest = 1 AND status = 'running'`)
     .all();
   for (const row of rows) {
-    markLatestFailed(row.upload_id, "interrupted");
+    markLatestInterrupted(row.upload_id);
   }
 }
 
@@ -153,10 +168,15 @@ async function startOcrJob(uploadId, attempt) {
 
   try {
     const buffer = readFileSync(filePath);
-    const normalized = await runOcrAdapter(buffer, {
-      image_width: uploadRow.image_width,
-      image_height: uploadRow.image_height,
-    });
+    const normalized = await Promise.race([
+      runOcrAdapter(buffer, {
+        image_width: uploadRow.image_width,
+        image_height: uploadRow.image_height,
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), OCR_TIMEOUT_MS),
+      ),
+    ]);
 
     insertQuestions(uploadId, normalized);
 
@@ -212,7 +232,18 @@ function createOcrAttempt(uploadId) {
   return attempt;
 }
 
-router.post("/uploads", upload.single("file"), (req, res) => {
+router.post("/uploads", (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ error: "file_too_large", message: "Original image must be <= 7 MiB" });
+      }
+      return res.status(400).json({ error: "invalid_upload", message: err.message });
+    }
+    if (err) return next(err);
+    next();
+  });
+}, (req, res) => {
   try {
     const buffer = req.file?.buffer;
     if (!buffer) {
@@ -236,26 +267,28 @@ router.post("/uploads", upload.single("file"), (req, res) => {
 
     const now = new Date().toISOString();
     try {
-      db.prepare(
-        `INSERT INTO uploads (
-           upload_id, student_id, subject, subject_label, source_type, source_title,
-           uploaded_at, storage_provider, storage_key, file_name, file_size, mime_type,
-           ocr_status, status, created_at, updated_at
-         ) VALUES (?, ?, 'math', '数学', 'exercise', ?, ?, 'local', ?, ?, ?, ?, 'queued', 'active', ?, ?)`,
-      ).run(
-        uploadId,
-        DEFAULT_STUDENT_ID,
-        req.file.originalname ?? uploadId,
-        now,
-        `${uploadId}/${fileName}`,
-        fileName,
-        buffer.length,
-        type.mime,
-        now,
-        now,
-      );
-
-      createOcrAttempt(uploadId);
+      const createUploadAndJob = db.transaction(() => {
+        db.prepare(
+          `INSERT INTO uploads (
+             upload_id, student_id, subject, subject_label, source_type, source_title,
+             uploaded_at, storage_provider, storage_key, file_name, file_size, mime_type,
+             ocr_status, status, created_at, updated_at
+           ) VALUES (?, ?, 'math', '数学', 'exercise', ?, ?, 'local', ?, ?, ?, ?, 'queued', 'active', ?, ?)`,
+        ).run(
+          uploadId,
+          DEFAULT_STUDENT_ID,
+          req.file.originalname ?? uploadId,
+          now,
+          `${uploadId}/${fileName}`,
+          fileName,
+          buffer.length,
+          type.mime,
+          now,
+          now,
+        );
+        createOcrAttempt(uploadId);
+      });
+      createUploadAndJob();
       setImmediate(() => {
         startOcrJob(uploadId, 1).catch(() => {});
       });
@@ -310,7 +343,8 @@ router.get("/uploads/:upload_id/image", (req, res) => {
     }
 
     const filePath = resolve(PRIVATE_ROOT, uploadRow.storage_key);
-    if (!filePath.startsWith(resolve(PRIVATE_ROOT))) {
+    const relPath = relative(resolve(PRIVATE_ROOT), filePath);
+    if (relPath.startsWith("..") || isAbsolute(relPath)) {
       return res.status(403).json({ error: "image_forbidden", message: "Image path forbidden" });
     }
     if (!existsSync(filePath)) {
