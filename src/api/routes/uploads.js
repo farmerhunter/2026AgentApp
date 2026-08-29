@@ -53,7 +53,7 @@ function privatePathFor(uploadId, fileName) {
   return resolve(PRIVATE_ROOT, uploadId, fileName);
 }
 
-function insertQuestions(uploadId, normalized) {
+function replaceQuestions(uploadId, normalized) {
   const deleteConfirmations = db.prepare(
     `DELETE FROM question_confirmations
      WHERE question_id IN (SELECT question_id FROM questions WHERE upload_id = ?)`,
@@ -67,28 +67,24 @@ function insertQuestions(uploadId, normalized) {
      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
 
-  const save = db.transaction(() => {
-    deleteConfirmations.run(uploadId);
-    deleteQuestions.run(uploadId);
-    for (const item of normalized.questions) {
-      insert.run(
-        `question_${uploadId}_${String(item.question_index).padStart(2, "0")}`,
-        uploadId,
-        1,
-        item.question_index,
-        item.question_text,
-        item.student_answer_text,
-        item.question_type,
-        item.ocr_confidence,
-        JSON.stringify(item.bbox),
-        null,
-        new Date().toISOString(),
-        new Date().toISOString(),
-      );
-    }
-  });
-
-  save();
+  deleteConfirmations.run(uploadId);
+  deleteQuestions.run(uploadId);
+  for (const item of normalized.questions) {
+    insert.run(
+      `question_${uploadId}_${String(item.question_index).padStart(2, "0")}`,
+      uploadId,
+      1,
+      item.question_index,
+      item.question_text,
+      item.student_answer_text,
+      item.question_type,
+      item.ocr_confidence,
+      JSON.stringify(item.bbox),
+      null,
+      new Date().toISOString(),
+      new Date().toISOString(),
+    );
+  }
 }
 
 function latestJob(uploadId) {
@@ -146,7 +142,7 @@ function markLatestInterrupted(uploadId) {
 
 export function recoverOcrJobs() {
   const rows = db
-    .prepare(`SELECT upload_id FROM ocr_jobs WHERE is_latest = 1 AND status = 'running'`)
+    .prepare(`SELECT upload_id FROM ocr_jobs WHERE is_latest = 1 AND status IN ('queued', 'running')`)
     .all();
   for (const row of rows) {
     markLatestInterrupted(row.upload_id);
@@ -178,38 +174,43 @@ async function startOcrJob(uploadId, attempt) {
       ),
     ]);
 
-    insertQuestions(uploadId, normalized);
-
-    db.prepare(
-      `UPDATE ocr_jobs
-       SET status = 'succeeded', provider_request_id = ?, provider_metadata_json = ?, error_message = NULL, updated_at = ?
-       WHERE upload_id = ? AND attempt = ?`,
-    ).run(
-      normalized.request_id,
-      JSON.stringify({
-        use_new_model: normalized.use_new_model,
-        image_width: normalized.image_width,
-        image_height: normalized.image_height,
-      }),
-      new Date().toISOString(),
-      uploadId,
-      attempt,
-    );
-    db.prepare(`UPDATE uploads SET ocr_status = 'completed', updated_at = ? WHERE upload_id = ?`).run(
-      new Date().toISOString(),
-      uploadId,
-    );
+    const succeed = db.transaction(() => {
+      replaceQuestions(uploadId, normalized);
+      db.prepare(
+        `UPDATE ocr_jobs
+         SET status = 'succeeded', provider_request_id = ?, provider_metadata_json = ?, error_message = NULL, updated_at = ?
+         WHERE upload_id = ? AND attempt = ?`,
+      ).run(
+        normalized.request_id,
+        JSON.stringify({
+          use_new_model: normalized.use_new_model,
+          image_width: normalized.image_width,
+          image_height: normalized.image_height,
+        }),
+        new Date().toISOString(),
+        uploadId,
+        attempt,
+      );
+      db.prepare(`UPDATE uploads SET ocr_status = 'succeeded', updated_at = ? WHERE upload_id = ?`).run(
+        new Date().toISOString(),
+        uploadId,
+      );
+    });
+    succeed();
   } catch (error) {
     const reason = error.message ?? "ocr_failed";
-    db.prepare(
-      `UPDATE ocr_jobs
-       SET status = 'failed', error_message = ?, updated_at = ?
-       WHERE upload_id = ? AND attempt = ?`,
-    ).run(reason, new Date().toISOString(), uploadId, attempt);
-    db.prepare(`UPDATE uploads SET ocr_status = 'failed', updated_at = ? WHERE upload_id = ?`).run(
-      new Date().toISOString(),
-      uploadId,
-    );
+    const fail = db.transaction(() => {
+      db.prepare(
+        `UPDATE ocr_jobs
+         SET status = 'failed', error_message = ?, updated_at = ?
+         WHERE upload_id = ? AND attempt = ?`,
+      ).run(reason, new Date().toISOString(), uploadId, attempt);
+      db.prepare(`UPDATE uploads SET ocr_status = 'failed', updated_at = ? WHERE upload_id = ?`).run(
+        new Date().toISOString(),
+        uploadId,
+      );
+    });
+    fail();
   }
 }
 

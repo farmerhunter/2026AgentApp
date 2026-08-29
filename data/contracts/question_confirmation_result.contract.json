@@ -11,6 +11,7 @@
     {
       "question_id": "q_001",
       "selected": true,
+      "student_answer_text": "k=6，图像在第一、三象限",
       "subject": "math",
       "subject_label": "数学",
       "student_mark": "做错了",

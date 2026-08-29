@@ -282,6 +282,24 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           message: "`selected` must be a boolean",
         });
       }
+      if (item.note != null && typeof item.note !== "string") {
+        return res.status(400).json({
+          error: "invalid_note",
+          message: "`note` must be a string or null",
+        });
+      }
+      if (item.student_answer_text != null && typeof item.student_answer_text !== "string") {
+        return res.status(400).json({
+          error: "invalid_student_answer_text",
+          message: "`student_answer_text` must be a string or null",
+        });
+      }
+      if ((item.note ?? "").length > 2000 || (item.student_answer_text ?? "").length > 2000) {
+        return res.status(400).json({
+          error: "field_too_long",
+          message: "note and student_answer_text must be <= 2000 characters",
+        });
+      }
       const allowedKeys = ["question_id", "selected", "student_answer_text", "note"];
       for (const key of Object.keys(item)) {
         if (!allowedKeys.includes(key)) {

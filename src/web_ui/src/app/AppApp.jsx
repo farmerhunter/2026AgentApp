@@ -153,6 +153,28 @@ function ImportView() {
     setAnswerOverrides(nextAnswers);
   }, [selectedIdValue, confirmation.data]);
 
+  useEffect(() => {
+    const session = sessions.data?.sessions?.find((item) => item.upload_id === selectedIdValue);
+    if (!session || !["queued", "running"].includes(session.ocr_status)) return;
+    let cancelled = false;
+    setUploadState("polling");
+    setOcrState({ upload_id: selectedIdValue, status: session.ocr_status });
+    (async () => {
+      const latest = await pollUpload(selectedIdValue);
+      if (cancelled) return;
+      if (latest.status === "succeeded") {
+        setUploadState("ready");
+        setReloadKey((key) => key + 1);
+      } else {
+        setUploadState("failed");
+        setUploadError({ message: latest.error_message ?? "OCR 处理失败" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedIdValue, sessions.data?.sessions]);
+
   async function pollUpload(uploadId) {
     let latest = { status: "queued", upload_id: uploadId };
     for (let i = 0; i < 60; i += 1) {
@@ -265,7 +287,14 @@ function ImportView() {
           <LoadingState label="正在上传并处理 OCR..." />
         ) : null}
         {uploadState === "failed" ? (
-          <ErrorState error={uploadError} label="上传或 OCR 失败" onRetry={handleRetry} />
+          ocrState?.upload_id ? (
+            <ErrorState error={uploadError} label="上传或 OCR 失败" onRetry={handleRetry} />
+          ) : (
+            <ErrorState error={uploadError} label="上传失败，请重新选择图片" />
+          )
+        ) : null}
+        {uploadState === "ready" && uploadError ? (
+          <ErrorState error={uploadError} label="保存失败" onRetry={handleSaveConfirmation} />
         ) : null}
         {uploadState === "saved" ? <SavedState label="错题确认已保存。" /> : null}
       </div>
@@ -384,13 +413,17 @@ function ImportView() {
 
 function ImageBboxViewer({ uploadId, questions }) {
   const [size, setSize] = useState(null);
+  const [imageError, setImageError] = useState(null);
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white">
+      {imageError ? <ErrorState error={imageError} label="原图加载失败" /> : null}
       <img
         src={`/api/uploads/${uploadId}/image`}
         alt="练习原图"
+        onError={() => setImageError({ message: "原图不存在或已损坏。" })}
         onLoad={(event) => {
+          setImageError(null);
           setSize({
             width: event.currentTarget.naturalWidth,
             height: event.currentTarget.naturalHeight,
