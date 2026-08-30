@@ -113,13 +113,43 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
   };
 }
 
+export async function callTencentQuestionSplitOcr(buffer, { useNewModel = false } = {}) {
+  const secretId = process.env.TENCENTCLOUD_SECRET_ID;
+  const secretKey = process.env.TENCENTCLOUD_SECRET_KEY;
+  const region = process.env.TENCENTCLOUD_REGION ?? "ap-guangzhou";
+  if (!secretId || !secretKey) {
+    throw new Error("missing TENCENTCLOUD_SECRET_ID or TENCENTCLOUD_SECRET_KEY");
+  }
+
+  const { default: tencentcloud } = await import("tencentcloud-sdk-nodejs");
+  const OcrClient = tencentcloud.ocr.v20181119.Client;
+  const client = new OcrClient({
+    credential: { secretId, secretKey },
+    region,
+    profile: {
+      httpProfile: {
+        endpoint: "ocr.tencentcloudapi.com",
+      },
+    },
+  });
+
+  const response = await client.QuestionSplitOCR({
+    ImageBase64: buffer.toString("base64"),
+    UseNewModel: useNewModel,
+  });
+
+  return normalizeOcrResult({ ...response, UseNewModel: useNewModel }, {});
+}
+
 export async function runOcrAdapter(buffer, meta) {
   const mode = process.env.OCR_PROVIDER_MODE;
   if (!mode) {
     throw new Error("OCR_PROVIDER_MODE is not configured; set fixture or real explicitly");
   }
   if (mode === "real") {
-    throw new Error("real OCR adapter is gated by #93 and not implemented until signed probe is complete");
+    return callTencentQuestionSplitOcr(buffer, {
+      useNewModel: process.env.TENCENT_OCR_USE_NEW_MODEL === "true",
+    });
   }
   if (mode !== "fixture") {
     throw new Error(`Unsupported OCR_PROVIDER_MODE: ${mode}`);
