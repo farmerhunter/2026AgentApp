@@ -148,7 +148,7 @@ export async function runOcrAdapter(buffer, meta) {
   }
   if (mode === "real") {
     return callTencentQuestionSplitOcr(buffer, {
-      useNewModel: process.env.TENCENT_OCR_USE_NEW_MODEL === "true",
+      useNewModel: process.env.TENCENT_OCR_USE_NEW_MODEL !== "false",
     });
   }
   if (mode !== "fixture") {
