@@ -160,14 +160,20 @@ function ImportView() {
     setUploadState("polling");
     setOcrState({ upload_id: selectedIdValue, status: session.ocr_status });
     (async () => {
-      const latest = await pollUpload(selectedIdValue);
-      if (cancelled) return;
-      if (latest.status === "succeeded") {
-        setUploadState("ready");
-        setReloadKey((key) => key + 1);
-      } else {
+      try {
+        const latest = await pollUpload(selectedIdValue);
+        if (cancelled) return;
+        if (latest.status === "succeeded") {
+          setUploadState("ready");
+          setReloadKey((key) => key + 1);
+        } else {
+          setUploadState("failed");
+          setUploadError({ message: latest.error_message ?? "OCR 处理失败" });
+        }
+      } catch (error) {
+        if (cancelled) return;
         setUploadState("failed");
-        setUploadError({ message: latest.error_message ?? "OCR 处理失败" });
+        setUploadError(error);
       }
     })();
     return () => {

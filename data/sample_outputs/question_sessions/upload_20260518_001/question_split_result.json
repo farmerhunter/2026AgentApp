@@ -35,7 +35,9 @@
         "provider": "tencent_question_split_ocr",
         "raw_response_url": "/data/question_sessions/upload_20260518_001/raw/tencent_raw_response.json",
         "raw_question_index": 1
-      }
+      },
+      "student_answer_text": null,
+      "question_type": null
     },
     {
       "question_id": "q_002",
@@ -57,7 +59,9 @@
         "provider": "tencent_question_split_ocr",
         "raw_response_url": "/data/question_sessions/upload_20260518_001/raw/tencent_raw_response.json",
         "raw_question_index": 2
-      }
+      },
+      "student_answer_text": null,
+      "question_type": null
     },
     {
       "question_id": "q_003",
@@ -79,7 +83,9 @@
         "provider": "tencent_question_split_ocr",
         "raw_response_url": "/data/question_sessions/upload_20260518_001/raw/tencent_raw_response.json",
         "raw_question_index": 3
-      }
+      },
+      "student_answer_text": null,
+      "question_type": null
     }
   ],
   "errors": []

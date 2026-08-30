@@ -224,7 +224,7 @@ async function main() {
   assert(split.body.contract_version === "1.2", "split version mismatch");
   assert(hasKeys(split.body, ["subject", "subject_label", "questions", "errors"]), "split required keys missing");
   assert(split.body.questions.length === 3, "expected 3 split questions");
-  assert(split.body.questions.every((q) => hasKeys(q, ["question_id", "question_index", "page", "bbox", "question_text", "related_knowledge_point_ids", "raw_ocr_ref"])), "split question required keys missing");
+  assert(split.body.questions.every((q) => hasKeys(q, ["question_id", "question_index", "page", "bbox", "question_text", "student_answer_text", "question_type", "ocr_confidence", "related_knowledge_point_ids", "raw_ocr_ref"])), "split question required keys missing");
   console.log("PASS GET /api/sessions/:upload_id/split");
 
   const before = await jsonRequest(`/api/sessions/${uploadId}/confirmation`);
@@ -232,7 +232,7 @@ async function main() {
   assert(before.body.contract === "question_confirmation_result", "confirmation contract mismatch");
   assert(before.body.contract_version === "1.2", "confirmation version mismatch");
   assert(hasKeys(before.body, ["subject", "subject_label", "confirmations"]), "confirmation required keys missing");
-  assert(before.body.confirmations.every((c) => hasKeys(c, ["question_id", "selected", "subject", "subject_label", "knowledge_point", "review_priority", "tags"])), "confirmation item required keys missing");
+  assert(before.body.confirmations.every((c) => hasKeys(c, ["question_id", "selected", "student_answer_text", "subject", "subject_label", "knowledge_point", "review_priority", "tags"])), "confirmation item required keys missing");
 
   // Atomic failure for confirmation
   const validConfirmation = {

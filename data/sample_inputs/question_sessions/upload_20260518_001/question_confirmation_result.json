@@ -27,7 +27,8 @@
         "错题",
         "老师讲过"
       ],
-      "note": "需要把 k 的正负和象限关系整理成口诀。"
+      "note": "需要把 k 的正负和象限关系整理成口诀。",
+      "student_answer_text": null
     },
     {
       "question_id": "q_002",
@@ -48,7 +49,8 @@
         "不确定",
         "需要复盘"
       ],
-      "note": "计算结果对了，但表达过程不清楚。"
+      "note": "计算结果对了，但表达过程不清楚。",
+      "student_answer_text": null
     },
     {
       "question_id": "q_003",
@@ -68,7 +70,8 @@
       "tags": [
         "已掌握"
       ],
-      "note": "暂不加入重点题。"
+      "note": "暂不加入重点题。",
+      "student_answer_text": null
     }
   ]
 }

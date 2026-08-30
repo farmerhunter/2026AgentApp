@@ -294,6 +294,12 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           message: "`student_answer_text` must be a string or null",
         });
       }
+      if (item.student_answer_text != null && item.student_answer_text.trim() === "") {
+        return res.status(400).json({
+          error: "blank_student_answer_text",
+          message: "`student_answer_text` must not be blank",
+        });
+      }
       if ((item.note ?? "").length > 2000 || (item.student_answer_text ?? "").length > 2000) {
         return res.status(400).json({
           error: "field_too_long",
@@ -315,7 +321,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           message: "student_answer_text can only be provided for a selected wrong question",
         });
       }
-      if (item.student_answer_text != null && item.student_answer_text !== "") {
+      if (item.student_answer_text != null && item.student_answer_text.trim() !== "") {
         const question = db
           .prepare("SELECT student_answer_text FROM questions WHERE question_id = ?")
           .get(item.question_id);
@@ -360,7 +366,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           insert.run(item.question_id, 1, item.note ?? null, new Date().toISOString(), new Date().toISOString());
         }
         if (item.student_answer_text != null && item.student_answer_text !== "") {
-          updateAnswer.run(item.student_answer_text, new Date().toISOString(), item.question_id);
+          updateAnswer.run(item.student_answer_text.trim(), new Date().toISOString(), item.question_id);
         }
       }
     });

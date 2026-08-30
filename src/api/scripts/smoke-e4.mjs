@@ -115,7 +115,7 @@ async function main() {
   const split = await jsonRequest(`/api/sessions/${uploadId}/split`);
   assert(split.status === 200, `split should be 200, got ${split.status}`);
   assert(split.body.contract_version === "1.2", "split contract_version should be 1.2");
-  assert(split.body.questions.length === 1, "fixture OCR should produce one question");
+  assert(split.body.questions.length === 11, "fixture OCR should produce 11 questions");
   assert(split.body.questions[0].student_answer_text === "5√2", "student answer text mismatch");
 
   const image = await fetch(`${BASE_URL}/api/uploads/${uploadId}/image`);
@@ -133,6 +133,20 @@ async function main() {
   assert(confirm.status === 200, `confirmation should be 200, got ${confirm.status}`);
   assert(confirm.body.contract_version === "1.2", "confirmation contract_version should be 1.2");
   assert(confirm.body.confirmations.length === 1, "confirmation length mismatch");
+
+  const tooMany = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      confirmations: split.body.questions.map((question) => ({
+        question_id: question.question_id,
+        selected: true,
+      })),
+    }),
+  });
+  assert(tooMany.status === 400, `>10 selected should be 400, got ${tooMany.status}`);
+  const afterTooMany = await jsonRequest(`/api/sessions/${uploadId}/confirmation`);
+  assert(afterTooMany.body.confirmations.length === 1, ">10 failure must not partially write");
 
   const malformedNote = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
     method: "POST",
