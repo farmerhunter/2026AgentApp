@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
+import Database from "better-sqlite3";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_DIR = resolve(__dirname, "..");
@@ -24,6 +25,35 @@ function pngBuffer() {
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
     0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
   ]);
+}
+
+function seedTooManyQuestions(uploadId) {
+  const database = new Database(DB_PATH);
+  database.defaultSafeIntegers(false);
+  const insert = database.prepare(
+    `INSERT INTO questions (
+       question_id, upload_id, page, question_index, question_text,
+       student_answer_text, question_type, ocr_confidence, bbox_json,
+       raw_ocr_json_url, created_at, updated_at
+     ) VALUES (?, ?, 1, ?, ?, ?, NULL, NULL, ?, NULL, ?, ?)`,
+  );
+  const now = new Date().toISOString();
+  const seed = database.transaction(() => {
+    for (let index = 0; index < 11; index += 1) {
+      insert.run(
+        `test_too_many_${index}`,
+        uploadId,
+        index + 1,
+        `测试题 ${index + 1}`,
+        null,
+        JSON.stringify({ x: 0, y: 0, width: 100, height: 50 }),
+        now,
+        now,
+      );
+    }
+  });
+  seed();
+  database.close();
 }
 
 async function waitForHealth(timeoutMs = 15000) {
@@ -115,7 +145,7 @@ async function main() {
   const split = await jsonRequest(`/api/sessions/${uploadId}/split`);
   assert(split.status === 200, `split should be 200, got ${split.status}`);
   assert(split.body.contract_version === "1.2", "split contract_version should be 1.2");
-  assert(split.body.questions.length === 11, "fixture OCR should produce 11 questions");
+  assert(split.body.questions.length === 1, "fixture OCR should produce one question");
   assert(split.body.questions[0].student_answer_text === "5√2", "student answer text mismatch");
 
   const image = await fetch(`${BASE_URL}/api/uploads/${uploadId}/image`);
@@ -134,12 +164,13 @@ async function main() {
   assert(confirm.body.contract_version === "1.2", "confirmation contract_version should be 1.2");
   assert(confirm.body.confirmations.length === 1, "confirmation length mismatch");
 
+  seedTooManyQuestions(uploadId);
   const tooMany = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      confirmations: split.body.questions.map((question) => ({
-        question_id: question.question_id,
+      confirmations: Array.from({ length: 11 }, (_, index) => ({
+        question_id: `test_too_many_${index}`,
         selected: true,
       })),
     }),

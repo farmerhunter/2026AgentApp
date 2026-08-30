@@ -10,18 +10,20 @@ const FIXTURE_RAW = {
       Height: 400,
       OrgWidth: 600,
       OrgHeight: 400,
-      ResultList: Array.from({ length: 11 }, (_, index) => ({
-        Question: [{ Text: `计算 √8 + √18（第 ${index + 1} 题）` }],
-        Answer: [{ Text: "5√2" }],
-        Coord: [
-          {
-            LeftTop: { X: 40, Y: 20 },
-            RightTop: { X: 560, Y: 20 },
-            LeftBottom: { X: 40, Y: 120 },
-            RightBottom: { X: 560, Y: 120 },
-          },
-        ],
-      })),
+      ResultList: [
+        {
+          Question: [{ Text: "计算 √8 + √18" }],
+          Answer: [{ Text: "5√2" }],
+          Coord: [
+            {
+              LeftTop: { X: 40, Y: 20 },
+              RightTop: { X: 560, Y: 20 },
+              LeftBottom: { X: 40, Y: 120 },
+              RightBottom: { X: 560, Y: 120 },
+            },
+          ],
+        },
+      ],
     },
   ],
 };
