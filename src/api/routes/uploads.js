@@ -4,6 +4,7 @@ import { readFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from "
 import { resolve, dirname, join, extname, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
+import { imageSize } from "image-size";
 import { getDb } from "../db/init.js";
 import { runOcrAdapter } from "../lib/ocrAdapter.js";
 
@@ -259,6 +260,14 @@ router.post("/uploads", (req, res, next) => {
       return res.status(400).json({ error: "invalid_image", message: "Only JPG/PNG images are allowed" });
     }
 
+    const dimensions = imageSize(buffer);
+    if (!dimensions?.width || !dimensions?.height) {
+      return res.status(400).json({ error: "invalid_image_dimensions", message: "Could not determine image dimensions" });
+    }
+    if (dimensions.orientation && dimensions.orientation > 1) {
+      return res.status(400).json({ error: "unsupported_image_orientation", message: "Rotated images are not supported yet" });
+    }
+
     const uploadId = newUploadId();
     const fileName = `${randomBytes(16).toString("hex")}${type.ext}`;
     const uploadDir = resolve(PRIVATE_ROOT, uploadId);
@@ -273,8 +282,8 @@ router.post("/uploads", (req, res, next) => {
           `INSERT INTO uploads (
              upload_id, student_id, subject, subject_label, source_type, source_title,
              uploaded_at, storage_provider, storage_key, file_name, file_size, mime_type,
-             ocr_status, status, created_at, updated_at
-           ) VALUES (?, ?, 'math', '数学', 'exercise', ?, ?, 'local', ?, ?, ?, ?, 'queued', 'active', ?, ?)`,
+             image_width, image_height, ocr_status, status, created_at, updated_at
+           ) VALUES (?, ?, 'math', '数学', 'exercise', ?, ?, 'local', ?, ?, ?, ?, ?, ?, 'queued', 'active', ?, ?)`,
         ).run(
           uploadId,
           DEFAULT_STUDENT_ID,
@@ -284,6 +293,8 @@ router.post("/uploads", (req, res, next) => {
           fileName,
           buffer.length,
           type.mime,
+          dimensions.width,
+          dimensions.height,
           now,
           now,
         );

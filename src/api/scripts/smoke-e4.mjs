@@ -3,11 +3,13 @@
 import { spawn } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, readFileSync } from "node:fs";
 import Database from "better-sqlite3";
+import { normalizeOcrResult } from "../lib/ocrAdapter.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_DIR = resolve(__dirname, "..");
+const REPO_ROOT = resolve(API_DIR, "..", "..");
 const PRIVATE_DIR = resolve(API_DIR, `e4_smoke_private_${Date.now()}`);
 const DB_PATH = resolve(API_DIR, `e4_smoke_${Date.now()}.db`).replaceAll("\\", "/");
 const DATABASE_URL = `sqlite:///${DB_PATH}`;
@@ -21,10 +23,7 @@ function assert(condition, message) {
 }
 
 function pngBuffer() {
-  return Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-    0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-  ]);
+  return readFileSync(resolve(REPO_ROOT, "media", "diagrams", "agent_flow.png"));
 }
 
 function seedTooManyQuestions(uploadId) {
@@ -221,6 +220,39 @@ async function main() {
 
   const unknownImage = await fetch(`${BASE_URL}/api/uploads/not_found/image`);
   assert(unknownImage.status === 404, `unknown image should be 404, got ${unknownImage.status}`);
+
+  let blankQuestionRejected = false;
+  try {
+    normalizeOcrResult(
+      {
+        QuestionInfo: [
+          {
+            Angle: 0,
+            Width: 100,
+            Height: 100,
+            ResultList: [
+              {
+                Question: [],
+                Answer: [{ Text: "A" }],
+                Coord: [
+                  {
+                    LeftTop: { X: 0, Y: 0 },
+                    RightTop: { X: 50, Y: 0 },
+                    LeftBottom: { X: 0, Y: 50 },
+                    RightBottom: { X: 50, Y: 50 },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      { image_width: 100, image_height: 100 },
+    );
+  } catch {
+    blankQuestionRejected = true;
+  }
+  assert(blankQuestionRejected, "blank question text must be rejected");
 
   console.log("E4 upload/OCR/confirmation smoke passed");
 }

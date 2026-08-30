@@ -82,6 +82,10 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
     }
     for (const item of page.ResultList ?? []) {
       const bbox = coordToBbox(item.Coord);
+      const questionText = joinText(item.Question);
+      if (!questionText) {
+        throw new Error("OCR result contains a question with empty question text");
+      }
       const widthLimit = imageMeta.image_width ?? raw.ImageWidth ?? page.Width;
       const heightLimit = imageMeta.image_height ?? raw.ImageHeight ?? page.Height;
       if (widthLimit != null && (bbox.x < 0 || bbox.y < 0 || bbox.x + bbox.width > widthLimit + 1 || bbox.y + bbox.height > heightLimit + 1)) {
@@ -89,7 +93,7 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
       }
       questions.push({
         question_index: index + 1,
-        question_text: joinText(item.Question),
+        question_text: questionText,
         student_answer_text: joinText(item.Answer),
         question_type: null,
         ocr_confidence: null,
@@ -113,7 +117,7 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
   };
 }
 
-export async function callTencentQuestionSplitOcr(buffer, { useNewModel = false } = {}) {
+export async function callTencentQuestionSplitOcr(buffer, { useNewModel = false, meta = {} } = {}) {
   const secretId = process.env.TENCENTCLOUD_SECRET_ID;
   const secretKey = process.env.TENCENTCLOUD_SECRET_KEY;
   const region = process.env.TENCENTCLOUD_REGION ?? "ap-guangzhou";
@@ -138,7 +142,7 @@ export async function callTencentQuestionSplitOcr(buffer, { useNewModel = false 
     UseNewModel: useNewModel,
   });
 
-  return normalizeOcrResult({ ...response, UseNewModel: useNewModel }, {});
+  return normalizeOcrResult({ ...response, UseNewModel: useNewModel }, meta);
 }
 
 export async function runOcrAdapter(buffer, meta) {
@@ -149,6 +153,7 @@ export async function runOcrAdapter(buffer, meta) {
   if (mode === "real") {
     return callTencentQuestionSplitOcr(buffer, {
       useNewModel: process.env.TENCENT_OCR_USE_NEW_MODEL !== "false",
+      meta,
     });
   }
   if (mode !== "fixture") {
