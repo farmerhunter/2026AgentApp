@@ -11,7 +11,7 @@
 5. [V2 实施计划](v2/implementation-plan.md)：了解 Epic 依赖和终评 R1 约束。
 6. [架构决策记录](decisions/architecture-decisions.md)：了解需要长期保持的技术选择。
 7. [Epic 设计文档规范](epic-design-guidelines.md)：Epic 启动后判断是否需要独立设计文档。
-8. [Epic 协作与质量 Gate 规范](epic-collaboration-protocol.md)：David 端到端交付时的 Architect Gate、最终审查和合并边界。
+8. [Epic 自主交付与质量复核规范](epic-collaboration-protocol.md)：共同维护者端到端设计、实现、验证、合并、部署和收尾的轻量流程。
 
 ## 版本文档
 

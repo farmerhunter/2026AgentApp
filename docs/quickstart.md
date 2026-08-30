@@ -88,4 +88,4 @@ curl -X POST http://localhost:8000/api/hermes/jobs \
 2. 改动前跑一遍本指南第 2 节的基线命令，确认环境可用；
 3. 保持 commit 聚焦，一次 commit 只表达一个逻辑变化；
 4. 产品边界、跨模块架构、contract、prompt、skill、demo flow 或部署方式发生实质变化时，按 [`docs/README.md`](README.md) 更新相应文档；
-5. Push 后把 GitHub Project 状态移到 `In review`，在 issue 里记录变更和验证结果，等待人工确认后再关闭（见 [CONTRIBUTING.md](../CONTRIBUTING.md)）。
+5. Push 后在 issue/PR 记录变更和验证结果；负责维护者完成 self-review、远端核验和 Project 状态同步后可自主合并并关闭，独立 review 按风险选用（见 [CONTRIBUTING.md](../CONTRIBUTING.md)）。
