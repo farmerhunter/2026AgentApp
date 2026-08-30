@@ -229,7 +229,7 @@ function createOcrAttempt(uploadId) {
   db.prepare(
     `INSERT INTO ocr_jobs (
        upload_id, provider, status, attempt, is_latest, error_message, created_at, updated_at
-     ) VALUES (?, 'tencent-question-split-ocr', 'queued', ?, 1, NULL, ?, ?)`,
+     ) VALUES (?, 'tencent_question_split_ocr', 'queued', ?, 1, NULL, ?, ?)`,
   ).run(uploadId, attempt, now, now);
   return attempt;
 }
@@ -260,7 +260,12 @@ router.post("/uploads", (req, res, next) => {
       return res.status(400).json({ error: "invalid_image", message: "Only JPG/PNG images are allowed" });
     }
 
-    const dimensions = imageSize(buffer);
+    let dimensions;
+    try {
+      dimensions = imageSize(buffer);
+    } catch {
+      return res.status(400).json({ error: "invalid_image", message: "Image contents could not be parsed" });
+    }
     if (!dimensions?.width || !dimensions?.height) {
       return res.status(400).json({ error: "invalid_image_dimensions", message: "Could not determine image dimensions" });
     }

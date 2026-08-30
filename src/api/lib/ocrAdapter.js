@@ -80,15 +80,38 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
     if (Math.abs(page.Angle ?? 0) > 0.5) {
       throw new Error("OCR result with non-zero rotation is not supported until rotation normalization is implemented");
     }
+
+    const originalWidth = imageMeta.image_width ?? page.OrgWidth ?? raw.OrgWidth ?? null;
+    const originalHeight = imageMeta.image_height ?? page.OrgHeight ?? raw.OrgHeight ?? null;
+    const providerWidth = page.Width ?? raw.Width ?? null;
+    const providerHeight = page.Height ?? raw.Height ?? null;
+
+    if (!originalWidth || !originalHeight || !providerWidth || !providerHeight) {
+      throw new Error("OCR result is missing original or preprocessed dimensions");
+    }
+    if (
+      (page.OrgWidth != null && imageMeta.image_width != null && Math.abs(page.OrgWidth - imageMeta.image_width) > 1) ||
+      (page.OrgHeight != null && imageMeta.image_height != null && Math.abs(page.OrgHeight - imageMeta.image_height) > 1)
+    ) {
+      throw new Error("OCR result original dimensions do not match uploaded image bytes");
+    }
+
+    const scaleX = originalWidth / providerWidth;
+    const scaleY = originalHeight / providerHeight;
+
     for (const item of page.ResultList ?? []) {
-      const bbox = coordToBbox(item.Coord);
+      const providerBbox = coordToBbox(item.Coord);
+      const bbox = {
+        x: providerBbox.x * scaleX,
+        y: providerBbox.y * scaleY,
+        width: providerBbox.width * scaleX,
+        height: providerBbox.height * scaleY,
+      };
       const questionText = joinText(item.Question);
       if (!questionText) {
         throw new Error("OCR result contains a question with empty question text");
       }
-      const widthLimit = imageMeta.image_width ?? raw.ImageWidth ?? page.Width;
-      const heightLimit = imageMeta.image_height ?? raw.ImageHeight ?? page.Height;
-      if (widthLimit != null && (bbox.x < 0 || bbox.y < 0 || bbox.x + bbox.width > widthLimit + 1 || bbox.y + bbox.height > heightLimit + 1)) {
+      if (bbox.x < 0 || bbox.y < 0 || bbox.x + bbox.width > originalWidth + 1 || bbox.y + bbox.height > originalHeight + 1) {
         throw new Error("OCR result bbox is outside source image bounds");
       }
       questions.push({
@@ -108,11 +131,11 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
   }
 
   return {
-    provider: "tencent-question-split-ocr",
+    provider: "tencent_question_split_ocr",
     request_id: raw.RequestId ?? null,
     use_new_model: Boolean(raw.UseNewModel),
-    image_width: imageMeta.image_width ?? raw.ImageWidth ?? null,
-    image_height: imageMeta.image_height ?? raw.ImageHeight ?? null,
+    image_width: imageMeta.image_width ?? raw.OrgWidth ?? raw.ImageWidth ?? null,
+    image_height: imageMeta.image_height ?? raw.OrgHeight ?? raw.ImageHeight ?? null,
     questions,
   };
 }
@@ -159,5 +182,17 @@ export async function runOcrAdapter(buffer, meta) {
   if (mode !== "fixture") {
     throw new Error(`Unsupported OCR_PROVIDER_MODE: ${mode}`);
   }
-  return normalizeOcrResult(FIXTURE_RAW, meta);
+  const fixtureRaw = {
+    ...FIXTURE_RAW,
+    ImageWidth: meta.image_width ?? FIXTURE_RAW.ImageWidth,
+    ImageHeight: meta.image_height ?? FIXTURE_RAW.ImageHeight,
+    QuestionInfo: FIXTURE_RAW.QuestionInfo.map((page) => ({
+      ...page,
+      Width: meta.image_width ?? page.Width,
+      Height: meta.image_height ?? page.Height,
+      OrgWidth: meta.image_width ?? page.OrgWidth,
+      OrgHeight: meta.image_height ?? page.OrgHeight,
+    })),
+  };
+  return normalizeOcrResult(fixtureRaw, meta);
 }

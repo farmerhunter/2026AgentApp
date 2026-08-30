@@ -254,6 +254,72 @@ async function main() {
   }
   assert(blankQuestionRejected, "blank question text must be rejected");
 
+  const scaled = normalizeOcrResult(
+    {
+      QuestionInfo: [
+        {
+          Angle: 0,
+          Width: 100,
+          Height: 100,
+          OrgWidth: 200,
+          OrgHeight: 200,
+          ResultList: [
+            {
+              Question: [{ Text: "缩放题" }],
+              Answer: [],
+              Coord: [
+                {
+                  LeftTop: { X: 10, Y: 10 },
+                  RightTop: { X: 90, Y: 10 },
+                  LeftBottom: { X: 10, Y: 90 },
+                  RightBottom: { X: 90, Y: 90 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    { image_width: 200, image_height: 200 },
+  );
+  assert(scaled.questions[0].bbox.x === 20, "bbox x should scale from provider to original");
+  assert(scaled.questions[0].bbox.width === 160, "bbox width should scale from provider to original");
+
+  let dimensionMismatchRejected = false;
+  try {
+    normalizeOcrResult(
+      {
+        QuestionInfo: [
+          {
+            Angle: 0,
+            Width: 100,
+            Height: 100,
+            OrgWidth: 100,
+            OrgHeight: 100,
+            ResultList: [
+              {
+                Question: [{ Text: "尺寸不匹配" }],
+                Answer: [],
+                Coord: [
+                  {
+                    LeftTop: { X: 0, Y: 0 },
+                    RightTop: { X: 10, Y: 0 },
+                    LeftBottom: { X: 0, Y: 10 },
+                    RightBottom: { X: 10, Y: 10 },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      { image_width: 200, image_height: 200 },
+    );
+  } catch {
+    dimensionMismatchRejected = true;
+  }
+  assert(dimensionMismatchRejected, "provider original dimension mismatch must be rejected");
+
   console.log("E4 upload/OCR/confirmation smoke passed");
 }
 
