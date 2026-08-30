@@ -11,6 +11,13 @@
 
 ---
 
+## 2026-08-30 — 共同维护者平权与 E4 自主交付规划（#88 / #93 / #94）
+
+- 明确项目负责人和 David 是权限平等的共同维护者；David 可以独立完成未来 Epic 的设计、实现、测试、VPS/Hermes 运维、合并、部署、发布和收尾。
+- 将独立 Architect/Final Gate 从权限门槛改为按风险选用的质量复核；高影响工作保留对所有维护者一致的留痕、脱敏、验证和恢复责任。
+- 更新 `CONTRIBUTING.md`、Epic 协作规范、Epic 设计规范、快速开始和文档入口；E4 当前执行规划与 VPS/OCR 支持信息同步到 #88/#93/#94。
+- 验证：`git diff --check`、治理措辞检索、GitHub Issue/Project 属性和 VPS `hermes` session 只读核查。
+
 ## 2026-08-28 — E4 练习图片导入与 OCR 实现（#88）
 
 - 新增私有图片上传/读取 API、OCR fixture adapter、normalizer、job/attempt/retry。
