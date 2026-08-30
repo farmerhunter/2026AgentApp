@@ -134,6 +134,49 @@ async function main() {
   assert(confirm.body.contract_version === "1.2", "confirmation contract_version should be 1.2");
   assert(confirm.body.confirmations.length === 1, "confirmation length mismatch");
 
+  const malformedNote = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmations: [{ question_id: questionId, selected: true, note: { bad: true } }] }),
+  });
+  assert(malformedNote.status === 400, `malformed note should be 400, got ${malformedNote.status}`);
+
+  const unsupportedField = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmations: [{ question_id: questionId, selected: true, knowledge_point_id: "kp_x" }] }),
+  });
+  assert(unsupportedField.status === 400, `unsupported field should be 400, got ${unsupportedField.status}`);
+
+  const falseAnswer = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmations: [{ question_id: questionId, selected: false, student_answer_text: "补录" }] }),
+  });
+  assert(falseAnswer.status === 400, `false with answer should be 400, got ${falseAnswer.status}`);
+
+  const overwriteAnswer = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmations: [{ question_id: questionId, selected: true, student_answer_text: "覆盖答案" }] }),
+  });
+  assert(overwriteAnswer.status === 400, `OCR answer overwrite should be 400, got ${overwriteAnswer.status}`);
+
+  const duplicateItem = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      confirmations: [
+        { question_id: questionId, selected: true },
+        { question_id: questionId, selected: true },
+      ],
+    }),
+  });
+  assert(duplicateItem.status === 400, `duplicate question should be 400, got ${duplicateItem.status}`);
+
+  const unknownImage = await fetch(`${BASE_URL}/api/uploads/not_found/image`);
+  assert(unknownImage.status === 404, `unknown image should be 404, got ${unknownImage.status}`);
+
   console.log("E4 upload/OCR/confirmation smoke passed");
 }
 
