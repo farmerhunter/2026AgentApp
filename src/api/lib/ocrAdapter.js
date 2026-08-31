@@ -81,17 +81,22 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
       throw new Error("OCR result with non-zero rotation is not supported until rotation normalization is implemented");
     }
 
-    const originalWidth = imageMeta.image_width ?? page.OrgWidth ?? raw.OrgWidth ?? null;
-    const originalHeight = imageMeta.image_height ?? page.OrgHeight ?? raw.OrgHeight ?? null;
-    const providerWidth = page.Width ?? raw.Width ?? null;
-    const providerHeight = page.Height ?? raw.Height ?? null;
+    const originalWidth = Number(page.OrgWidth ?? raw.OrgWidth);
+    const originalHeight = Number(page.OrgHeight ?? raw.OrgHeight);
+    const providerWidth = Number(page.Width ?? raw.Width);
+    const providerHeight = Number(page.Height ?? raw.Height);
 
-    if (!originalWidth || !originalHeight || !providerWidth || !providerHeight) {
-      throw new Error("OCR result is missing original or preprocessed dimensions");
+    if (
+      !Number.isFinite(originalWidth) || originalWidth <= 0 ||
+      !Number.isFinite(originalHeight) || originalHeight <= 0 ||
+      !Number.isFinite(providerWidth) || providerWidth <= 0 ||
+      !Number.isFinite(providerHeight) || providerHeight <= 0
+    ) {
+      throw new Error("OCR result dimensions must be finite positive numbers");
     }
     if (
-      (page.OrgWidth != null && imageMeta.image_width != null && Math.abs(page.OrgWidth - imageMeta.image_width) > 1) ||
-      (page.OrgHeight != null && imageMeta.image_height != null && Math.abs(page.OrgHeight - imageMeta.image_height) > 1)
+      (imageMeta.image_width != null && Math.abs(originalWidth - imageMeta.image_width) > 1) ||
+      (imageMeta.image_height != null && Math.abs(originalHeight - imageMeta.image_height) > 1)
     ) {
       throw new Error("OCR result original dimensions do not match uploaded image bytes");
     }
@@ -107,6 +112,9 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
         width: providerBbox.width * scaleX,
         height: providerBbox.height * scaleY,
       };
+      if (![bbox.x, bbox.y, bbox.width, bbox.height].every(Number.isFinite) || bbox.width <= 0 || bbox.height <= 0) {
+        throw new Error("OCR result bbox is not a finite positive rectangle");
+      }
       const questionText = joinText(item.Question);
       if (!questionText) {
         throw new Error("OCR result contains a question with empty question text");

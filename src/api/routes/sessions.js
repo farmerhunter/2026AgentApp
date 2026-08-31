@@ -189,7 +189,7 @@ router.get("/sessions/:upload_id/split", (req, res) => {
       student_id: upload.student_id,
       subject: upload.subject,
       subject_label: upload.subject_label,
-      ocr_provider: "tencent-question-split-ocr",
+      ocr_provider: "tencent_question_split_ocr",
       ocr_status: upload.ocr_status,
       processed_at: upload.updated_at ?? null,
       source_image_url: `/api/uploads/${upload.upload_id}/image`,

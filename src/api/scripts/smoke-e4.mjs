@@ -320,6 +320,35 @@ async function main() {
   }
   assert(dimensionMismatchRejected, "provider original dimension mismatch must be rejected");
 
+  const baseResult = {
+    Angle: 0,
+    Width: 100,
+    Height: 100,
+    OrgWidth: 200,
+    OrgHeight: 200,
+    ResultList: [
+      {
+        Question: [{ Text: "异常尺寸" }],
+        Answer: [],
+        Coord: [
+          { LeftTop: { X: 0, Y: 0 }, RightTop: { X: 10, Y: 0 }, LeftBottom: { X: 0, Y: 10 }, RightBottom: { X: 10, Y: 10 } },
+        ],
+      },
+    ],
+  };
+  const missing = { Angle: 0, Width: 100, Height: 100, ResultList: baseResult.ResultList };
+  const badString = { ...baseResult, Width: "bad" };
+  const negative = { ...baseResult, Width: -100 };
+  let missingRejected = false;
+  let badStringRejected = false;
+  let negativeRejected = false;
+  try { normalizeOcrResult({ QuestionInfo: [missing] }, { image_width: 200, image_height: 200 }); } catch { missingRejected = true; }
+  try { normalizeOcrResult({ QuestionInfo: [badString] }, { image_width: 200, image_height: 200 }); } catch { badStringRejected = true; }
+  try { normalizeOcrResult({ QuestionInfo: [negative] }, { image_width: 200, image_height: 200 }); } catch { negativeRejected = true; }
+  assert(missingRejected, "missing provider dimensions must be rejected");
+  assert(badStringRejected, "non-numeric provider dimensions must be rejected");
+  assert(negativeRejected, "negative provider dimensions must be rejected");
+
   console.log("E4 upload/OCR/confirmation smoke passed");
 }
 
