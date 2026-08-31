@@ -29,6 +29,7 @@ V2 的目标不是做生产系统，而是在一台 VPS 上可靠展示两条彼
 - [V2 系统架构](architecture.md)：模块、数据流、失败边界和裁剪范围。
 - [E1–E6 实施计划](implementation-plan.md)：总体 Epic 分工和终评 R1 约束。
 - [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)：Hermes、DeepSeek、profile、CLI bridge 和 Skill 迭代方式。
+- [Hermes 错因分析与 Finding 质量设计](hermes-analysis-quality.md)：已确认的 E5-D4 质量原则、小案例检查、正式 CLI 回放和持续改进方法；尚待实现验证。
 - [E1 设计文档](epics/e1-persistence-api.md)：已经完成的持久化 API 基础。
 - [E2 设计文档](epics/e2-dual-entry-ui.md)：`/demo` 与 `/app` 双入口、四页真实工作台骨架和失败边界。
 - [E3 设计文档](epics/e3-textbook-knowledge-map.md)：人教版八年级下册数学知识底图、只读查询 API 和扩展边界。

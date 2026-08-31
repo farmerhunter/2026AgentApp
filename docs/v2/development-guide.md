@@ -41,10 +41,10 @@ Skill 推荐流程：
 
 ```text
 在 studyv2-lab TUI 快速试 -> 小样例回放 -> 用 CLI 跑同样输入
--> 通过 contract -> 提交 Skill，记录 content hash -> runtime 使用
+-> 通过 contract + 人工检查分析质量 -> 提交 Skill，记录 content hash -> runtime 使用
 ```
 
-详细规则见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。
+详细规则见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。质量检查先用 6–8 个小案例，检查“数学对不对、是否编造作答、建议能不能帮到学生”，方法见 [Finding 质量设计](hermes-analysis-quality.md)。这些是待 E5 验证的标准，不代表能力已经通过验收。
 
 ## 做到什么就算 V2 MVP
 

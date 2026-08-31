@@ -1,0 +1,23 @@
+{
+  "model": {
+    "default": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "base_url": "https://api.deepseek.com"
+  },
+  "agent": {
+    "max_turns": 1,
+    "api_max_retries": 1
+  },
+  "platform_toolsets": {
+    "cli": []
+  },
+  "memory": {
+    "memory_enabled": false,
+    "user_profile_enabled": false
+  },
+  "mcp_servers": {},
+  "fallback_model": [],
+  "auxiliary": {
+    "transient_retries": 0
+  }
+}

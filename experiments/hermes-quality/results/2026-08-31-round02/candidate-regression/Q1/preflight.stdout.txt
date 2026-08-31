@@ -1,0 +1,1 @@
+{"resolved_toolsets": ["kanban"], "tools": [], "loaded_skills": ["confirmed-mistake-analysis-probe"], "missing_skills": [], "skill_prompt_chars": 2416}
