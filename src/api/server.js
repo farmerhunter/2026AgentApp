@@ -12,6 +12,7 @@ import knowledgeMapRouter from "./routes/knowledgeMap.js";
 import uploadsRouter, { recoverOcrJobs } from "./routes/uploads.js";
 import { getDb } from "./db/init.js";
 import { runE4Migrations } from "./db/migrate-e4.js";
+import { runE5Migrations } from "./db/migrate-e5.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -27,6 +28,8 @@ const JOB_SCRIPTS = {
   textbook_summary: "run_textbook_summary.sh",
   learning_insight_update: "run_learning_insight_update.sh",
   weekly_report: "run_weekly_report.sh",
+  confirmed_mistake_analysis: "run_e5_analysis.mjs",
+  weekly_learning_report: "run_e5_weekly_report.mjs",
 };
 
 const SUBJECTS = ["chinese", "math", "english"];
@@ -36,6 +39,7 @@ const JOB_STALE_MS = 5 * 60 * 1000;
 const db = getDb();
 db.defaultSafeIntegers(false);
 runE4Migrations(db);
+runE5Migrations(db);
 recoverOcrJobs();
 
 const app = express();
@@ -200,13 +204,19 @@ function spawnJob(jobType, args, payload) {
   const scriptName = JOB_SCRIPTS[jobType];
   if (!scriptName) throw new Error(`Unknown job type: ${jobType}`);
 
-  const scriptPath = resolve(JOBS_DIR, scriptName);
+  const scriptPath = scriptName.endsWith(".mjs")
+    ? resolve(__dirname, "scripts", scriptName)
+    : resolve(JOBS_DIR, scriptName);
   const env = { ...process.env, HERMES_JOB_MODE: MODE, JOB_ID: jobId };
 
   writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
   insertJobDb(jobId, jobType, MODE, payload);
 
-  const child = spawn("bash", [scriptPath, ...args], {
+  const isNodeScript = scriptName.endsWith(".mjs") || scriptName.endsWith(".js");
+  const command = isNodeScript ? process.execPath : "bash";
+  const commandArgs = [scriptPath, ...args];
+
+  const child = spawn(command, commandArgs, {
     cwd: REPO_ROOT,
     env,
     detached: true,
@@ -279,6 +289,13 @@ function buildArgs(jobType, body) {
       if (body.week_start) args.push("--week-start", body.week_start);
       if (body.week_end) args.push("--week-end", body.week_end);
       break;
+    case "confirmed_mistake_analysis":
+      if (body.source_ids?.[0]) args.push("--upload-id", body.source_ids[0]);
+      break;
+    case "weekly_learning_report":
+      if (body.week_start) args.push("--week-start", body.week_start);
+      if (body.week_end) args.push("--week-end", body.week_end);
+      break;
   }
   return args;
 }
@@ -299,7 +316,8 @@ app.post("/api/hermes/jobs", (req, res) => {
     }
 
     const args = buildArgs(job_type, { textbook_id, source_ids, week_start, week_end });
-    if (args.length === 0) {
+    const requiresArgs = job_type !== "weekly_learning_report";
+    if (requiresArgs && args.length === 0) {
       return res.status(400).json({
         error: "missing_parameters",
         message: `Missing required parameters for ${job_type}`,
@@ -307,7 +325,9 @@ app.post("/api/hermes/jobs", (req, res) => {
           ? ["textbook_id"]
           : job_type === "learning_insight_update"
             ? ["source_ids[0]"]
-            : ["week_start", "week_end"],
+            : job_type === "confirmed_mistake_analysis"
+              ? ["source_ids[0]"]
+              : ["week_start", "week_end"],
       });
     }
 

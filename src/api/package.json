@@ -10,6 +10,7 @@
     "promote:knowledge-map": "node scripts/promote-knowledge-map.mjs",
     "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs",
     "smoke:e4": "node scripts/smoke-e4.mjs",
+    "smoke:e5": "node scripts/smoke-e5.mjs",
     "probe:tencent-ocr": "node scripts/probe-tencent-ocr.mjs"
   },
   "dependencies": {

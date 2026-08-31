@@ -64,12 +64,15 @@ function weeklyContextDto(row) {
 function findingDto(row, memoryRows, actionRows, weeklyContextRows) {
   return {
     finding_id: row.finding_id,
+    question_id: row.question_id ?? null,
+    upload_id: row.upload_id ?? null,
     scope: row.scope,
     finding_type: row.finding_type,
     statement: row.statement,
     evidence_summary: row.evidence_summary,
     concept_links: parseJson(row.concept_links_json, []),
     mistake_reasons: parseJson(row.mistake_reasons_json, []),
+    source_memory_ids: parseJson(row.source_memory_ids_json, []),
     confidence: row.confidence,
     is_recurring: booleanFromNumber(row.is_recurring),
     memory_candidates: memoryRows.map(memoryCandidateDto),
@@ -273,7 +276,7 @@ router.post("/memories", (req, res) => {
        WHERE f.finding_id = ? AND f.finding_batch_id = ?`
     );
     const findExisting = db.prepare(
-      "SELECT memory_id FROM memory_decisions WHERE finding_id = ? AND finding_batch_id = ?"
+      "SELECT * FROM memory_decisions WHERE finding_id = ? AND finding_batch_id = ?"
     );
     const insert = db.prepare(
       `INSERT INTO memory_decisions
@@ -307,7 +310,11 @@ router.post("/memories", (req, res) => {
         const studentId = referencedFinding.batch_student_id ?? DEFAULT_STUDENT_ID;
         const subject = referencedFinding.batch_subject ?? null;
         const subjectLabel = referencedFinding.batch_subject_label ?? null;
-        const statement = referencedFinding.statement ?? null;
+        const statement = existing?.statement ?? referencedFinding.statement ?? null;
+        const reason = item.reason ?? existing?.reason ?? null;
+        const candidateType = item.candidate_type ?? existing?.candidate_type ?? "short_term";
+        const priority = item.priority ?? existing?.priority ?? "中";
+        const note = item.note ?? existing?.note ?? "";
 
         if (existing) {
           update.run(
@@ -315,10 +322,10 @@ router.post("/memories", (req, res) => {
             subject,
             subjectLabel,
             statement,
-            item.reason ?? null,
-            item.candidate_type ?? "short_term",
-            item.priority ?? "中",
-            item.note ?? "",
+            reason,
+            candidateType,
+            priority,
+            note,
             status,
             acceptedAt,
             nowIso(),
@@ -334,10 +341,10 @@ router.post("/memories", (req, res) => {
             subject,
             subjectLabel,
             statement,
-            item.reason ?? null,
-            item.candidate_type ?? "short_term",
-            item.priority ?? "中",
-            item.note ?? "",
+            reason,
+            candidateType,
+            priority,
+            note,
             status,
             acceptedAt
           );

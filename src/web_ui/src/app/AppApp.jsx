@@ -14,7 +14,11 @@ import {
   fetchMemories,
   fetchReports,
   fetchReport,
+  createHermesJob,
+  pollHermesJob,
+  saveMemories,
 } from "../lib/appApi.js";
+import FindingCard from "../components/FindingCard.jsx";
 import useAsyncData from "../lib/useAsyncData.js";
 
 const appNav = [
@@ -460,108 +464,198 @@ function ImageBboxViewer({ uploadId, questions }) {
 
 function AnalysisView() {
   const [reloadKey, setReloadKey] = useState(0);
-  const findings = useAsyncData(() => fetchFindings(), [reloadKey]);
+  const [jobStatus, setJobStatus] = useState("idle");
+  const [jobError, setJobError] = useState(null);
+  const [selectedUploadId, setSelectedUploadId] = useState(null);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
+  const [memorySaving, setMemorySaving] = useState(false);
+  const sessions = useAsyncData(() => fetchSessions(), [reloadKey]);
+  const findings = useAsyncData(() => fetchFindings(), [reloadKey]);
+  const memories = useAsyncData(() => fetchMemories(), [reloadKey]);
+  const uploadId = selectedUploadId ?? sessions.data?.sessions?.find((s) => s.confirmed_count > 0)?.upload_id ?? null;
   const selectedId = selectedBatchId ?? findings.data?.batches?.[0]?.finding_batch_id ?? null;
   const detail = useAsyncData(
     () => (selectedId ? fetchFindingBatch(selectedId) : Promise.resolve(null)),
     [selectedId, reloadKey],
   );
-  const memories = useAsyncData(() => fetchMemories(), [reloadKey]);
 
-  if (findings.isLoading) return <LoadingState label="正在读取分析数据..." />;
-  if (findings.error) return <ErrorState error={findings.error} label="分析数据读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
+  async function handleAnalyze() {
+    if (!uploadId || jobStatus === "running" || jobStatus === "pending") return;
+    setJobStatus("pending");
+    setJobError(null);
+    try {
+      const created = await createHermesJob({
+        job_type: "confirmed_mistake_analysis",
+        source_ids: [uploadId],
+      });
+      setJobStatus("running");
+      const final = await pollHermesJob(created.job_id, {
+        onUpdate: (status) => setJobStatus(status.status),
+        timeoutMs: 300_000,
+      });
+      if (!final || final.status !== "completed") {
+        throw new Error(final?.error_message ?? "错题分析任务未完成");
+      }
+      setJobStatus("completed");
+      setReloadKey((key) => key + 1);
+    } catch (error) {
+      setJobStatus("failed");
+      setJobError(error);
+    }
+  }
 
-  const findingsSection =
-    findings.data?.batches?.length > 0 ? (
-      <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <div className="space-y-2">
-          {findings.data.batches.map((batch) => (
-            <button
-              key={batch.finding_batch_id}
-              type="button"
-              onClick={() => setSelectedBatchId(batch.finding_batch_id)}
-              className={[
-                "w-full rounded-xl border px-3 py-2 text-left text-sm",
-                batch.finding_batch_id === selectedId
-                  ? "border-aurora/40 bg-aurora/10"
-                  : "border-slate-200 bg-white hover:border-aurora/25",
-              ].join(" ")}
-            >
-              <span className="font-semibold">{batch.subject_label}</span>
-              <span className="block truncate text-xs text-slate-500">{batch.finding_batch_id}</span>
-            </button>
-          ))}
-        </div>
-        <div>
-          {detail.isLoading ? (
-            <LoadingState label="正在读取发现详情..." />
-          ) : detail.error ? (
-            <ErrorState
-              error={detail.error}
-              label="发现详情读取失败"
-              onRetry={() => setReloadKey((k) => k + 1)}
-            />
-          ) : (
-            <div className="space-y-2 text-sm text-slate-600">
-              <p>发现详情：{detail.data?.findings?.length ?? 0} 条</p>
-            </div>
-          )}
-        </div>
-      </div>
-    ) : (
-      <EmptyState label="暂无分析数据。" />
-    );
+  async function handleMemoryDecision(memory, status) {
+    setMemorySaving(true);
+    try {
+      await saveMemories([
+        {
+          finding_id: memory.finding_id,
+          finding_batch_id: memory.finding_batch_id,
+          status,
+          note: "",
+        },
+      ]);
+      setReloadKey((key) => key + 1);
+    } catch (error) {
+      setJobError(error);
+    } finally {
+      setMemorySaving(false);
+    }
+  }
 
-  const memoriesSection = memories.isLoading ? (
-    <LoadingState label="正在读取记忆决策..." />
-  ) : memories.error ? (
-    <ErrorState
-      error={memories.error}
-      label="记忆决策读取失败"
-      onRetry={() => setReloadKey((k) => k + 1)}
-    />
-  ) : memories.data?.memories?.length > 0 ? (
-    <div className="space-y-2">
-      <p className="text-sm font-semibold text-ink">
-        待确定记忆：{memories.data.total ?? memories.data.memories.length} 条
-      </p>
-      <ul className="space-y-2">
-        {memories.data.memories.map((memory) => (
-          <li
-            key={memory.memory_id}
-            className="rounded-xl border border-slate-200 bg-white p-3 text-sm"
-          >
-            <span className="font-medium">{memory.statement}</span>
-            <span className="block text-xs text-slate-500">
-              {memory.subject_label} · {memory.status}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  ) : (
-    <EmptyState label="暂无待确定的记忆记录。" />
-  );
+  if (sessions.isLoading || findings.isLoading) {
+    return <LoadingState label="正在读取分析数据..." />;
+  }
+  if (sessions.error || findings.error) {
+    return <ErrorState error={sessions.error ?? findings.error} label="分析数据读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
+  }
+
+  const analysisSessions = (sessions.data?.sessions ?? []).filter((session) => session.confirmed_count > 0);
+  const findingsBatches = findings.data?.batches ?? [];
+  const memoryList = memories.data?.memories ?? [];
+  const pendingMemories = memoryList.filter((memory) => memory.status !== "accepted");
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">分析与记忆</h2>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-4">
+        <p className="text-sm font-semibold text-ink">生成错题分析</p>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <label className="flex-1 min-w-[220px]">
+            <span className="text-xs text-slate-500">选择已确认错题的练习批次</span>
+            <select
+              value={uploadId ?? ""}
+              onChange={(event) => setSelectedUploadId(event.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="">请选择</option>
+              {analysisSessions.map((session) => (
+                <option key={session.upload_id} value={session.upload_id}>
+                  {session.subject_label} · {session.source_title} · {session.confirmed_count} 题
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={handleAnalyze}
+            disabled={!uploadId || jobStatus === "pending" || jobStatus === "running"}
+            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {jobStatus === "pending" ? "提交中..." : jobStatus === "running" ? "分析中..." : "开始分析"}
+          </button>
+          {jobStatus === "completed" && <SavedState label="分析已保存" />}
+          {jobStatus === "failed" && jobError && <ErrorState error={jobError} label="分析失败" onRetry={handleAnalyze} />}
+        </div>
+      </section>
+
       <section className="space-y-2">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">发现</h3>
-        {findingsSection}
+        {findingsBatches.length === 0 ? (
+          <EmptyState label="暂无分析数据" />
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+            <div className="space-y-2">
+              {findingsBatches.map((batch) => (
+                <button
+                  key={batch.finding_batch_id}
+                  type="button"
+                  onClick={() => setSelectedBatchId(batch.finding_batch_id)}
+                  className={[
+                    "w-full rounded-xl border px-3 py-2 text-left text-sm",
+                    batch.finding_batch_id === selectedId
+                      ? "border-aurora/40 bg-aurora/10"
+                      : "border-slate-200 bg-white hover:border-aurora/25",
+                  ].join(" ")}
+                >
+                  <span className="font-semibold">{batch.subject_label}</span>
+                  <span className="block truncate text-xs text-slate-500">{batch.finding_batch_id}</span>
+                </button>
+              ))}
+            </div>
+            <div>
+              {detail.isLoading ? (
+                <LoadingState label="正在读取发现详情..." />
+              ) : detail.error ? (
+                <ErrorState error={detail.error} label="发现详情读取失败" onRetry={() => setReloadKey((k) => k + 1)} />
+              ) : (
+                <div className="space-y-3">
+                  {(detail.data?.findings ?? []).map((finding) => (
+                    <FindingCard key={finding.finding_id} finding={finding} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
+
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">待确定记忆</h3>
-        {memoriesSection}
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">待确认记忆</h3>
+        {memories.isLoading ? (
+          <LoadingState label="正在读取记忆决策..." />
+        ) : memories.error ? (
+          <ErrorState error={memories.error} label="记忆决策读取失败" onRetry={() => setReloadKey((k) => k + 1)} />
+        ) : pendingMemories.length === 0 ? (
+          <EmptyState label="暂无待确认的记忆记录" />
+        ) : (
+          <div className="space-y-2">
+            {pendingMemories.map((memory) => (
+              <div key={memory.memory_id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
+                <p className="font-medium text-ink">{memory.statement}</p>
+                <p className="mt-1 text-xs text-slate-500">{memory.subject_label} · {memory.candidate_type}</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleMemoryDecision(memory, "accepted")}
+                    disabled={memorySaving}
+                    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                  >
+                    接受
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMemoryDecision(memory, "rejected")}
+                    disabled={memorySaving}
+                    className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 disabled:opacity-50"
+                  >
+                    拒绝
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
-      <NotReadyState label="E5 Hermes 分析生成尚未接入，当前只能查看 E1 已保存的分析结果。" />
     </div>
   );
 }
 
 function ReportView() {
   const [reloadKey, setReloadKey] = useState(0);
+  const [jobStatus, setJobStatus] = useState("idle");
+  const [jobError, setJobError] = useState(null);
   const reports = useAsyncData(() => fetchReports(), [reloadKey]);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const selectedId = selectedReportId ?? reports.data?.reports?.[0]?.weekly_report_id ?? null;
@@ -570,12 +664,49 @@ function ReportView() {
     [selectedId, reloadKey],
   );
 
+  async function handleGenerate() {
+    if (jobStatus === "pending" || jobStatus === "running") return;
+    setJobStatus("pending");
+    setJobError(null);
+    try {
+      const created = await createHermesJob({ job_type: "weekly_learning_report" });
+      setJobStatus("running");
+      const final = await pollHermesJob(created.job_id, {
+        onUpdate: (status) => setJobStatus(status.status),
+        timeoutMs: 300_000,
+      });
+      if (!final || final.status !== "completed") {
+        throw new Error(final?.error_message ?? "周报任务未完成");
+      }
+      setJobStatus("completed");
+      setReloadKey((key) => key + 1);
+    } catch (error) {
+      setJobStatus("failed");
+      setJobError(error);
+    }
+  }
+
   if (reports.isLoading) return <LoadingState label="正在读取周报..." />;
   if (reports.error) return <ErrorState error={reports.error} label="周报读取失败" onRetry={() => setReloadKey((k) => k + 1)} />;
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">周报与打印</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold text-ink">生成本自然周学习周报</p>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={jobStatus === "pending" || jobStatus === "running"}
+            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {jobStatus === "pending" ? "提交中..." : jobStatus === "running" ? "生成中..." : "生成周报"}
+          </button>
+          {jobStatus === "completed" && <SavedState label="周报已保存" />}
+          {jobStatus === "failed" && jobError && <ErrorState error={jobError} label="周报生成失败" onRetry={handleGenerate} />}
+        </div>
+      </section>
       {reports.data?.reports?.length > 0 ? (
         <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
           <div className="space-y-2">
@@ -604,7 +735,7 @@ function ReportView() {
             ) : detail.data ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                 <h3 className="font-semibold text-ink">{detail.data.week?.title ?? detail.data.weekly_report_id}</h3>
-                <p className="mt-2">{detail.data.analysis?.overall_summary ?? "暂无周报摘要"}</p>
+                <p className="mt-2 whitespace-pre-wrap">{detail.data.analysis?.overall_summary ?? "暂无周报摘要"}</p>
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -614,12 +745,12 @@ function ReportView() {
                 </button>
               </div>
             ) : (
-              <EmptyState label="请选择一份周报。" />
+              <EmptyState label="请选择一份周报" />
             )}
           </div>
         </div>
       ) : (
-        <EmptyState label="暂无周报。" />
+        <EmptyState label="暂无周报" />
       )}
     </div>
   );
