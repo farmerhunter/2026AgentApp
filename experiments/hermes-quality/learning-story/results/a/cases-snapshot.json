@@ -1,0 +1,32 @@
+[
+  {
+    "case_id": "Q1",
+    "task": "confirmed_mistake_analysis",
+    "experiment_id": "e5-learning-story-01",
+    "student_id": "exp_story_student",
+    "subject": "math",
+    "batch_id": "exp_story_batch_a",
+    "input_origin": "curated_synthetic_text_not_ocr",
+    "accepted_memories": [],
+    "questions": [
+      {
+        "question_id": "exp_story_a06",
+        "question_text": "计算：√18＋√8＝________。",
+        "student_answer_text": "√26。纸上演算：√18＋√8＝√(18＋8)＝√26。",
+        "note": null
+      },
+      {
+        "question_id": "exp_story_a09",
+        "question_text": "将 3/(√5－√2) 的分母有理化，并化简。",
+        "student_answer_text": "3/(√5－√2)\n＝3(√5＋√2)/[(√5－√2)(√5＋√2)]\n＝3(√5＋√2)/(5＋2)\n＝3(√5＋√2)/7",
+        "note": null
+      },
+      {
+        "question_id": "exp_story_a10",
+        "question_text": "已知一次函数的图像经过点 P(1，4) 和 Q(3，8)。（1）求这个一次函数的表达式。（2）求 x＝4 时的函数值。",
+        "student_answer_text": "（1）k＝(8－4)/(3－1)＝2\n所以 y＝2x。\n（2）x＝4 时，y＝2×4＝8。",
+        "note": null
+      }
+    ]
+  }
+]
