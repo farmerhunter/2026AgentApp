@@ -28,6 +28,7 @@ V2 的目标不是做生产系统，而是在一台 VPS 上可靠展示两条彼
 - [给 David 的 V2 一页开发说明](development-guide.md)：最短的开发入口和优先级。
 - [V2 系统架构](architecture.md)：模块、数据流、失败边界和裁剪范围。
 - [E1–E6 实施计划](implementation-plan.md)：总体 Epic 分工和终评 R1 约束。
+- [E5 核心能力设计：从错题分析到学习周报](epics/e5-hermes-learning-analysis.md)：面向开发者和评委，解释两个关键 Skill 如何基于作答形成发现、复用记忆并生成有用周报；区分设计目标与已验证能力。
 - [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)：Hermes、DeepSeek、profile、CLI bridge 和 Skill 迭代方式。
 - [Hermes 错因分析与 Finding 质量设计](hermes-analysis-quality.md)：已确认的 E5-D4 质量原则、小案例检查、正式 CLI 回放和持续改进方法；尚待实现验证。
 - [E1 设计文档](epics/e1-persistence-api.md)：已经完成的持久化 API 基础。

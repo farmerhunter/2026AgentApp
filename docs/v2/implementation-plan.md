@@ -37,7 +37,7 @@ SQLite 与 REST API 基础已经完成。E1 不再扩大范围；后续 Epic 可
 
 ### E5：Hermes 分析、记忆与周报（#13）
 
-用三个固定 Skill 跑通错题分析和周报。Findings/actions 校验后自动保存；memory candidate 由用户接受或拒绝；只有已接受记忆会进入下一次上下文。
+用错题分析和周报两个在线 Skill 跑通学习分析；教材整理 Skill 是离线辅助。Findings/actions 校验后自动保存；memory candidate 由错题分析提出、用户接受或拒绝；只有已接受的历史记忆会进入下一次上下文。周报综合本周 findings 和对应作答，不再产生记忆候选。产品价值与设计取舍见 [E5 核心能力设计](epics/e5-hermes-learning-analysis.md)。
 
 开发方式：确定性 API/SQLite/校验逻辑在本地开发；真实 Hermes 调用和 Skill 迭代在 VPS 独立开发目录和数据库验证，不触碰生产数据。详见 [Hermes 设计](hermes-runtime-and-skills.md)。
 
