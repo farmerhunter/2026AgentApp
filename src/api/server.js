@@ -21,6 +21,7 @@ const STATUS_DIR = resolve(REPO_ROOT, "runtime", "public", "job_status");
 const PUBLIC_DIR = resolve(REPO_ROOT, "runtime", "public");
 
 const PORT = process.env.HERMES_API_PORT ?? 8000;
+const HOST = process.env.HERMES_API_HOST ?? "127.0.0.1";
 let MODE = process.env.HERMES_JOB_MODE ?? "fixture";
 if (MODE === "hermes") MODE = "real";
 
@@ -414,8 +415,8 @@ app.use((err, req, res, next) => {
 
 // ── Start ──
 startJobReconciliation();
-app.listen(PORT, () => {
-  console.log(`Hermes API server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Hermes API server running on http://${HOST}:${PORT}`);
   console.log(`Mode: ${MODE}`);
   console.log(`Jobs: ${Object.keys(JOB_SCRIPTS).join(", ")}`);
 });
