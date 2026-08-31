@@ -34,7 +34,7 @@ function buildArgs({ profile, skillName, usageFile, requestJson, env }) {
       .concat(["-z", requestJson]);
   }
 
-  const args = ["--profile", profile, "--skills", skillName, "--usage-file", usageFile];
+  const args = ["-p", profile, "--skills", skillName, "--usage-file", usageFile];
   if (env.HERMES_BRIDGE_EXTRA_ARGS) {
     args.push(...env.HERMES_BRIDGE_EXTRA_ARGS.split(/\s+/).filter(Boolean));
   }
@@ -70,7 +70,7 @@ export async function runHermesSkill({
   writeFileSync(usageFile, "{}", "utf-8");
 
   const bin = env.HERMES_BIN ?? "hermes";
-  const profile = env.HERMES_PROFILE ?? "studyv2-runtime";
+  const profile = env.HERMES_PROFILE ?? "studyv2";
   const args = buildArgs({ profile, skillName, usageFile, requestJson, env });
 
   const childEnv = {
