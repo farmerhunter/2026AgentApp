@@ -26,6 +26,12 @@ CREATE TABLE IF NOT EXISTS uploads (
   captured_at TEXT,
   uploaded_at TEXT,
   storage_provider TEXT DEFAULT 'local',
+  storage_key TEXT,
+  file_name TEXT,
+  file_size INTEGER,
+  mime_type TEXT,
+  image_width INTEGER,
+  image_height INTEGER,
   ocr_status TEXT DEFAULT 'pending',
   status TEXT DEFAULT 'active',
   created_at TEXT DEFAULT (datetime('now', 'localtime')),
@@ -42,6 +48,10 @@ CREATE TABLE IF NOT EXISTS ocr_jobs (
   provider TEXT,
   provider_job_id TEXT,
   status TEXT DEFAULT 'pending',
+  attempt INTEGER DEFAULT 1,
+  is_latest INTEGER DEFAULT 1,
+  provider_request_id TEXT,
+  provider_metadata_json TEXT,
   raw_response_url TEXT,
   error_message TEXT,
   created_at TEXT DEFAULT (datetime('now', 'localtime')),
@@ -56,6 +66,9 @@ CREATE TABLE IF NOT EXISTS questions (
   page INTEGER,
   question_index INTEGER,
   question_text TEXT,
+  student_answer_text TEXT,
+  question_type TEXT,
+  ocr_confidence REAL,
   question_image_url TEXT,
   bbox_json TEXT,
   raw_ocr_json_url TEXT,
@@ -64,6 +77,7 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_questions_upload ON questions(upload_id);
+CREATE INDEX IF NOT EXISTS idx_ocr_jobs_latest ON ocr_jobs(upload_id, attempt);
 
 -- 5. question_confirmations
 CREATE TABLE IF NOT EXISTS question_confirmations (

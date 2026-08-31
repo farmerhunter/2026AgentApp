@@ -45,6 +45,10 @@ function readJson(filePath) {
   }
 }
 
+function hasKeys(obj, keys) {
+  return keys.every((key) => Object.prototype.hasOwnProperty.call(obj, key));
+}
+
 function checkNoLocalPaths(obj, label, depth = 0) {
   if (depth > 10) return;
   if (typeof obj === "string") {
@@ -350,6 +354,41 @@ for (const uploadId of sampleSessionDirs) {
 }
 
 log(sampleSessionCount >= 2, `has ${sampleSessionCount} sample input sessions (expected ≥ 2)`);
+
+// ── 7.1 Authoritative E4 contract fields and versions ──
+console.log("\n📋 Authoritative Question Contracts");
+const AUTHORITATIVE_DIR = resolve(__dirname, "..", "..", "..", "data");
+
+function validateQuestionContracts(dir, label) {
+  const sessionsDir = resolve(dir, "question_sessions");
+  if (!existsSync(sessionsDir)) return;
+  const dirs = readdirSync(sessionsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  for (const uploadId of dirs) {
+    const split = readJson(resolve(sessionsDir, uploadId, "question_split_result.json"));
+    if (split) {
+      log(split.contract_version === "1.2", `${label}/${uploadId}/question_split_result.json: contract_version is 1.2`);
+      log((split.questions ?? []).every((q) => hasKeys(q, ["student_answer_text", "question_type", "ocr_confidence"])), `${label}/${uploadId}: split question has 1.2 fields`);
+    }
+    const confirmation = readJson(resolve(sessionsDir, uploadId, "question_confirmation_result.json"));
+    if (confirmation) {
+      log(confirmation.contract_version === "1.2", `${label}/${uploadId}/question_confirmation_result.json: contract_version is 1.2`);
+      log((confirmation.confirmations ?? []).every((item) => hasKeys(item, ["student_answer_text"])), `${label}/${uploadId}: confirmation has student_answer_text`);
+    }
+  }
+}
+
+validateQuestionContracts(resolve(AUTHORITATIVE_DIR, "sample_inputs"), "sample_inputs");
+validateQuestionContracts(resolve(AUTHORITATIVE_DIR, "sample_outputs"), "sample_outputs");
+
+const authoritativeSplitContract = readJson(resolve(AUTHORITATIVE_DIR, "contracts", "question_split_result.contract.json"));
+log(authoritativeSplitContract?.contract_version === "1.2", "contracts/question_split_result.contract.json: contract_version is 1.2");
+log((authoritativeSplitContract?.questions ?? []).every((q) => hasKeys(q, ["student_answer_text", "question_type", "ocr_confidence"])), "contracts/question_split_result.contract.json: question has 1.2 fields");
+
+const authoritativeConfirmationContract = readJson(resolve(AUTHORITATIVE_DIR, "contracts", "question_confirmation_result.contract.json"));
+log(authoritativeConfirmationContract?.contract_version === "1.2", "contracts/question_confirmation_result.contract.json: contract_version is 1.2");
+log((authoritativeConfirmationContract?.confirmations ?? []).every((item) => hasKeys(item, ["student_answer_text"])), "contracts/question_confirmation_result.contract.json: confirmation has student_answer_text");
 
 // ── Summary ──
 console.log(`\n${"─".repeat(40)}`);
