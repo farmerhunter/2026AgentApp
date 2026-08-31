@@ -5,7 +5,7 @@
 **Owner：设计由 Jinghu 与 AI 助手共同维护；David 可独立实现和迭代，Final Gate 保持独立复核。**  
 **Updated：2026-08-31**
 
-后续执行更新：[两批学习故事首轮](../../experiments/hermes-quality/learning-story/review.md)已运行 A 批三题（1 次真实调用），A06 仍出现含变量关系的一般化问题；B 批与周报未执行、记忆未接受。旧单题三轮资料保留，不将该新候选标为合格发布版。
+后续执行更新：[两批学习故事首轮](../../experiments/hermes-quality/learning-story/review.md)已完成 A 批 → 两条用户接受记忆 → B 批 → 周报（共 3 次真实调用）。[周报原文](../../experiments/hermes-quality/learning-story/weekly-report.md)在本组输入上区分了重复问题、局部变化和证据不足，但错题计数口径、学生向用语、一般化措辞仍有问题。用户要求不陷入过度设计，本轮不重跑 A、不改 Skill 或追加调用；保留旧基线和新原始结果，不宣称产品链路或发布质量已通过。
 
 ## 1. 给 David 的一分钟说明
 
