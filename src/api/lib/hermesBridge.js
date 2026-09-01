@@ -1,6 +1,12 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compactStderr } from "./e5Common.js";
@@ -12,34 +18,50 @@ function sha256File(path) {
   return createHash("sha256").update(readFileSync(path, "utf-8")).digest("hex");
 }
 
-function parseUniqueJson(stdout) {
-  if (!stdout) return null;
-  const clean = String(stdout).trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-  try {
-    return JSON.parse(clean);
-  } catch {
-    return null;
+function extractJsonObject(text) {
+  if (!text) return null;
+  const startCandidates = [];
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === "{") startCandidates.push(index);
   }
+  for (const start of startCandidates) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let index = start; index < text.length; index += 1) {
+      const char = text[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+        } else if (char === "\\") {
+          escaped = true;
+        } else if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+      } else if (char === "{") {
+        depth += 1;
+      } else if (char === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          const candidate = text.slice(start, index + 1);
+          try {
+            return JSON.parse(candidate);
+          } catch {
+            break;
+          }
+        }
+      }
+    }
+  }
+  return null;
 }
 
-function buildArgs({ profile, skillName, usageFile, requestJson, env }) {
-  if (env.HERMES_BRIDGE_CLI_ARGS) {
-    return env.HERMES_BRIDGE_CLI_ARGS.split(/\s+/)
-      .map((token) =>
-        token
-          .replaceAll("{profile}", profile)
-          .replaceAll("{skill}", skillName)
-          .replaceAll("{usage}", usageFile),
-      )
-      .concat(["-z", requestJson]);
-  }
-
-  const args = ["-p", profile, "--skills", skillName, "--usage-file", usageFile];
-  if (env.HERMES_BRIDGE_EXTRA_ARGS) {
-    args.push(...env.HERMES_BRIDGE_EXTRA_ARGS.split(/\s+/).filter(Boolean));
-  }
-  args.push("-z", requestJson);
-  return args;
+function copyIfExists(source, target) {
+  if (existsSync(source)) copyFileSync(source, target);
 }
 
 export async function runHermesSkill({
@@ -53,30 +75,58 @@ export async function runHermesSkill({
   if (!existsSync(skillPath)) {
     return {
       ok: false,
-      error: `Skill file not found: ${skillPath}`,
+      code: "SKILL_FILE_NOT_FOUND",
+      message: "Skill file not found",
       skill_sha256: null,
     };
   }
 
   const skillSha256 = sha256File(skillPath);
-  const privateDir = resolve(
+  const baseDir = resolve(
     env.HERMES_E5_JOB_DIR ?? resolve(REPO_ROOT, "runtime", "private", "e5_jobs"),
     jobId,
   );
-  mkdirSync(privateDir, { recursive: true });
+  const privateDir = resolve(baseDir, "private");
+  const jobHome = resolve(privateDir, "hermes-home");
+  const skillDir = resolve(jobHome, "skills", skillName);
+  mkdirSync(skillDir, { recursive: true });
+
+  // Execute the exact reviewed skill file, never a same-name profile skill.
+  const executedSkillPath = resolve(skillDir, "SKILL.md");
+  copyFileSync(skillPath, executedSkillPath);
+
+  const sourceProfileDir =
+    env.HERMES_SOURCE_PROFILE_DIR ?? env.HERMES_PROFILE_DIR ?? "";
+  if (sourceProfileDir) {
+    copyIfExists(resolve(sourceProfileDir, "config.yaml"), resolve(jobHome, "config.yaml"));
+    copyIfExists(resolve(sourceProfileDir, ".env"), resolve(jobHome, ".env"));
+    copyIfExists(resolve(sourceProfileDir, "SOUL.md"), resolve(jobHome, "SOUL.md"));
+  }
 
   const requestJson = JSON.stringify(request, null, 2);
-  const usageFile = resolve(privateDir, "usage.json");
-  writeFileSync(usageFile, "{}", "utf-8");
+  const stdoutPath = resolve(privateDir, "stdout.txt");
+  const stderrPath = resolve(privateDir, "stderr.txt");
+  writeFileSync(stdoutPath, "", "utf-8");
+  writeFileSync(stderrPath, "", "utf-8");
 
   const bin = env.HERMES_BIN ?? "hermes";
-  const profile = env.HERMES_PROFILE ?? "studyv2";
-  const args = buildArgs({ profile, skillName, usageFile, requestJson, env });
+  const extraArgs = env.HERMES_BRIDGE_EXTRA_ARGS?.split(/\s+/).filter(Boolean) ?? [];
+  const args = [
+    "chat",
+    "--query-file",
+    "-",
+    "--skills",
+    skillName,
+    "--quiet",
+    "--max-turns",
+    "1",
+    ...extraArgs,
+  ];
 
   const childEnv = {
     ...env,
     PYTHONUNBUFFERED: "1",
-    ...(env.HERMES_HOME ? { HERMES_HOME: env.HERMES_HOME } : {}),
+    HERMES_HOME: jobHome,
   };
 
   return await new Promise((resolvePromise) => {
@@ -109,9 +159,12 @@ export async function runHermesSkill({
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      writeFileSync(stderrPath, compactStderr(error.message), "utf-8");
       resolvePromise({
         ok: false,
-        error: compactStderr(error.message),
+        code: "HERMES_SPAWN_FAILED",
+        message: "Hermes process could not be started",
+        diagnostics_path: stderrPath,
         skill_sha256: skillSha256,
       });
     });
@@ -120,11 +173,15 @@ export async function runHermesSkill({
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      writeFileSync(stdoutPath, stdout, "utf-8");
+      writeFileSync(stderrPath, stderr, "utf-8");
 
       if (timedOut) {
         resolvePromise({
           ok: false,
-          error: `Hermes job timed out after ${timeoutMs} ms`,
+          code: "HERMES_TIMEOUT",
+          message: "Hermes job timed out",
+          diagnostics_path: stderrPath,
           skill_sha256: skillSha256,
         });
         return;
@@ -133,24 +190,33 @@ export async function runHermesSkill({
       if (code !== 0) {
         resolvePromise({
           ok: false,
+          code: "HERMES_NONZERO_EXIT",
+          message: "Hermes exited with a non-zero status",
           exit_code: code,
-          error: compactStderr(stderr) || `Hermes exited with code ${code}`,
+          diagnostics_path: stderrPath,
           skill_sha256: skillSha256,
         });
         return;
       }
 
-      const result = parseUniqueJson(stdout);
+      const result = extractJsonObject(stdout);
       if (!result || typeof result !== "object" || Array.isArray(result)) {
         resolvePromise({
           ok: false,
-          error: "Hermes stdout did not contain a single JSON object",
+          code: "HERMES_INVALID_JSON",
+          message: "Hermes stdout did not contain a single JSON object",
+          diagnostics_path: stdoutPath,
           skill_sha256: skillSha256,
         });
         return;
       }
 
-      resolvePromise({ ok: true, result, skill_sha256: skillSha256 });
+      resolvePromise({
+        ok: true,
+        result,
+        skill_sha256: skillSha256,
+        executed_skill_path: executedSkillPath,
+      });
     });
 
     child.stdin.write(requestJson);

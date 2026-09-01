@@ -245,7 +245,7 @@ export function saveAnalysisResult(normalized, context, meta = {}) {
 
       for (const candidate of finding.memory_candidates) {
         insertMemory.run(
-          candidate.memory_id,
+          `mem_${batchId}_${finding.question_id}`,
           findingId,
           batchId,
           context.student_id,

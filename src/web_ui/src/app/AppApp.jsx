@@ -533,7 +533,7 @@ function AnalysisView() {
   const analysisSessions = (sessions.data?.sessions ?? []).filter((session) => session.confirmed_count > 0);
   const findingsBatches = findings.data?.batches ?? [];
   const memoryList = memories.data?.memories ?? [];
-  const pendingMemories = memoryList.filter((memory) => memory.status !== "accepted");
+  const pendingMemories = memoryList.filter((memory) => memory.status === "pending");
 
   return (
     <div className="space-y-4">

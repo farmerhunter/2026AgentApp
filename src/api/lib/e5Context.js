@@ -36,8 +36,37 @@ export function compactKnowledgePoints() {
   }
 }
 
-function acceptedMemoriesFor(studentId, subject) {
-  return db
+export function compactKnowledgePointsForIds(ids = []) {
+  const full = compactKnowledgePoints();
+  if (!ids.length) {
+    return { ...full, knowledge_points: [] };
+  }
+  const wanted = new Set(ids);
+  return {
+    ...full,
+    knowledge_points: full.knowledge_points.filter((point) => wanted.has(point.knowledge_point_id)),
+  };
+}
+
+function bigrams(text) {
+  const clean = String(text ?? "").replace(/\s+/g, "");
+  const result = new Set();
+  for (let index = 0; index < clean.length - 1; index += 1) {
+    result.add(clean.slice(index, index + 2));
+  }
+  return result;
+}
+
+function sharesBigram(left, right) {
+  const leftGrams = bigrams(left);
+  for (const gram of bigrams(right)) {
+    if (leftGrams.has(gram)) return true;
+  }
+  return false;
+}
+
+function acceptedMemoriesFor(studentId, subject, questions = [], limit = 5) {
+  const rows = db
     .prepare(
       `SELECT memory_id, statement, reason, candidate_type, priority, finding_id, finding_batch_id
        FROM memory_decisions
@@ -45,6 +74,34 @@ function acceptedMemoriesFor(studentId, subject) {
        ORDER BY accepted_at DESC, memory_id`,
     )
     .all(studentId, subject);
+
+  const questionText = questions
+    .map((question) => [question.question_text, question.student_answer_text, question.note].filter(Boolean).join(" "))
+    .join("\n");
+  const knowledgeIds = new Set(questions.flatMap((question) => question.knowledge_point_ids ?? []));
+
+  const getConceptLinks = db.prepare(
+    "SELECT concept_links_json FROM findings WHERE finding_id = ?",
+  );
+  const scored = rows
+    .map((row) => {
+      let score = 0;
+      const source = getConceptLinks.get(row.finding_id);
+      const links = parseJson(source?.concept_links_json, []);
+      if (links.some((link) => knowledgeIds.has(link.concept_id ?? link.knowledge_point_id))) {
+        score += 3;
+      }
+      if (questionText && sharesBigram(questionText, row.statement)) {
+        score += 1;
+      }
+      return { row, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || String(b.row.accepted_at).localeCompare(String(a.row.accepted_at)))
+    .slice(0, limit);
+
+  if (scored.length > 0) return scored.map((item) => item.row);
+  return rows.slice(0, Math.min(2, limit));
 }
 
 export function getAnalysisContext(uploadId, studentId = DEFAULT_STUDENT_ID) {
@@ -72,6 +129,11 @@ export function getAnalysisContext(uploadId, studentId = DEFAULT_STUDENT_ID) {
     error.status = 400;
     throw error;
   }
+  if (rows.length > 10) {
+    const error = new Error(`Upload ${uploadId} has more than 10 confirmed wrong questions`);
+    error.status = 400;
+    throw error;
+  }
 
   const questions = rows.map((row) => ({
     question_id: row.question_id,
@@ -92,8 +154,8 @@ export function getAnalysisContext(uploadId, studentId = DEFAULT_STUDENT_ID) {
     subject: upload.subject,
     subject_label: upload.subject_label,
     questions,
-    accepted_memories: acceptedMemoriesFor(upload.student_id ?? studentId, upload.subject),
-    knowledge_map: compactKnowledgePoints(),
+    accepted_memories: acceptedMemoriesFor(upload.student_id ?? studentId, upload.subject, questions),
+    knowledge_map: compactKnowledgePointsForIds(questions.flatMap((question) => question.knowledge_point_ids)),
   };
 }
 
@@ -140,8 +202,25 @@ function findingRowsForRange(studentId, subject, weekStart, weekEnd) {
     .all(studentId, subject, weekStart, weekEnd);
 }
 
+function utcStart(dateString) {
+  return new Date(`${dateString}T00:00:00+08:00`).toISOString();
+}
+
+function utcDayAfter(dateString) {
+  const value = new Date(`${dateString}T00:00:00+08:00`);
+  value.setDate(value.getDate() + 1);
+  return value.toISOString();
+}
+
 export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "math", weekStart, weekEnd }) {
-  const rows = findingRowsForRange(studentId, subject, weekStart, weekEnd);
+  const start = utcStart(weekStart);
+  const end = utcDayAfter(weekEnd);
+  const allRows = findingRowsForRange(studentId, subject, start, end);
+  const latestByQuestion = new Map();
+  for (const row of allRows) {
+    latestByQuestion.set(row.question_id, row);
+  }
+  const rows = [...latestByQuestion.values()];
   if (rows.length === 0) {
     return {
       job: "weekly_learning_report",
@@ -151,7 +230,7 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
       week_start: weekStart,
       week_end: weekEnd,
       findings: [],
-      accepted_memories: acceptedMemoriesFor(studentId, subject),
+      accepted_memories: acceptedMemoriesFor(studentId, subject, []),
       knowledge_map: compactKnowledgePoints(),
     };
   }
@@ -168,7 +247,7 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
          AND b.generated_at >= ? AND b.generated_at < ?
        ORDER BY a.finding_id, a.id`,
     )
-    .all(studentId, subject, weekStart, weekEnd)) {
+    .all(studentId, subject, start, end)) {
     const list = actionByFinding.get(action.finding_id) ?? [];
     list.push({
       action_type: action.action_type,
@@ -190,7 +269,7 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
          AND b.generated_at >= ? AND b.generated_at < ?
        ORDER BY m.finding_id, m.memory_id`,
     )
-    .all(studentId, subject, weekStart, weekEnd)) {
+    .all(studentId, subject, start, end)) {
     const list = memoryByFinding.get(memory.finding_id) ?? [];
     list.push({
       memory_id: memory.memory_id,
@@ -202,6 +281,7 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
     memoryByFinding.set(memory.finding_id, list);
   }
 
+  const selectedFindingIds = new Set(rows.map((row) => row.finding_id));
   const findings = rows.map((row) => ({
     finding_id: row.finding_id,
     finding_batch_id: row.finding_batch_id,
@@ -216,8 +296,8 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
     mistake_reasons: parseJson(row.mistake_reasons_json, []),
     concept_links: parseJson(row.concept_links_json, []),
     source_memory_ids: parseJson(row.source_memory_ids_json, []),
-    actions: actionByFinding.get(row.finding_id) ?? [],
-    memory_decisions: memoryByFinding.get(row.finding_id) ?? [],
+    actions: (actionByFinding.get(row.finding_id) ?? []).filter(() => selectedFindingIds.has(row.finding_id)),
+    memory_decisions: (memoryByFinding.get(row.finding_id) ?? []).filter(() => selectedFindingIds.has(row.finding_id)),
   }));
 
   return {
@@ -228,8 +308,14 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
     week_start: weekStart,
     week_end: weekEnd,
     findings,
-    accepted_memories: acceptedMemoriesFor(studentId, subject),
-    knowledge_map: compactKnowledgePoints(),
+    accepted_memories: acceptedMemoriesFor(
+      studentId,
+      subject,
+      findings.map((finding) => finding.question).filter(Boolean),
+    ),
+    knowledge_map: compactKnowledgePointsForIds(
+      findings.flatMap((finding) => finding.question?.knowledge_point_ids ?? []),
+    ),
   };
 }
 
@@ -245,5 +331,9 @@ export function listWeekFindingsSummary(studentId = DEFAULT_STUDENT_ID, subject 
 }
 
 export function hasUsableWeeklyData(studentId, subject, weekStart, weekEnd) {
-  return findingRowsForRange(studentId, subject, weekStart, weekEnd).length > 0;
+  const start = utcStart(weekStart);
+  const end = utcDayAfter(weekEnd);
+  const rows = findingRowsForRange(studentId, subject, start, end);
+  const latest = new Set(rows.map((row) => row.question_id));
+  return latest.size > 0;
 }

@@ -107,7 +107,15 @@ async function main() {
         : { ok: true, result: fixtureAnalysis(context), skill_sha256: null };
 
     if (!raw.ok) {
-      throw new Error(raw.error ?? "Hermes analysis failed");
+      const error = new Error(raw.message ?? "Hermes analysis failed");
+      error.code = raw.code ?? "HERMES_ANALYSIS_FAILED";
+      error.diagnostics_path = raw.diagnostics_path ?? null;
+      throw error;
+    }
+
+    const fixtureDelayMs = Number(process.env.HERMES_E5_FIXTURE_DELAY_MS ?? 0);
+    if (fixtureDelayMs > 0) {
+      await new Promise((resolvePromise) => setTimeout(resolvePromise, fixtureDelayMs));
     }
 
     const normalized = validateAnalysisOutput(raw.result, context);

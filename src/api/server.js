@@ -36,6 +36,8 @@ const JOB_SCRIPTS = {
 const SUBJECTS = ["chinese", "math", "english"];
 const JOB_RECONCILE_INTERVAL_MS = 1000;
 const JOB_STALE_MS = 5 * 60 * 1000;
+const jobQueue = [];
+let activeJob = null;
 
 const db = getDb();
 db.defaultSafeIntegers(false);
@@ -200,18 +202,14 @@ function startJobReconciliation() {
   setInterval(reconcileJobs, JOB_RECONCILE_INTERVAL_MS);
 }
 
-function spawnJob(jobType, args, payload) {
-  const jobId = generateJobId();
+function runJob(jobType, args, payload, jobId) {
   const scriptName = JOB_SCRIPTS[jobType];
-  if (!scriptName) throw new Error(`Unknown job type: ${jobType}`);
-
   const scriptPath = scriptName.endsWith(".mjs")
     ? resolve(__dirname, "scripts", scriptName)
     : resolve(JOBS_DIR, scriptName);
   const env = { ...process.env, HERMES_JOB_MODE: MODE, JOB_ID: jobId };
 
-  writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
-  insertJobDb(jobId, jobType, MODE, payload);
+  writeStatus(jobId, { job_type: jobType, status: "running", mode: MODE });
 
   const isNodeScript = scriptName.endsWith(".mjs") || scriptName.endsWith(".js");
   const command = isNodeScript ? process.execPath : "bash";
@@ -225,6 +223,13 @@ function spawnJob(jobType, args, payload) {
   });
 
   let checkInterval = null;
+  let timedOut = false;
+
+  const finishActive = () => {
+    if (checkInterval) clearInterval(checkInterval);
+    activeJob = null;
+    drainJobQueue();
+  };
 
   child.on("error", (err) => {
     if (checkInterval) clearInterval(checkInterval);
@@ -235,11 +240,11 @@ function spawnJob(jobType, args, payload) {
       error_message: err.message,
     });
     syncJobFromStatusFile(jobId);
+    finishActive();
   });
 
   child.unref();
 
-  // Poll for completion in background
   checkInterval = setInterval(() => {
     try {
       const s = readStatus(jobId);
@@ -250,16 +255,17 @@ function spawnJob(jobType, args, payload) {
         }
       }
       if (s && (s.status === "completed" || s.status === "failed")) {
-        clearInterval(checkInterval);
+        finishActive();
       }
     } catch {
       // Status file not written yet, keep polling
     }
   }, 1000);
 
-  // Timeout after 5 minutes
   setTimeout(() => {
-    clearInterval(checkInterval);
+    if (timedOut) return;
+    timedOut = true;
+    if (checkInterval) clearInterval(checkInterval);
     try {
       const s = readStatus(jobId);
       if (s && s.status !== "completed" && s.status !== "failed") {
@@ -272,8 +278,25 @@ function spawnJob(jobType, args, payload) {
         syncJobFromStatusFile(jobId);
       }
     } catch {}
+    finishActive();
   }, 300_000);
+}
 
+function drainJobQueue() {
+  if (activeJob || jobQueue.length === 0) return;
+  const next = jobQueue.shift();
+  activeJob = next.jobId;
+  runJob(next.jobType, next.args, next.payload, next.jobId);
+}
+
+function spawnJob(jobType, args, payload) {
+  const jobId = generateJobId();
+  if (!JOB_SCRIPTS[jobType]) throw new Error(`Unknown job type: ${jobType}`);
+
+  writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
+  insertJobDb(jobId, jobType, MODE, payload);
+  jobQueue.push({ jobId, jobType, args, payload });
+  drainJobQueue();
   return jobId;
 }
 

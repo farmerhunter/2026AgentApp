@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_DIR = resolve(__dirname, "..");
 const DB_PATH = resolve(API_DIR, `e5_smoke_${Date.now()}.db`).replaceAll("\\", "/");
 const DATABASE_URL = `sqlite:///${DB_PATH}`;
+process.env.DATABASE_URL = DATABASE_URL;
 const PRIVATE_DIR = resolve(API_DIR, `e5_smoke_private_${Date.now()}`);
 const PORT = 8127;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -79,6 +80,28 @@ async function waitForJob(jobId, timeoutMs = 30000) {
   throw new Error(`Job ${jobId} did not reach terminal state; last=${JSON.stringify(last)}`);
 }
 
+async function assertSerialJobs(firstId, secondId) {
+  const deadline = Date.now() + 30000;
+  let bothRunning = false;
+  let firstFinal = null;
+  let secondFinal = null;
+  while (Date.now() < deadline) {
+    const first = (await jsonRequest(`/api/hermes/jobs/${firstId}`)).body;
+    const second = (await jsonRequest(`/api/hermes/jobs/${secondId}`)).body;
+    if (first.status === "running" && second.status === "running") {
+      bothRunning = true;
+      break;
+    }
+    firstFinal = ["completed", "failed", "timeout"].includes(first.status) ? first.status : null;
+    secondFinal = ["completed", "failed", "timeout"].includes(second.status) ? second.status : null;
+    if (firstFinal && secondFinal) break;
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
+  }
+  assert(!bothRunning, "two jobs ran concurrently");
+  assert(firstFinal === "completed", `first serial job should complete, got ${firstFinal}`);
+  assert(secondFinal === "completed", `second serial job should complete, got ${secondFinal}`);
+}
+
 function startServer() {
   mkdirSync(PRIVATE_DIR, { recursive: true });
   server = spawn(process.execPath, ["server.js"], {
@@ -88,6 +111,7 @@ function startServer() {
       HERMES_API_PORT: String(PORT),
       HERMES_JOB_MODE: "fixture",
       HERMES_E5_TEST_MODE: "fixture",
+      HERMES_E5_FIXTURE_DELAY_MS: "1200",
       HERMES_PRIVATE_UPLOADS_DIR: PRIVATE_DIR,
       DATABASE_URL,
     },
@@ -148,6 +172,19 @@ async function main() {
   const analysisJob = await waitForJob(analysis.body.job_id);
   assert(analysisJob.status === "completed", `analysis job should complete, got ${analysisJob.status}: ${analysisJob.error_message ?? ""}`);
 
+  const [serialA, serialB] = await Promise.all([
+    jsonRequest("/api/hermes/jobs", {
+      method: "POST",
+      body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+    }),
+    jsonRequest("/api/hermes/jobs", {
+      method: "POST",
+      body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+    }),
+  ]);
+  assert(serialA.status === 202 && serialB.status === 202, "serial job creation should be 202");
+  await assertSerialJobs(serialA.body.job_id, serialB.body.job_id);
+
   const findings = await jsonRequest("/api/findings");
   assert(findings.body.batches.some((batch) => batch.subject === "math"), "analysis batch not saved");
   const memoryList = await jsonRequest("/api/memories");
@@ -182,6 +219,36 @@ async function main() {
   const reportDetail = await jsonRequest(`/api/reports/${reports.body.reports[0].weekly_report_id}`);
   assert(reportDetail.status === 200, "weekly report detail should be 200");
   assert(reportDetail.body.analysis?.overall_summary, "weekly report should contain overall_summary");
+
+  const { getDb } = await import("../db/init.js");
+  const { getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
+  const contextDb = getDb();
+  const now = new Date().toISOString();
+  contextDb.prepare(
+    `INSERT OR REPLACE INTO learning_findings
+     (finding_batch_id, student_id, subject, subject_label, generated_by, generated_at, source_refs_json, created_at, updated_at)
+     VALUES (?, 'student_demo', 'math', '数学', 'sunday-boundary-test', ?, '[]', ?, ?)`,
+  ).run("sunday_boundary_batch", "2026-09-06T23:00:00.000Z", now, now);
+  contextDb.prepare(
+    `INSERT OR REPLACE INTO findings
+     (finding_batch_id, finding_id, question_id, upload_id, scope, finding_type, statement, evidence_summary, confidence, is_recurring, mistake_reasons_json, concept_links_json, source_memory_ids_json, created_at, updated_at)
+     VALUES ('sunday_boundary_batch', 'sunday_boundary_finding', 'sunday_boundary_q', 'sunday_boundary_upload', 'local', 'unknown', 'sunday boundary', 'excluded', 'low', 0, '[]', '[]', '[]', ?, ?)`,
+  ).run(now, now);
+
+  const context = getWeeklyContext({
+    studentId: "student_demo",
+    subject: "math",
+    weekStart: "2026-08-31",
+    weekEnd: "2026-09-06",
+  });
+  assert(
+    context.findings.every((finding) => finding.question?.question_id !== "sunday_boundary_q"),
+    "Sunday 23:00 UTC should be outside the half-open weekly range",
+  );
+  const contextQuestionIds = context.findings.map((finding) => finding.question?.question_id).filter(Boolean);
+  assert(new Set(contextQuestionIds).size === contextQuestionIds.length, "weekly context should deduplicate repeated analyses");
+  assert(hasUsableWeeklyData("student_demo", "math", "2026-08-31", "2026-09-06"), "weekly data should be usable");
+  contextDb.close();
 
   console.log("E5 fixture analysis/memory/report smoke passed");
 }

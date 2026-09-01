@@ -129,7 +129,10 @@ async function main() {
         : { ok: true, result: fixtureWeeklyReport(context), skill_sha256: null };
 
     if (!raw.ok) {
-      throw new Error(raw.error ?? "Hermes weekly report failed");
+      const error = new Error(raw.message ?? "Hermes weekly report failed");
+      error.code = raw.code ?? "HERMES_WEEKLY_REPORT_FAILED";
+      error.diagnostics_path = raw.diagnostics_path ?? null;
+      throw error;
     }
 
     const normalized = validateWeeklyReportOutput(raw.result, context);
