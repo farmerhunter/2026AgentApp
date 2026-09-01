@@ -223,16 +223,19 @@ function runJob(jobType, args, payload, jobId) {
   });
 
   let checkInterval = null;
-  let timedOut = false;
+  let timeoutHandle = null;
+  let finished = false;
 
   const finishActive = () => {
+    if (finished) return;
+    finished = true;
     if (checkInterval) clearInterval(checkInterval);
+    if (timeoutHandle) clearTimeout(timeoutHandle);
     activeJob = null;
     drainJobQueue();
   };
 
   child.on("error", (err) => {
-    if (checkInterval) clearInterval(checkInterval);
     writeStatus(jobId, {
       job_type: jobType,
       status: "failed",
@@ -262,10 +265,10 @@ function runJob(jobType, args, payload, jobId) {
     }
   }, 1000);
 
-  setTimeout(() => {
-    if (timedOut) return;
-    timedOut = true;
-    if (checkInterval) clearInterval(checkInterval);
+  timeoutHandle = setTimeout(() => {
+    try {
+      child.kill("SIGKILL");
+    } catch {}
     try {
       const s = readStatus(jobId);
       if (s && s.status !== "completed" && s.status !== "failed") {

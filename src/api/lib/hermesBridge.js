@@ -98,9 +98,27 @@ export async function runHermesSkill({
   const sourceProfileDir =
     env.HERMES_SOURCE_PROFILE_DIR ?? env.HERMES_PROFILE_DIR ?? "";
   if (sourceProfileDir) {
+    const requiredFiles = ["config.yaml", ".env"];
+    const missing = requiredFiles.filter((file) => !existsSync(resolve(sourceProfileDir, file)));
+    if (missing.length > 0) {
+      return {
+        ok: false,
+        code: "HERMES_PROFILE_UNAVAILABLE",
+        message: "Hermes source profile is missing required files",
+        missing_files: missing,
+        skill_sha256: skillSha256,
+      };
+    }
     copyIfExists(resolve(sourceProfileDir, "config.yaml"), resolve(jobHome, "config.yaml"));
     copyIfExists(resolve(sourceProfileDir, ".env"), resolve(jobHome, ".env"));
     copyIfExists(resolve(sourceProfileDir, "SOUL.md"), resolve(jobHome, "SOUL.md"));
+  } else {
+    return {
+      ok: false,
+      code: "HERMES_PROFILE_UNAVAILABLE",
+      message: "HERMES_SOURCE_PROFILE_DIR is required",
+      skill_sha256: skillSha256,
+    };
   }
 
   const requestJson = JSON.stringify(request, null, 2);

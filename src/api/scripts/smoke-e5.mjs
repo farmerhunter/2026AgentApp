@@ -224,16 +224,48 @@ async function main() {
   const { getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
   const contextDb = getDb();
   const now = new Date().toISOString();
-  contextDb.prepare(
+  const insertQuestion = contextDb.prepare(
+    `INSERT OR REPLACE INTO questions
+     (question_id, upload_id, page, question_index, question_text, student_answer_text, question_type, ocr_confidence, bbox_json, raw_ocr_json_url, created_at, updated_at)
+     VALUES (?, ?, 1, ?, ?, NULL, NULL, NULL, '{"x":0,"y":0,"width":100,"height":50}', NULL, ?, ?)`,
+  );
+  const insertBatch = contextDb.prepare(
     `INSERT OR REPLACE INTO learning_findings
      (finding_batch_id, student_id, subject, subject_label, generated_by, generated_at, source_refs_json, created_at, updated_at)
      VALUES (?, 'student_demo', 'math', '数学', 'sunday-boundary-test', ?, '[]', ?, ?)`,
-  ).run("sunday_boundary_batch", "2026-09-06T23:00:00.000Z", now, now);
-  contextDb.prepare(
+  );
+  const insertFinding = contextDb.prepare(
     `INSERT OR REPLACE INTO findings
      (finding_batch_id, finding_id, question_id, upload_id, scope, finding_type, statement, evidence_summary, confidence, is_recurring, mistake_reasons_json, concept_links_json, source_memory_ids_json, created_at, updated_at)
-     VALUES ('sunday_boundary_batch', 'sunday_boundary_finding', 'sunday_boundary_q', 'sunday_boundary_upload', 'local', 'unknown', 'sunday boundary', 'excluded', 'low', 0, '[]', '[]', '[]', ?, ?)`,
-  ).run(now, now);
+     VALUES (?, ?, ?, ?, 'local', 'unknown', ?, 'boundary', 'low', 0, '[]', '[]', '[]', ?, ?)`,
+  );
+
+  insertQuestion.run("sunday_boundary_q", "sunday_boundary_upload", 1, "周日边界题", now, now);
+  insertQuestion.run("monday_boundary_q", "monday_boundary_upload", 1, "周一边界题", now, now);
+
+  // Sunday 23:00 Asia/Shanghai = 2026-09-06T15:00:00Z; must be included.
+  insertBatch.run("sunday_included_batch", "2026-09-06T15:00:00.000Z", now, now);
+  insertFinding.run(
+    "sunday_included_batch",
+    "sunday_included_finding",
+    "sunday_boundary_q",
+    "sunday_boundary_upload",
+    "周日 23:00 上海时间应包含",
+    now,
+    now,
+  );
+
+  // Monday 00:00 Asia/Shanghai = 2026-09-06T16:00:00Z; must be excluded.
+  insertBatch.run("monday_excluded_batch", "2026-09-06T16:00:00.000Z", now, now);
+  insertFinding.run(
+    "monday_excluded_batch",
+    "monday_excluded_finding",
+    "monday_boundary_q",
+    "monday_boundary_upload",
+    "周一 00:00 上海时间应排除",
+    now,
+    now,
+  );
 
   const context = getWeeklyContext({
     studentId: "student_demo",
@@ -242,8 +274,12 @@ async function main() {
     weekEnd: "2026-09-06",
   });
   assert(
-    context.findings.every((finding) => finding.question?.question_id !== "sunday_boundary_q"),
-    "Sunday 23:00 UTC should be outside the half-open weekly range",
+    context.findings.some((finding) => finding.question?.question_id === "sunday_boundary_q"),
+    "Sunday 23:00 Asia/Shanghai should be included in the weekly range",
+  );
+  assert(
+    context.findings.every((finding) => finding.question?.question_id !== "monday_boundary_q"),
+    "Monday 00:00 Asia/Shanghai should be outside the half-open weekly range",
   );
   const contextQuestionIds = context.findings.map((finding) => finding.question?.question_id).filter(Boolean);
   assert(new Set(contextQuestionIds).size === contextQuestionIds.length, "weekly context should deduplicate repeated analyses");

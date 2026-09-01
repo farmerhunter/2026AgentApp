@@ -101,7 +101,7 @@ function acceptedMemoriesFor(studentId, subject, questions = [], limit = 5) {
     .slice(0, limit);
 
   if (scored.length > 0) return scored.map((item) => item.row);
-  return rows.slice(0, Math.min(2, limit));
+  return [];
 }
 
 export function getAnalysisContext(uploadId, studentId = DEFAULT_STUDENT_ID) {
