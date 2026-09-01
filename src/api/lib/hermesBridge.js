@@ -24,7 +24,8 @@ function extractJsonObject(text) {
   for (let index = 0; index < text.length; index += 1) {
     if (text[index] === "{") startCandidates.push(index);
   }
-  for (const start of startCandidates.reverse()) {
+  const parsed = [];
+  for (const start of startCandidates) {
     let depth = 0;
     let inString = false;
     let escaped = false;
@@ -49,15 +50,21 @@ function extractJsonObject(text) {
         if (depth === 0) {
           const candidate = text.slice(start, index + 1);
           try {
-            return JSON.parse(candidate);
+            parsed.push(JSON.parse(candidate));
           } catch {
-            break;
+            // ignore and continue
           }
+          break;
         }
       }
     }
   }
-  return null;
+  return (
+    parsed.find((value) => Array.isArray(value.findings)) ??
+    parsed.find((value) => value.analysis && typeof value.analysis === "object") ??
+    parsed[0] ??
+    null
+  );
 }
 
 function copyIfExists(source, target) {
