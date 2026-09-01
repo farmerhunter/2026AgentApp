@@ -15,9 +15,24 @@ die() {
   exit 1
 }
 
+backup_sqlite() {
+  local src="$1"
+  local dst="$2"
+  python3 - "$src" "$dst" <<'PY'
+import sqlite3, sys
+src, dst = sys.argv[1], sys.argv[2]
+source = sqlite3.connect(src)
+target = sqlite3.connect(dst)
+with target:
+    source.backup(target)
+target.close()
+source.close()
+PY
+}
+
 assert_name() {
   local name="$1"
-  [[ "$name" == "baseline-ab" || "$name" == "last-run" ]] || die "unknown snapshot name: $name"
+  [[ "$name" == "baseline-ab" || "$name" == "showcase-abc" || "$name" == "last-run" ]] || die "unknown snapshot name: $name"
 }
 
 snapshot_path() {
@@ -36,7 +51,7 @@ snapshot() {
   mkdir -p "$SNAPSHOT_ROOT"
   local staging
   staging="$(mktemp -d "$SNAPSHOT_ROOT/.snapshot.XXXXXX")"
-  sqlite3 "$DATA_ROOT/sqlite/xuetuzhiban.db" ".backup '$staging/xuetuzhiban.db'"
+  backup_sqlite "$DATA_ROOT/sqlite/xuetuzhiban.db" "$staging/xuetuzhiban.db"
   cp -a "$DATA_ROOT/uploads" "$staging/uploads"
   cat > "$staging/manifest.json" <<JSON
 {
@@ -66,7 +81,7 @@ restore() {
   rm -rf "$last"
   mkdir -p "$last"
   if [[ -f "$DATA_ROOT/sqlite/xuetuzhiban.db" ]]; then
-    sqlite3 "$DATA_ROOT/sqlite/xuetuzhiban.db" ".backup '$last/xuetuzhiban.db'"
+    backup_sqlite "$DATA_ROOT/sqlite/xuetuzhiban.db" "$last/xuetuzhiban.db"
   fi
   if [[ -d "$DATA_ROOT/uploads" ]]; then
     cp -a "$DATA_ROOT/uploads" "$last/uploads"
@@ -88,10 +103,14 @@ restore() {
 verify() {
   local name="$1"
   assert_name "$name"
-  curl -fsS "$API_BASE/api/health" >/dev/null || die "API health failed"
-  # C must not be active for baseline-ab; exact record counts are checked by the
-  # accepted manifest after the first baseline is approved.
-  echo "verify $name: health ok"
+  for _ in $(seq 1 30); do
+    if curl -fsS "$API_BASE/api/health" >/dev/null; then
+      echo "verify $name: health ok"
+      return 0
+    fi
+    sleep 1
+  done
+  die "API health failed"
 }
 
 case "${1:-}" in
