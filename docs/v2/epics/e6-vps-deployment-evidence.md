@@ -40,3 +40,10 @@
 - 隐私扫描：`xuetuzhiban-privacy-scan` 已安装并返回 `PRIVACY_SCAN_OK`
 - 兜底脚本：`xuetuzhiban-fallback` 已安装，当前返回 `LIVE_OK`
 - 60–90 秒录屏仍待录制
+
+## 5. Review 修复记录
+
+- `verify` 现校验 A/B only、6 错题、findings/memory/report、active job=0、uploads/DB 引用。
+- restore 中间失败自动回滚 `last-run`。
+- Vite 本地代理新增 `/api/xuetuzhiban` rewrite。
+- Nginx `/apps/xuetuzhiban/` 精确 302 到 demo。
