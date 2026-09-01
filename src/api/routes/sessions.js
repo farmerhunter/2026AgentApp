@@ -192,7 +192,7 @@ router.get("/sessions/:upload_id/split", (req, res) => {
       ocr_provider: "tencent_question_split_ocr",
       ocr_status: upload.ocr_status,
       processed_at: upload.updated_at ?? null,
-      source_image_url: `/api/uploads/${upload.upload_id}/image`,
+      source_image_url: `/api/xuetuzhiban/uploads/${upload.upload_id}/image`,
       image_size:
         upload.image_width && upload.image_height
           ? { width: upload.image_width, height: upload.image_height }

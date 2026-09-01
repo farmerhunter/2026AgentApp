@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# E6 private operator: only touches the synthetic production data root.
+# It does not call OCR/Hermes and does not touch Chatbox, port 3000, Nginx or Git.
+
+PROD_ROOT="${XUETUZHIBAN_PROD_ROOT:-/opt/hermes/2026agentapp-prod}"
+DATA_ROOT="$PROD_ROOT/data"
+SNAPSHOT_ROOT="$PROD_ROOT/snapshots"
+API_SERVICE="xuetuzhiban-api.service"
+API_BASE="http://127.0.0.1:8001"
+
+die() {
+  echo "xuetuzhiban-demo: $*" >&2
+  exit 1
+}
+
+assert_name() {
+  local name="$1"
+  [[ "$name" == "baseline-ab" || "$name" == "last-run" ]] || die "unknown snapshot name: $name"
+}
+
+snapshot_path() {
+  local name="$1"
+  echo "$SNAPSHOT_ROOT/$name"
+}
+
+snapshot() {
+  local name="$1"
+  assert_name "$name"
+  [[ "$name" != "last-run" ]] || die "last-run is reserved"
+  local dest
+  dest="$(snapshot_path "$name")"
+  [[ ! -e "$dest" ]] || die "snapshot already exists: $name"
+
+  mkdir -p "$SNAPSHOT_ROOT"
+  local staging
+  staging="$(mktemp -d "$SNAPSHOT_ROOT/.snapshot.XXXXXX")"
+  sqlite3 "$DATA_ROOT/sqlite/xuetuzhiban.db" ".backup '$staging/xuetuzhiban.db'"
+  cp -a "$DATA_ROOT/uploads" "$staging/uploads"
+  cat > "$staging/manifest.json" <<JSON
+{
+  "name": "$name",
+  "app_commit": "$(git -C "$PROD_ROOT/app" rev-parse HEAD 2>/dev/null || echo unknown)",
+  "schema_version": "e6",
+  "created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+JSON
+  mv "$staging" "$dest"
+  echo "snapshot $name created at $dest"
+}
+
+restore() {
+  local name="$1"
+  assert_name "$name"
+  local src
+  src="$(snapshot_path "$name")"
+  [[ -f "$src/xuetuzhiban.db" && -f "$src/manifest.json" ]] || die "snapshot missing or corrupt: $name"
+
+  if systemctl is-active --quiet "$API_SERVICE"; then
+    systemctl stop "$API_SERVICE"
+  fi
+
+  local last
+  last="$(snapshot_path "last-run")"
+  rm -rf "$last"
+  mkdir -p "$last"
+  if [[ -f "$DATA_ROOT/sqlite/xuetuzhiban.db" ]]; then
+    sqlite3 "$DATA_ROOT/sqlite/xuetuzhiban.db" ".backup '$last/xuetuzhiban.db'"
+  fi
+  if [[ -d "$DATA_ROOT/uploads" ]]; then
+    cp -a "$DATA_ROOT/uploads" "$last/uploads"
+  fi
+
+  local staging
+  staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
+  cp -a "$src/." "$staging/"
+  mkdir -p "$DATA_ROOT/sqlite"
+  mv "$staging/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
+  rm -rf "$DATA_ROOT/uploads"
+  mv "$staging/uploads" "$DATA_ROOT/uploads"
+  rm -rf "$staging"
+
+  systemctl start "$API_SERVICE"
+  verify "$name"
+}
+
+verify() {
+  local name="$1"
+  assert_name "$name"
+  curl -fsS "$API_BASE/api/health" >/dev/null || die "API health failed"
+  # C must not be active for baseline-ab; exact record counts are checked by the
+  # accepted manifest after the first baseline is approved.
+  echo "verify $name: health ok"
+}
+
+case "${1:-}" in
+  snapshot) shift; snapshot "${1:?name required}" ;;
+  restore) shift; restore "${1:?name required}" ;;
+  verify) shift; verify "${1:?name required}" ;;
+  *) die "usage: $0 {snapshot|restore|verify} baseline-ab" ;;
+esac

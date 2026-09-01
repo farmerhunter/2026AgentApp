@@ -1,4 +1,4 @@
-const DATA_BASE_URL = "/data";
+const DATA_BASE_URL = "/apps/xuetuzhiban/data";
 
 export async function fetchJson(path) {
   const response = await fetch(`${DATA_BASE_URL}${path}`);

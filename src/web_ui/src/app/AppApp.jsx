@@ -429,7 +429,7 @@ function ImageBboxViewer({ uploadId, questions }) {
     <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white">
       {imageError ? <ErrorState error={imageError} label="原图加载失败" /> : null}
       <img
-        src={`/api/uploads/${uploadId}/image`}
+        src={`${import.meta.env.VITE_APP_API_BASE_URL ?? "/api/xuetuzhiban"}/uploads/${uploadId}/image`}
         alt="练习原图"
         onError={() => setImageError({ message: "原图不存在或已损坏。" })}
         onLoad={(event) => {
