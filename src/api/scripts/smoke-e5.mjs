@@ -110,6 +110,8 @@ async function assertTimeoutQueue(firstId, secondId) {
   while (Date.now() < deadline) {
     const first = (await jsonRequest(`/api/hermes/jobs/${firstId}`)).body;
     const second = (await jsonRequest(`/api/hermes/jobs/${secondId}`)).body;
+    firstFinal = ["completed", "failed", "timeout"].includes(first.status) ? first.status : null;
+    secondFinal = ["completed", "failed", "timeout"].includes(second.status) ? second.status : null;
     if (second.status === "running" && firstFinal === null) {
       secondStartedBeforeFirst = true;
       break;
@@ -118,8 +120,6 @@ async function assertTimeoutQueue(firstId, secondId) {
       secondStartedBeforeFirst = true;
       break;
     }
-    firstFinal = ["completed", "failed", "timeout"].includes(first.status) ? first.status : null;
-    secondFinal = ["completed", "failed", "timeout"].includes(second.status) ? second.status : null;
     if (firstFinal && secondFinal) break;
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
   }
