@@ -37,6 +37,6 @@
 
 ## 4. 残余事项
 
-- 60–90 秒录屏
-- 隐私扫描
-- 现场兜底切换脚本演练
+- 隐私扫描：`xuetuzhiban-privacy-scan` 已安装并返回 `PRIVACY_SCAN_OK`
+- 兜底脚本：`xuetuzhiban-fallback` 已安装，当前返回 `LIVE_OK`
+- 60–90 秒录屏仍待录制
