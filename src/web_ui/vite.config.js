@@ -6,6 +6,11 @@ export default defineConfig({
   base: "/apps/xuetuzhiban/",
   server: {
     proxy: {
+      "/api/xuetuzhiban": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/xuetuzhiban/, "/api"),
+      },
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,

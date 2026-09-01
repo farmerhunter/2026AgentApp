@@ -87,9 +87,8 @@ restore() {
     cp -a "$DATA_ROOT/uploads" "$last/uploads"
   fi
 
-  local staging
-  staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
   rollback() {
+    trap - ERR
     systemctl stop "$API_SERVICE" || true
     mkdir -p "$DATA_ROOT/sqlite"
     if [[ -f "$last/xuetuzhiban.db" ]]; then
@@ -104,16 +103,17 @@ restore() {
     echo "restore failed; rolled back to last-run"
   }
 
-  if ! cp -a "$src/." "$staging/"; then
-    rollback
-    return 1
-  fi
+  trap rollback ERR
+  local staging
+  staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
+  cp -a "$src/." "$staging/"
   mkdir -p "$DATA_ROOT/sqlite"
   mv "$staging/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
   rm -rf "$DATA_ROOT/uploads"
   mv "$staging/uploads" "$DATA_ROOT/uploads"
   rm -rf "$staging"
   chown -R ubuntu:ubuntu "$DATA_ROOT/sqlite" "$DATA_ROOT/uploads"
+  trap - ERR
 
   systemctl start "$API_SERVICE"
   if ! verify "$name"; then
@@ -126,14 +126,39 @@ verify() {
   local name="$1"
   assert_name "$name"
   for _ in $(seq 1 30); do
-    if curl -fsS "$API_BASE/api/health" >/dev/null; then
-      echo "verify $name: health ok"
-      return 0
-    fi
+    curl -fsS "$API_BASE/health" >/dev/null && break
     sleep 1
   done
-  echo "verify $name: API health failed" >&2
-  return 1
+  curl -fsS "$API_BASE/health" >/dev/null || { echo "verify $name: API health failed" >&2; return 1; }
+
+  python3 - "$DATA_ROOT/sqlite/xuetuzhiban.db" "$DATA_ROOT/uploads" <<'PY'
+import os, sqlite3, sys
+db_path, uploads_root = sys.argv[1], sys.argv[2]
+conn = sqlite3.connect(db_path)
+uploads = conn.execute("select upload_id, source_title from uploads").fetchall()
+ids = [u[0] for u in uploads]
+titles = [u[1] or '' for u in uploads]
+assert len(uploads) == 2, f"expected 2 active uploads, got {len(uploads)}"
+assert not any('worksheet-c' in t.lower() for t in titles), "C worksheet is still active"
+assert any('worksheet-a' in t.lower() for t in titles), "A worksheet missing"
+assert any('worksheet-b' in t.lower() for t in titles), "B worksheet missing"
+confirmed = conn.execute("select count(*) from question_confirmations where selected=1").fetchone()[0]
+assert confirmed == 6, f"expected 6 confirmed wrong questions, got {confirmed}"
+findings = conn.execute("select count(*) from findings").fetchone()[0]
+assert findings >= 6, f"expected at least 6 findings, got {findings}"
+memories = conn.execute("select count(*) from memory_decisions").fetchone()[0]
+assert memories >= 3, f"expected at least 3 memory decisions, got {memories}"
+reports = conn.execute("select count(*) from weekly_reports").fetchone()[0]
+assert reports >= 1, f"expected at least 1 weekly report, got {reports}"
+active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('queued','running','pending')").fetchone()[0]
+assert active_jobs == 0, f"expected no active jobs, got {active_jobs}"
+for uid in ids:
+    q = conn.execute("select count(*) from questions where upload_id=?", (uid,)).fetchone()[0]
+    assert q == 10, f"expected 10 questions for {uid}, got {q}"
+    assert os.path.isdir(os.path.join(uploads_root, uid)), f"uploads dir missing for {uid}"
+conn.close()
+print("verify data: A/B only, 6 confirmed, findings/memory/report present, no active jobs")
+PY
 }
 
 case "${1:-}" in
