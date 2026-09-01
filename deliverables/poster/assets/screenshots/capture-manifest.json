@@ -1,0 +1,52 @@
+{
+  "capture_type": "accepted-result replay",
+  "base_url": "http://127.0.0.1:5173",
+  "viewport": {
+    "width": 1800,
+    "height": 1200,
+    "device_scale_factor": 1.5
+  },
+  "source_commit": "3ccefce4971dbb5798c2ea2578a0c5174147785a",
+  "source_material": "committed synthetic A/B worksheets and accepted Hermes outputs",
+  "new_external_calls": {
+    "ocr": 0,
+    "hermes": 0
+  },
+  "files": [
+    "01-import-confirmation-full.png",
+    "02-analysis-memory-full.png",
+    "03-weekly-report-full.png"
+  ],
+  "checks": [
+    {
+      "route": "/app/import",
+      "heading": "练习导入与确认",
+      "assertions": [
+        "原创模拟练习 A",
+        "已选 3/10",
+        "练习原图可见"
+      ]
+    },
+    {
+      "route": "/app/analysis",
+      "heading": "分析与记忆",
+      "assertions": [
+        "B 批发现可见",
+        "证据不足可见",
+        "A09 待确认记忆可见"
+      ]
+    },
+    {
+      "route": "/app/report",
+      "heading": "周报与打印",
+      "assertions": [
+        "重复问题",
+        "局部变化",
+        "原因未知",
+        "打印周报按钮"
+      ]
+    }
+  ],
+  "console_errors": [],
+  "request_failures": []
+}

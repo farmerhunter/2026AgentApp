@@ -1,0 +1,24 @@
+{
+  "operation": "poster crops from unaltered browser captures",
+  "target_size": {
+    "width": 1600,
+    "height": 900
+  },
+  "files": [
+    {
+      "output": "01-import-confirmation-poster.png",
+      "source": "01-import-confirmation-full.png",
+      "note": "top portion of the import and confirmation page"
+    },
+    {
+      "output": "02-analysis-memory-poster.png",
+      "source": "02-analysis-memory-full.png",
+      "note": "two unaltered crops from the same page, joined with an 8 px divider to show findings and memory decision"
+    },
+    {
+      "output": "03-weekly-report-poster.png",
+      "source": "03-weekly-report-full.png",
+      "note": "report title and evidence-based summary area"
+    }
+  ]
+}
