@@ -15,7 +15,7 @@
                                                    │
             教材知识地图 JSON ─────────────────────┤
             腾讯 QuestionSplitOCR <── exercise 图 ┤
-            Hermes CLI bridge <── 3 个固定 Skill ─┘
+            Hermes CLI bridge <── 2 个在线 Skill ─┘
                      └── DeepSeek（Hermes 内已配置的推理 Provider）
 ```
 
@@ -81,7 +81,7 @@ E1 现有 `pending/running/completed/failed/timeout` 是已实现兼容词汇。
 - 产品不通过 tmux `send-keys` 驱动 TUI。TUI 只用于人类快速试验 Skill。
 - 产品学习记忆以 SQLite 为准，显式传给 Hermes；不读取 Hermes 的 ambient memory。
 
-详见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。
+两个在线 Skill 的价值与分析策略见 [E5 核心能力设计](epics/e5-hermes-learning-analysis.md)；运行接入见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。教材整理 Skill 在线下使用，不计为在线任务。
 
 ## 4. 真实业务流
 
@@ -96,9 +96,13 @@ E1 现有 `pending/running/completed/failed/timeout` 是已实现兼容词汇。
 
 V2 不实现 memory 编辑、合并、去重或自动 consolidation，也不自动定时生成周报。
 
+此处不做的是独立的自动聚合和记忆维护流程；周报任务内部应综合本周不同题目的 findings、对应已确认题干/作答/已有备注、行动建议和必要的已接受记忆，表达有证据的共性、重复或变化。本周 findings 不要求先被接受为记忆。V2 记忆候选只从错题分析产生，周报不新增候选或自动改写历史记录。这些能力尚待真实接入与验证，不新增澄清问答、UI 页面或聚合服务。
+
 ## 5. 代表性展示数据
 
-展示数据保持简单：约 3 批、每批 2 题，共 6 题；覆盖 2 个知识区域，包含一次重复错误和一次改善，最多 2 条已接受记忆。具体知识点和故事由终评内容设计确定，不写死在系统架构中。
+展示材料为 2 批仿真练习、每批 10 题，共 20 题，重点覆盖第 16 章二次根式和第 19 章一次函数。每批约 3 道重点错题，形成约 6 条 findings，最多 2 条已接受记忆；这只是展示规模，不是新增系统配额。
+
+第二批用不同题目体现一次同类问题再次出现、一次可见步骤的局部改善和证据不足的情况。正确题用于还原完整练习，不引入自动判分或正确题分析。具体题目不写死在系统架构中；来源标为模拟材料，最终通过真实链路生成并保存结果。材料与周报要求见 [E5 核心能力设计](epics/e5-hermes-learning-analysis.md)。
 
 ## 6. 失败边界
 

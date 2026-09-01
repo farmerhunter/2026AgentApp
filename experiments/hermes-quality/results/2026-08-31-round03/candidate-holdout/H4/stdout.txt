@@ -1,0 +1,23 @@
+{
+  "case_id": "H4",
+  "finding": {
+    "scope": "local",
+    "evidence_summary": "学生由两点正确算出斜率 k=(6-2)/(2-0)=2，但最终只写出 y=2x，且备注明确写“一次函数里的 b 总是0”。可见斜率部分已做对，错误集中在把 b 恒当作0。",
+    "statement": "斜率 k=2 算对了，但一次函数的一般形式是 y=kx+b，b 并不恒为0，它表示直线与 y 轴交点的纵坐标，也就是 x=0 时的 y 值。只有当直线经过原点时 b 才等于0，此时才是正比例函数 y=kx。本题图象经过 (0,2)，代入 x=0 得 y=2，所以 b=2，解析式应为 y=2x+2。你的问题在于把一次函数和正比例函数混在了一起。可以把 (0,2) 代回 y=2x 检验：左边 y=2，右边 2×0=0，两边不相等，由此就能发现漏掉了 b。",
+    "finding_type": "concept_gap",
+    "mistake_reasons": ["concept_gap"],
+    "confidence": "high",
+    "is_recurring": false,
+    "concept_links": [
+      {"concept_id": "kp_8b_ch19_linear_function_concept", "concept_name": "一次函数的概念"},
+      {"concept_id": "kp_8b_ch19_linear_function_equation", "concept_name": "待定系数法求一次函数解析式"}
+    ],
+    "action_candidates": [
+      {"action_type": "review_concept", "description": "复习 y=kx+b 的一般形式，明确 b 的几何意义；对比正比例函数 y=kx（b=0）与不经过原点的一次函数。"},
+      {"action_type": "check_again", "description": "把两个已知点分别代回所写的 y=2x，检验是否都成立；(0,2) 代入会得到 0≠2，从而发现 b 不应为0。"}
+    ],
+    "memory_candidates": [
+      {"statement": "在 H4 中该生曾表述“一次函数里的 b 总是0”并答 y=2x（正确为 y=2x+2），需进一步确认其对一次函数与正比例函数的区分。", "review_status": "pending"}
+    ]
+  }
+}

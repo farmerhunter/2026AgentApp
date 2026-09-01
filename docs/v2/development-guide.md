@@ -18,7 +18,7 @@ V2 要做的事可以用一句话说清：
 - E2：先把 `/demo`、`/app` 和四页真实 UI 骨架稳定下来。
 - E3：准备一份数学教材知识地图 JSON。
 - E4：接真实图片上传和腾讯 QuestionSplitOCR，让用户勾选错题。
-- E5：接 Hermes CLI，迭代三个 Skill，保存分析、记忆决定和周报。
+- E5：接 Hermes CLI，迭代错题分析与周报两个在线 Skill，保存分析、记忆决定和周报；教材整理 Skill 是离线辅助。
 - E6：部署到 VPS，做两次完整实测和终评演练。
 
 E2、E3、E4 可以并行推进；E5 依赖 E3/E4 的可靠输入；E6 最后把所有模块接起来。
@@ -31,9 +31,12 @@ E2、E3、E4 可以并行推进；E5 依赖 E3/E4 的可靠输入；E6 最后把
 - 用户只需勾错题；OCR 漏掉作答时才补文字。
 - 一次确认批次对应一次 Hermes 分析。
 - 记忆只能接受或拒绝；周报手工触发，只保留最新成功版本。
-- 展示数据控制在约 6 题、2 个知识区域、最多 2 条已接受记忆。
+- 展示材料为 2 批、每批 10 题，覆盖二次根式和一次函数；每批约 3 道重点错题，共约 6 条 findings，最多 2 条已接受记忆。不是把整份试卷缩成 6 题。
+- 记忆候选只从错题分析产生；周报比较本周 findings 及对应作答，不另建记忆候选或行动反馈流程。
 
 ## Hermes 怎么接
+
+先读 [E5 核心能力设计](epics/e5-hermes-learning-analysis.md)，理解两个 Skill 为什么这样分析、周报需要展示什么，再落实运行接口。
 
 应用不能直接调 DeepSeek，也不能用 tmux 模拟人敲 TUI。应用启动非交互 Hermes CLI，通过 JSON stdin/stdout 交换数据。TUI 是你试验和改 Skill 的实验室。
 
@@ -41,10 +44,10 @@ Skill 推荐流程：
 
 ```text
 在 studyv2-lab TUI 快速试 -> 小样例回放 -> 用 CLI 跑同样输入
--> 通过 contract -> 提交 Skill，记录 content hash -> runtime 使用
+-> 通过 contract + 人工检查分析质量 -> 提交 Skill，记录 content hash -> runtime 使用
 ```
 
-详细规则见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。
+详细规则见 [Hermes 运行与 Skill 设计](hermes-runtime-and-skills.md)。质量检查先用 6–8 个小案例，检查“数学对不对、是否编造作答、建议能不能帮到学生”，方法见 [Finding 质量设计](hermes-analysis-quality.md)。这些是待 E5 验证的标准，不代表能力已经通过验收。
 
 ## 做到什么就算 V2 MVP
 

@@ -1,0 +1,21 @@
+{
+  "case_id": "H3",
+  "finding": {
+    "scope": "local",
+    "evidence_summary": "作答只给出最终式 y=2x，没有中间步骤。正确结果是 y=2x+2：两点间斜率 k=(6-2)/(2-0)=2，再把 (0,2) 代入 y=kx+b 可得 b=2。作答中系数 2 恰好等于斜率，但 x=0 时 y=0 而不是 2，说明直线经过了原点而不是 (0,2)。",
+    "statement": "这道题的结果漏掉了常数项。题目给的两点表明直线不经过原点，所以不能只用 y=kx，应设一般式 y=kx+b，并用 (0,2) 先确定 b=2。你写的系数 2 与斜率一致，提示可能是斜率算对了但漏掉了截距，也可能是把一次函数误当成正比例函数；由于没有中间步骤，还不能确定具体是哪种情况。",
+    "finding_type": "unknown",
+    "mistake_reasons": [],
+    "confidence": "low",
+    "is_recurring": false,
+    "concept_links": [
+      {"concept_id": "kp_8b_ch19_linear_function_concept", "concept_name": "一次函数的概念"},
+      {"concept_id": "kp_8b_ch19_linear_function_equation", "concept_name": "待定系数法求一次函数解析式"}
+    ],
+    "action_candidates": [
+      {"action_type": "check_again", "description": "把 x=0 代入你写的 y=2x，看是否得到 2；再代入 (2,6) 检查是否成立。"},
+      {"action_type": "redo_question", "description": "设 y=kx+b，先把 (0,2) 代入求出 b，再把 (2,6) 代入求出 k，写出完整解析式。"}
+    ],
+    "memory_candidates": []
+  }
+}

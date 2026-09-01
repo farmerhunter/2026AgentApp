@@ -1,0 +1,208 @@
+{
+  "case_id": "H1",
+  "subject": "math",
+  "question_id": "probe_h1",
+  "question_text": "已知一次函数 y＝2x＋1，求 x＝3 时 y 的值。",
+  "student_answer_text": "y＝2×3＋1＝6＋1＝8。",
+  "student_note": "",
+  "confirmed_wrong": true,
+  "accepted_memories": [],
+  "knowledge_map": {
+    "map_id": "renjiao_math_grade8_v2",
+    "map_version": "1.0.0",
+    "knowledge_points": [
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_concept",
+        "name": "二次根式的概念",
+        "description": "识别形如 √a（a≥0）的二次根式，理解被开方数必须非负。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_nonnegative",
+        "name": "二次根式的双重非负性",
+        "description": "理解 √a≥0 且 a≥0，并运用双重非负性求相关值。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_properties",
+        "name": "二次根式的基本性质",
+        "description": "掌握 (√a)^2=a（a≥0）和 √(a^2)=|a|。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_multiply",
+        "name": "二次根式的乘法法则",
+        "description": "掌握 √a·√b=√(ab)（a≥0，b≥0）并进行乘法运算。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_divide",
+        "name": "二次根式的除法法则",
+        "description": "掌握 √a/√b=√(a/b)（a≥0，b>0）并进行除法运算。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_simplify",
+        "name": "最简二次根式",
+        "description": "能利用乘除法则把二次根式化为最简二次根式。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_like_terms",
+        "name": "同类二次根式",
+        "description": "能判断两个最简二次根式是否为同类二次根式。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_add_subtract",
+        "name": "二次根式的加减运算",
+        "description": "能合并同类二次根式，进行二次根式加减。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch16_radical_mixed",
+        "name": "二次根式的混合运算",
+        "description": "能综合运用二次根式的加减乘除进行混合运算。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch17_pythagorean_theorem",
+        "name": "勾股定理",
+        "description": "理解直角三角形两直角边的平方和等于斜边的平方。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch17_pythagorean_application",
+        "name": "勾股定理的应用",
+        "description": "用勾股定理解决简单实际问题。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch17_converse_theorem",
+        "name": "勾股定理的逆定理",
+        "description": "理解如果三角形三边满足 a^2+b^2=c^2，则它是直角三角形。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch17_converse_application",
+        "name": "逆定理的应用",
+        "description": "用勾股定理的逆定理判断三角形是否为直角三角形。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch18_parallelogram_properties",
+        "name": "平行四边形的性质",
+        "description": "理解平行四边形对边、对角和对角线的性质。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch18_parallelogram_determination",
+        "name": "平行四边形的判定",
+        "description": "掌握从边、角、对角线判定平行四边形的方法。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch18_rectangle",
+        "name": "矩形",
+        "description": "理解矩形的性质和判定。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch18_rhombus",
+        "name": "菱形",
+        "description": "理解菱形的性质和判定。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch18_square",
+        "name": "正方形",
+        "description": "理解正方形的性质以及它与矩形、菱形的关系。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_variable_constant",
+        "name": "变量与常量",
+        "description": "在具体问题中区分变量与常量。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_function_concept",
+        "name": "函数的概念",
+        "description": "理解自变量每取一个确定值，函数都有唯一确定值与之对应；能据此判断一个关系是否为函数。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_function_representation",
+        "name": "函数的三种表示法",
+        "description": "能用解析式法、列表法和图象法表示函数关系。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_function_graph",
+        "name": "函数的图象",
+        "description": "能描点画出简单函数的图象，并从图象读取信息。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_proportional_function",
+        "name": "正比例函数",
+        "description": "理解正比例函数 y=kx（k≠0）及其图象特征。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_linear_function_concept",
+        "name": "一次函数的概念",
+        "description": "理解一次函数 y=kx+b（k≠0）的一般形式。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_linear_function_image",
+        "name": "一次函数的图象与性质",
+        "description": "能画出一次函数图象，并根据 k、b 判断增减性和位置。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_linear_function_equation",
+        "name": "待定系数法求一次函数解析式",
+        "description": "用待定系数法由两点确定一次函数解析式。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_linear_function_equation_inequality",
+        "name": "一次函数与方程、不等式",
+        "description": "从函数观点理解一次函数与一元一次方程、一元一次不等式的关系，以及二元一次方程组与两条一次函数图象交点的关系。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch19_scheme_selection",
+        "name": "用一次函数选择方案",
+        "description": "根据实际问题建立一次函数模型，比较并选择最优方案。",
+        "coverage": "detailed"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch20_mean",
+        "name": "平均数",
+        "description": "理解算术平均数和加权平均数，能计算一组数据的平均数。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch20_median_mode",
+        "name": "中位数与众数",
+        "description": "理解中位数和众数，能根据数据选择合适统计量。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch20_variance",
+        "name": "方差",
+        "description": "理解方差能刻画数据的波动程度，并会计算方差。",
+        "coverage": "catalog"
+      },
+      {
+        "knowledge_point_id": "kp_8b_ch20_data_analysis_project",
+        "name": "数据分析综合应用",
+        "description": "综合运用平均数、中位数、众数和方差分析实际数据。",
+        "coverage": "catalog"
+      }
+    ]
+  }
+}
