@@ -2,8 +2,8 @@
 
 **日期：** 2026-09-01（Asia/Shanghai）  
 **分支：** `epic/13-hermes-analysis-report`  
-**提交：** `c5cf049`  
-**VPS worktree：** `/opt/hermes/2026agentapp-private/dev/e5-real`  
+**提交：** `f5d32ee`  
+**VPS clean worktree：** `/opt/hermes/2026agentapp-private/dev/e5-clean-f5d32ee`  
 **产品 DB：** `/opt/hermes/2026agentapp-private/dev/e5-real.db`
 
 ## 1. 运行环境
@@ -74,7 +74,7 @@
 
 ## 5.1 当前 head 真实分析证据
 
-- head：`cde60fd`（后续还会更新到最新 head）
+- head：`f5d32ee`
 - 真实 analysis job：`job_20260901133245._351719` → `completed`
 - 实际执行 Skill SHA：`019856d21bcdf079497ab927dd08d927d1bdd3d86fac32a91a28459014088ffc`
 
@@ -93,3 +93,9 @@
 - 最终演示图片尚未生成，两批链路的题目/作答来自已核对文字 fixture，非 OCR 结果。
 - 两个 Skill 仍为 `e5-wip-0.1`，未通过独立 Final Gate。
 - 周报 job 当前按 `student_demo` / `math` 固定查询，尚未参数化。
+
+## 8. PR #99 材料与 PR #100 工程线关系
+
+- PR #99 是 E5 设计/质量/实验材料线，当前仍是 draft，不直接作为实现 PR 合并。
+- PR #100 是 E5 工程实现线；本分支读取并复用了 #99 固定提交中的 A/B 文字 fixture、设计文档和实验结论，但没有合并 #99 分支本身。
+- 关闭 E5 前需要项目负责人决定：#99 的设计与材料是否先合入 `main`，还是仅保留固定 commit 作为证据来源，再由 #100 合并后引用。
