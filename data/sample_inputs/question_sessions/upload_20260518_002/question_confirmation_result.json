@@ -1,6 +1,6 @@
 {
   "contract": "question_confirmation_result",
-  "contract_version": "1.1",
+  "contract_version": "1.2",
   "upload_id": "upload_20260518_002",
   "student_id": "小明",
   "subject": "chinese",
@@ -28,7 +28,8 @@
         "阅读题",
         "老师讲过"
       ],
-      "note": "需要先用自己的话概括中心论点，再回答论据作用。"
+      "note": "需要先用自己的话概括中心论点，再回答论据作用。",
+      "student_answer_text": null
     },
     {
       "question_id": "q_chinese_002",
@@ -50,7 +51,8 @@
         "作文修改",
         "需要复盘"
       ],
-      "note": "修改时先写中心句，再加入一个具体动作或场景。"
+      "note": "修改时先写中心句，再加入一个具体动作或场景。",
+      "student_answer_text": null
     }
   ]
 }

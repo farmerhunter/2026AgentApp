@@ -8,10 +8,15 @@
     "dev": "node --watch server.js",
     "validate:knowledge-map": "node scripts/validate-knowledge-map.mjs",
     "promote:knowledge-map": "node scripts/promote-knowledge-map.mjs",
-    "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs"
+    "smoke:knowledge-map": "node scripts/smoke-knowledge-map.mjs",
+    "smoke:e4": "node scripts/smoke-e4.mjs",
+    "probe:tencent-ocr": "node scripts/probe-tencent-ocr.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "image-size": "^1.1.1",
+    "multer": "^2.0.2",
+    "tencentcloud-sdk-nodejs": "^4.0.1000"
   }
 }

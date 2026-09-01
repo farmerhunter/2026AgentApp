@@ -62,6 +62,15 @@
 - 更新 `CONTRIBUTING.md`、Epic 协作规范、Epic 设计规范、快速开始和文档入口；E4 当前执行规划与 VPS/OCR 支持信息同步到 #88/#93/#94。
 - 验证：`git diff --check`、治理措辞检索、GitHub Issue/Project 属性和 VPS `hermes` session 只读核查。
 
+## 2026-08-28 — E4 练习图片导入与 OCR 实现（#88）
+
+- 新增私有图片上传/读取 API、OCR fixture adapter、normalizer、job/attempt/retry。
+- 新增 E4 migration，扩展 `uploads/questions/ocr_jobs`；确认结果改为最小字段，最多 10 道错题。
+- `/app/import` 增加上传、OCR 轮询、bbox overlay、错题勾选和保存。
+- 同步 7 MiB 原始图片上限到 V2 architecture/development guide/ADR。
+- 验证：`node scripts/smoke_api.mjs` 全通过；`smoke:e4` 通过；E3 smoke 通过；Web build 通过；`validate:data` 120/120。
+- 遗留：real OCR adapter 与真实 walkthrough 等待 #93；图片公网激活等待 E6 shared-password gate。
+
 ## 2026-08-27 — E3 教材知识底图实现（#87）
 
 - 新增 `data/contracts/textbook_knowledge_map.contract.json`，定义版本化 `(map_id, map_version)` 知识地图契约。

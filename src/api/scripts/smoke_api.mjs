@@ -221,21 +221,25 @@ async function main() {
   const split = await jsonRequest(`/api/sessions/${uploadId}/split`);
   assert(split.status === 200, `GET split returned ${split.status}`);
   assert(split.body.contract === "question_split_result", "split contract mismatch");
-  assert(split.body.contract_version === "1.1", "split version mismatch");
+  assert(split.body.contract_version === "1.2", "split version mismatch");
   assert(hasKeys(split.body, ["subject", "subject_label", "questions", "errors"]), "split required keys missing");
   assert(split.body.questions.length === 3, "expected 3 split questions");
-  assert(split.body.questions.every((q) => hasKeys(q, ["question_id", "question_index", "page", "bbox", "question_text", "related_knowledge_point_ids", "raw_ocr_ref"])), "split question required keys missing");
+  assert(split.body.questions.every((q) => hasKeys(q, ["question_id", "question_index", "page", "bbox", "question_text", "student_answer_text", "question_type", "ocr_confidence", "related_knowledge_point_ids", "raw_ocr_ref"])), "split question required keys missing");
   console.log("PASS GET /api/sessions/:upload_id/split");
 
   const before = await jsonRequest(`/api/sessions/${uploadId}/confirmation`);
   assert(before.status === 200, `GET confirmation returned ${before.status}`);
   assert(before.body.contract === "question_confirmation_result", "confirmation contract mismatch");
-  assert(before.body.contract_version === "1.1", "confirmation version mismatch");
+  assert(before.body.contract_version === "1.2", "confirmation version mismatch");
   assert(hasKeys(before.body, ["subject", "subject_label", "confirmations"]), "confirmation required keys missing");
-  assert(before.body.confirmations.every((c) => hasKeys(c, ["question_id", "selected", "subject", "subject_label", "knowledge_point", "review_priority", "tags"])), "confirmation item required keys missing");
+  assert(before.body.confirmations.every((c) => hasKeys(c, ["question_id", "selected", "student_answer_text", "subject", "subject_label", "knowledge_point", "review_priority", "tags"])), "confirmation item required keys missing");
 
   // Atomic failure for confirmation
-  const validConfirmation = { ...before.body.confirmations[0], note: "atomic invalid should not persist" };
+  const validConfirmation = {
+    question_id: before.body.confirmations[0].question_id,
+    selected: true,
+    note: "atomic invalid should not persist",
+  };
   const invalidConfirmation = { question_id: "q_not_in_upload", selected: true };
   const atomicConfirmation = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
     method: "POST",
@@ -246,9 +250,11 @@ async function main() {
   assert(jsonEqual(before.body.confirmations, afterAtomicConfirmation.body.confirmations), "confirmation atomic failure left partial data");
   console.log("PASS confirmation atomic failure");
 
-  const nextConfirmations = before.body.confirmations.map((item, index) =>
-    index === 0 ? { ...item, note: "smoke test update", review_priority: "高" } : item
-  );
+  const nextConfirmations = before.body.confirmations.map((item, index) => ({
+    question_id: item.question_id,
+    selected: true,
+    note: index === 0 ? "smoke test update" : item.note,
+  }));
   const saved = await jsonRequest(`/api/sessions/${uploadId}/confirmation`, {
     method: "POST",
     body: JSON.stringify({ confirmations: nextConfirmations }),

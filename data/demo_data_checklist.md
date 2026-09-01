@@ -8,14 +8,14 @@
 
 ## A. Contract Version
 
-- [ ] 所有 contract JSON 使用 `"contract_version": "1.1"`
-- [ ] 所有 sample JSON 使用 `"contract_version": "1.1"`
+- [ ] `question_split_result` 与 `question_confirmation_result` contract/sample 使用 `"contract_version": "1.2"`
+- [ ] 其他 demo data 保持各自既有 contract version
 - [ ] `subject` 字段使用内部 code：`chinese` / `math` / `english`
 - [ ] 中文展示字段使用 `subject_label`（语文 / 数学 / 英语）
 
 验证命令：
 ```bash
-grep -r '"contract_version"' data/contracts data/sample_inputs data/sample_outputs | grep -v '"1.1"'
+grep -r '"contract_version"' data/contracts/question_split_result.contract.json data/contracts/question_confirmation_result.contract.json data/sample_inputs/question_sessions data/sample_outputs/question_sessions | grep -v '"1.2"'
 grep -r '"subject":' data/sample_inputs data/sample_outputs | grep -vE 'chinese|math|english'
 ```
 

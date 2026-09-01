@@ -45,7 +45,7 @@
 ### Exercise 输入与 OCR
 
 - 产品文案统一使用“练习/试卷图片”，数据域可使用 `exercise`，不把普通作业强行叫 quiz。
-- 单次一张 JPG/PNG，最大 10 MB；原图保存到 VPS 私有目录。
+- 单次一张 JPG/PNG，原始文件最大 7 MiB；原图保存到 VPS 私有目录。
 - 腾讯云官方 Node SDK 封装为一个 QuestionSplitOCR adapter，使用 Base64 直传和环境变量密钥。
 - `UseNewModel` 等厂商开关不凭印象写死：E4 用一份脱敏图片做真实探测后固定配置和字段映射。
 - OCR 保存题干、学生作答、bbox 和原始响应必要元数据；前端按 bbox 显示区域，不生成每题裁图文件。

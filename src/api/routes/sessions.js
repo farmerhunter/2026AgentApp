@@ -50,8 +50,10 @@ function toQuestionDto(row) {
     page: row.page,
     bbox: parseJson(row.bbox_json),
     question_text: row.question_text,
+    student_answer_text: row.student_answer_text ?? null,
+    question_type: row.question_type ?? null,
+    ocr_confidence: row.ocr_confidence ?? null,
     question_image_url: row.question_image_url,
-    ocr_confidence: null,
     related_knowledge_point_ids: [],
     raw_ocr_ref: row.raw_ocr_json_url
       ? {
@@ -67,6 +69,7 @@ function toConfirmationDto(row, upload) {
   return {
     question_id: row.question_id,
     selected: booleanFromNumber(row.selected),
+    student_answer_text: row.student_answer_text ?? null,
     subject: upload.subject,
     subject_label: upload.subject_label,
     student_mark: row.student_mark,
@@ -181,16 +184,19 @@ router.get("/sessions/:upload_id/split", (req, res) => {
 
     res.json({
       contract: "question_split_result",
-      contract_version: "1.1",
+      contract_version: "1.2",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
       subject: upload.subject,
       subject_label: upload.subject_label,
-      ocr_provider: null,
+      ocr_provider: "tencent_question_split_ocr",
       ocr_status: upload.ocr_status,
-      processed_at: null,
-      source_image_url: null,
-      image_size: null,
+      processed_at: upload.updated_at ?? null,
+      source_image_url: `/api/uploads/${upload.upload_id}/image`,
+      image_size:
+        upload.image_width && upload.image_height
+          ? { width: upload.image_width, height: upload.image_height }
+          : null,
       questions: rows.map(toQuestionDto),
       errors: [],
     });
@@ -207,7 +213,7 @@ router.get("/sessions/:upload_id/confirmation", (req, res) => {
 
     const rows = db
       .prepare(
-        `SELECT c.*, q.question_index
+        `SELECT c.*, q.question_index, q.student_answer_text
          FROM question_confirmations c
          JOIN questions q ON q.question_id = c.question_id
          WHERE q.upload_id = ?
@@ -217,7 +223,7 @@ router.get("/sessions/:upload_id/confirmation", (req, res) => {
 
     res.json({
       contract: "question_confirmation_result",
-      contract_version: "1.1",
+      contract_version: "1.2",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
       subject: upload.subject,
@@ -252,6 +258,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
         .map((row) => row.question_id)
     );
 
+    const seenQuestionIds = new Set();
     for (const item of confirmations) {
       if (!item || typeof item.question_id !== "string") {
         return res.status(400).json({
@@ -259,12 +266,83 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
           message: "Each confirmation requires a string `question_id`",
         });
       }
+      if (seenQuestionIds.has(item.question_id)) {
+        return res.status(400).json({
+          error: "duplicate_confirmation_item",
+          message: `Duplicate question_id ${item.question_id}`,
+        });
+      }
+      seenQuestionIds.add(item.question_id);
       if (!uploadQuestionIds.has(item.question_id)) {
         return res.status(400).json({
           error: "question_not_in_upload",
           message: `Question ${item.question_id} does not belong to upload ${req.params.upload_id}`,
         });
       }
+      if (typeof item.selected !== "boolean") {
+        return res.status(400).json({
+          error: "invalid_selected",
+          message: "`selected` must be a boolean",
+        });
+      }
+      if (item.note != null && typeof item.note !== "string") {
+        return res.status(400).json({
+          error: "invalid_note",
+          message: "`note` must be a string or null",
+        });
+      }
+      if (item.student_answer_text != null && typeof item.student_answer_text !== "string") {
+        return res.status(400).json({
+          error: "invalid_student_answer_text",
+          message: "`student_answer_text` must be a string or null",
+        });
+      }
+      if (item.student_answer_text != null && item.student_answer_text.trim() === "") {
+        return res.status(400).json({
+          error: "blank_student_answer_text",
+          message: "`student_answer_text` must not be blank",
+        });
+      }
+      if ((item.note ?? "").length > 2000 || (item.student_answer_text ?? "").length > 2000) {
+        return res.status(400).json({
+          error: "field_too_long",
+          message: "note and student_answer_text must be <= 2000 characters",
+        });
+      }
+      const allowedKeys = ["question_id", "selected", "student_answer_text", "note"];
+      for (const key of Object.keys(item)) {
+        if (!allowedKeys.includes(key)) {
+          return res.status(400).json({
+            error: "unsupported_confirmation_field",
+            message: `Field ${key} is not accepted by E4 confirmation`,
+          });
+        }
+      }
+      if (item.student_answer_text != null && !item.selected) {
+        return res.status(400).json({
+          error: "answer_without_selection",
+          message: "student_answer_text can only be provided for a selected wrong question",
+        });
+      }
+      if (item.student_answer_text != null && item.student_answer_text.trim() !== "") {
+        const question = db
+          .prepare("SELECT student_answer_text FROM questions WHERE question_id = ?")
+          .get(item.question_id);
+        if (question?.student_answer_text) {
+          return res.status(400).json({
+            error: "ocr_answer_already_exists",
+            message: `Question ${item.question_id} already has OCR answer text and cannot be overwritten`,
+          });
+        }
+      }
+    }
+
+    const selectedCount = confirmations.filter((item) => item.selected).length;
+    if (selectedCount > 10) {
+      return res.status(400).json({
+        error: "too_many_selected",
+        message: "At most 10 wrong questions may be confirmed per upload",
+      });
     }
 
     const deleteAll = db.prepare(
@@ -274,28 +352,25 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
 
     const insert = db.prepare(
       `INSERT INTO question_confirmations
-       (question_id, selected, student_mark, teacher_score, full_score, knowledge_point,
-        knowledge_point_ids_json, mistake_reason, review_priority, review_status, tags_json, note)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       (question_id, selected, note, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+
+    const updateAnswer = db.prepare(
+      `UPDATE questions
+       SET student_answer_text = ?, updated_at = ?
+       WHERE question_id = ?`,
     );
 
     const save = db.transaction(() => {
       deleteAll.run(req.params.upload_id);
       for (const item of confirmations) {
-        insert.run(
-          item.question_id,
-          item.selected ? 1 : 0,
-          item.student_mark ?? null,
-          item.teacher_score ?? null,
-          item.full_score ?? null,
-          item.knowledge_point ?? null,
-          item.knowledge_point_ids ? JSON.stringify(item.knowledge_point_ids) : null,
-          item.mistake_reason ?? null,
-          item.review_priority ?? null,
-          item.review_status ?? null,
-          item.tags ? JSON.stringify(item.tags) : null,
-          item.note ?? null
-        );
+        if (item.selected) {
+          insert.run(item.question_id, 1, item.note ?? null, new Date().toISOString(), new Date().toISOString());
+        }
+        if (item.student_answer_text != null && item.student_answer_text !== "") {
+          updateAnswer.run(item.student_answer_text.trim(), new Date().toISOString(), item.question_id);
+        }
       }
     });
 
@@ -303,7 +378,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
 
     const savedRows = db
       .prepare(
-        `SELECT c.*, q.question_index
+        `SELECT c.*, q.question_index, q.student_answer_text
          FROM question_confirmations c
          JOIN questions q ON q.question_id = c.question_id
          WHERE q.upload_id = ?
@@ -313,7 +388,7 @@ router.post("/sessions/:upload_id/confirmation", (req, res) => {
 
     res.json({
       contract: "question_confirmation_result",
-      contract_version: "1.1",
+      contract_version: "1.2",
       upload_id: upload.upload_id,
       student_id: upload.student_id,
       subject: upload.subject,
