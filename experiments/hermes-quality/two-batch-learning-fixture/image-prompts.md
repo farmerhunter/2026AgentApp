@@ -1,12 +1,86 @@
 # 带批改试卷的图片生成记录
 
-状态（2026-09-01）：内置 imagegen 重试已成功生成 A、B 两张 1024×1536 PNG 样张，文字稿仍是内容权威。A 首次重试结果采用；B 首稿内容完整但缺少第 10 题的部分得分三角标记，第一次局部编辑因重复生成一组分数和“订正”而放弃，第二次只补一个红色 △ 后采用。图片生成与视觉自查不等于 OCR、Hermes、产品保存或 UI 验证通过。
+状态（2026-09-01）：内置 imagegen 已成功生成 A、B、C 三张 1024×1536 PNG 样张，文字稿仍是内容权威。A 首次重试结果采用；B 首稿内容完整但缺少第 10 题的部分得分三角标记，第一次局部编辑因重复生成一组分数和“订正”而放弃，第二次只补一个红色 △ 后采用。C 以 A/B 为视觉参考一次生成后采用。图片生成与视觉自查不等于 OCR、Hermes、产品保存或 UI 验证通过。
 
 ## 2026-09-01 重试产物
 
 - [A 卷样张 v1](worksheet-a-v1.png)：10 题、学生蓝笔、教师红笔、39/50、分项得分和空白订正区均可见。
 - [B 卷样张 v1](worksheet-b-v1.png)：10 题、学生蓝笔、教师红笔、39/50、分项得分和空白订正区均可见；第 10 题保留原错误结果并补齐部分得分 △。
-- 两张图片均为原创合成材料，无姓名、学校、日期、签名或真实学生数据。本次未调用 OCR/Hermes，未操作 VPS。
+- [C 卷样张 v1](worksheet-c-v1.png)：6 题、学生蓝笔、教师红笔、无总分、C05/C06 的局部错误和空白订正区均可见；没有出现正确结果 `9√3` 或 `－4`。
+- 三张图片均为原创合成材料，无姓名、学校、日期、签名或真实学生数据。本次未调用 OCR/Hermes，未操作 VPS。
+
+## C 卷采用提示词
+
+生成方式：Codex 内置 imagegen；以 A/B 图片作为视觉参考，不把它们作为待编辑图片。以下为实际采用的完整提示词。
+
+```text
+Create one new portrait 1024x1536 realistic Chinese middle-school math worksheet image. The two referenced A/B sheets are visual-style references only: match their clean white paper, two-column layout, black printed Chinese/math text, blue handwritten student answers, and red handwritten teacher marks. Do not copy their exact questions or scores.
+
+This is a synthetic, privacy-safe demo sheet titled exactly:
+八年级数学巩固练习 C
+Subtitle exactly:
+第16章 二次根式 · 第19章 一次函数
+Small line exactly:
+建议用时15分钟 · 共6题
+
+Use generous spacing and crisp high-resolution text. No student name, school name, date, logo, QR code, watermark, overall score, or standard-answer section. The page should look photographed nearly straight-on in bright even light.
+
+Print these six questions exactly. Questions 1–4 in the left column, questions 5–6 in the right column.
+
+一、基础题
+
+1. 式子 √(2x－4) 在实数范围内有意义，则 x 的取值范围是（　）。
+A. x≥2　 B. x≤2　 C. x＞2　 D. x≠2
+Below it, blue handwriting: A
+Add a red check mark.
+
+2. 化简：√45＝________。
+Below it, blue handwriting:
+√45＝√(9×5)＝3√5
+Add a red check mark.
+
+3. 对于一次函数 y＝－3x＋1，下列说法正确的是（　）。
+A. y随x增大而增大
+B. y随x增大而减小
+C. y的值始终为1
+D. 无法判断
+Below it, blue handwriting: B
+Add a red check mark.
+
+4. 下列各点中，在直线 y＝2x－1 上的是（　）。
+A. (1，0)　 B. (1，1)　 C. (2，2)　 D. (0，1)
+Below it, blue handwriting: B
+Add a red check mark.
+
+二、过程题（保留原作答）
+
+5. 计算：√48＋√75＝________。
+Blue handwritten work exactly:
+√48＋√75
+＝4√3＋5√3
+＝8√3
+Add small red check marks beside the correct simplification line, then a red cross beside the final “8√3”, a red triangle, red “3/5”, and red “订正”. Do NOT print or write the correct result 9√3 anywhere.
+
+6. 已知一次函数的图像经过点 P(1，5) 和 Q(3，11)。
+（1）求这个一次函数的表达式。
+（2）求 x＝－2 时的函数值。
+Blue handwritten work exactly:
+（1）k＝(11－5)/(3－1)＝3
+5＝3×1＋b，b＝2
+所以 y＝3x＋2
+（2）x＝－2 时，y＝3×(－2)＋2
+＝－6＋2＝－8
+Add red check marks beside the correct k, b, and y＝3x＋2 steps. Add a red cross beside the final “－8”, a red triangle, red “4/5”, and red “订正”. Do NOT print or write the correct result －4 anywhere.
+
+At the bottom print exactly:
+仿真练习 · 非真实学生记录
+请订正第5、6题，保留原作答。
+Add a large empty rectangular box labeled exactly:
+订正区
+Keep that box empty.
+
+Important fidelity constraints: exactly six numbered questions; no extra questions; no duplicated text; no invented scores; no overall score; no correct answers for questions 5 or 6; all Chinese and mathematical expressions must remain legible.
+```
 
 ## 2026-08-31 首次两次尝试（历史）
 
