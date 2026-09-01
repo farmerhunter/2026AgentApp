@@ -7,6 +7,7 @@ import subprocess
 from docx import Document
 from docx.shared import Pt, Inches, Cm, RGBColor, Emu
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
 # ── Paths ──
@@ -16,11 +17,11 @@ MD_PATH = os.path.join(BASE_DIR, "技术文档.md")
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
 OUT_PATH = os.path.join(BASE_DIR, "技术文档.docx")
 
-# ── Fonts: cross-platform safe Office defaults ──
-FONT_WEST = "Calibri"           # Western script
-FONT_EAST = "微软雅黑"           # East Asian (Microsoft YaHei, shipped with Office on both platforms)
-FONT_CODE = "Consolas"
-FONT_CODE_EAST = "微软雅黑"
+# ── Fonts: cross-platform Office-compatible defaults ──
+FONT_WEST = "Noto Sans SC"  # One font for Latin and Chinese improves renderer portability
+FONT_EAST = "Noto Sans SC"
+FONT_CODE = "Noto Sans SC"
+FONT_CODE_EAST = "Noto Sans SC"
 
 # ── Read markdown ──
 with open(MD_PATH, "r", encoding="utf-8") as f:
@@ -161,6 +162,19 @@ def add_blockquote(doc, lines, start, end):
         run.font.color.rgb = RGBColor(80, 80, 80)
         run.font.italic = True
 
+def set_repeat_table_header(row):
+    """Repeat a table's header row when Word paginates the table."""
+    tr_pr = row._tr.get_or_add_trPr()
+    tbl_header = OxmlElement("w:tblHeader")
+    tbl_header.set(qn("w:val"), "true")
+    tr_pr.append(tbl_header)
+
+def prevent_table_row_split(row):
+    """Keep a table row together instead of splitting it across pages."""
+    tr_pr = row._tr.get_or_add_trPr()
+    cant_split = OxmlElement("w:cantSplit")
+    tr_pr.append(cant_split)
+
 # ── First pass: identify special block ranges ──
 in_code_block = False
 code_start = -1
@@ -244,6 +258,7 @@ while i < len(lines):
             p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(6)
             p.paragraph_format.line_spacing = Pt(14)
+            p.paragraph_format.keep_together = True
             run = p.add_run(code_text)
             set_run_font(run, font_name=FONT_CODE, east_name=FONT_CODE_EAST, size_pt=10)
             run.font.color.rgb = RGBColor(50, 50, 50)
@@ -277,6 +292,20 @@ while i < len(lines):
         alt_text = m.group(1)
         svg_rel_path = m.group(2)
         svg_path = os.path.join(BASE_DIR, svg_rel_path)
+        # Prefer an explicit Markdown caption on the following non-empty line.
+        # This keeps figure numbering aligned across Markdown and Word without
+        # generating a duplicate caption in the DOCX.
+        caption_idx = i + 1
+        while caption_idx < len(lines) and is_empty(lines[caption_idx]):
+            caption_idx += 1
+        explicit_caption = None
+        if caption_idx < len(lines):
+            caption_match = re.match(
+                r"^\*(图\s*\d+(?:-\d+)?\s+.+)\*\s*$",
+                lines[caption_idx].strip(),
+            )
+            if caption_match:
+                explicit_caption = caption_match.group(1)
         if os.path.exists(svg_path):
             try:
                 # Use pre-generated PNG if available, else convert
@@ -289,7 +318,7 @@ while i < len(lines):
                 # Caption
                 cap = doc.add_paragraph()
                 cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                cap_run = cap.add_run(alt_text)
+                cap_run = cap.add_run(explicit_caption or alt_text)
                 set_run_font(cap_run, size_pt=9)
                 cap_run.font.color.rgb = RGBColor(100, 100, 100)
                 # Clean temp png
@@ -303,6 +332,12 @@ while i < len(lines):
             p = doc.add_paragraph()
             run = p.add_run(f"[图片: {alt_text} — 文件未找到: {svg_path}]")
             set_run_font(run, color=RGBColor(255, 0, 0))
+        i = caption_idx + 1 if explicit_caption else i + 1
+        continue
+
+    # Markdown table headers are consumed by the following separator branch.
+    # Skipping them here prevents a duplicate raw "| ... |" paragraph.
+    if is_table_row(line) and i + 1 < len(lines) and is_table_sep(lines[i + 1]):
         i += 1
         continue
 
@@ -330,6 +365,9 @@ while i < len(lines):
         num_cols = len(header_cells)
         table = doc.add_table(rows=1 + len(data_rows), cols=num_cols)
         table.style = "Light Grid Accent 1"
+        set_repeat_table_header(table.rows[0])
+        for table_row in table.rows:
+            prevent_table_row_split(table_row)
 
         # Header
         for ci, cell_text in enumerate(header_cells):
