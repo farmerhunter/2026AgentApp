@@ -8,6 +8,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/opt/hermes/2026agentapp-prod/app/src/api
 EnvironmentFile=/opt/hermes/2026agentapp-prod/env/xuetuzhiban.env
+EnvironmentFile=-/opt/hermes/.secrets/2026agentapp/dev/tencent-ocr.env
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=3
