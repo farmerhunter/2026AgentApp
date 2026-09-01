@@ -126,10 +126,10 @@ verify() {
   local name="$1"
   assert_name "$name"
   for _ in $(seq 1 30); do
-    curl -fsS "$API_BASE/health" >/dev/null && break
+    curl -fsS "$API_BASE/api/health" >/dev/null && break
     sleep 1
   done
-  curl -fsS "$API_BASE/health" >/dev/null || { echo "verify $name: API health failed" >&2; return 1; }
+  curl -fsS "$API_BASE/api/health" >/dev/null || { echo "verify $name: API health failed" >&2; return 1; }
 
   python3 - "$DATA_ROOT/sqlite/xuetuzhiban.db" "$DATA_ROOT/uploads" <<'PY'
 import os, sqlite3, sys
