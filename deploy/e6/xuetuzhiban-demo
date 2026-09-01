@@ -89,7 +89,24 @@ restore() {
 
   local staging
   staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
-  cp -a "$src/." "$staging/"
+  rollback() {
+    systemctl stop "$API_SERVICE" || true
+    mkdir -p "$DATA_ROOT/sqlite"
+    if [[ -f "$last/xuetuzhiban.db" ]]; then
+      mv "$last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
+    fi
+    if [[ -d "$last/uploads" ]]; then
+      rm -rf "$DATA_ROOT/uploads"
+      mv "$last/uploads" "$DATA_ROOT/uploads"
+    fi
+    systemctl start "$API_SERVICE"
+    echo "restore failed; rolled back to last-run"
+  }
+
+  if ! cp -a "$src/." "$staging/"; then
+    rollback
+    return 1
+  fi
   mkdir -p "$DATA_ROOT/sqlite"
   mv "$staging/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
   rm -rf "$DATA_ROOT/uploads"
@@ -97,7 +114,10 @@ restore() {
   rm -rf "$staging"
 
   systemctl start "$API_SERVICE"
-  verify "$name"
+  if ! verify "$name"; then
+    rollback
+    return 1
+  fi
 }
 
 verify() {
@@ -110,12 +130,13 @@ verify() {
     fi
     sleep 1
   done
-  die "API health failed"
+  echo "verify $name: API health failed" >&2
+  return 1
 }
 
 case "${1:-}" in
   snapshot) shift; snapshot "${1:?name required}" ;;
   restore) shift; restore "${1:?name required}" ;;
-  verify) shift; verify "${1:?name required}" ;;
+  verify) shift; verify "${1:?name required}" || exit 1 ;;
   *) die "usage: $0 {snapshot|restore|verify} baseline-ab" ;;
 esac
