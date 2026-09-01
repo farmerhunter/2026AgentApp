@@ -280,7 +280,7 @@ function runJob(jobType, args, payload, jobId) {
           job_type: jobType,
           status: "timeout",
           mode: MODE,
-          error_message: "Job timed out after 5 minutes",
+          error_message: `Job timed out after ${JOB_TIMEOUT_MS} ms`,
         });
         syncJobFromStatusFile(jobId);
       }
@@ -308,7 +308,10 @@ function killJobTree(child) {
       return;
     }
 
-    const forceTimer = setTimeout(() => resolve(), 2000);
+    // Degradation guard: if the OS has not emitted close after SIGKILL/taskkill,
+    // release FIFO after a bounded grace period instead of blocking forever.
+    const killGraceMs = Number(process.env.HERMES_JOB_KILL_GRACE_MS ?? 2000);
+    const forceTimer = setTimeout(() => resolve(), killGraceMs);
     child.once("close", () => {
       clearTimeout(forceTimer);
       resolve();

@@ -102,7 +102,7 @@ async function assertSerialJobs(firstId, secondId) {
   assert(secondFinal === "completed", `second serial job should complete, got ${secondFinal}`);
 }
 
-function startServer() {
+function startServer(overrides = {}) {
   mkdirSync(PRIVATE_DIR, { recursive: true });
   server = spawn(process.execPath, ["server.js"], {
     cwd: API_DIR,
@@ -114,6 +114,7 @@ function startServer() {
       HERMES_E5_FIXTURE_DELAY_MS: "1200",
       HERMES_PRIVATE_UPLOADS_DIR: PRIVATE_DIR,
       DATABASE_URL,
+      ...overrides,
     },
     stdio: "ignore",
   });
@@ -131,9 +132,21 @@ async function stopServer() {
 function cleanup() {
   for (const suffix of ["", "-shm", "-wal"]) {
     const file = `${DB_PATH}${suffix}`;
-    if (existsSync(file)) rmSync(file);
+    if (existsSync(file)) {
+      try {
+        rmSync(file);
+      } catch {
+        // A detached runner may still be closing on Windows; leave a temp file.
+      }
+    }
   }
-  if (existsSync(PRIVATE_DIR)) rmSync(PRIVATE_DIR, { recursive: true, force: true });
+  if (existsSync(PRIVATE_DIR)) {
+    try {
+      rmSync(PRIVATE_DIR, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup races.
+    }
+  }
 }
 
 async function main() {
@@ -221,7 +234,7 @@ async function main() {
   assert(reportDetail.body.analysis?.overall_summary, "weekly report should contain overall_summary");
 
   const { getDb } = await import("../db/init.js");
-  const { getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
+  const { getAnalysisContext, getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
   const contextDb = getDb();
   const now = new Date().toISOString();
   const insertQuestion = contextDb.prepare(
@@ -242,6 +255,18 @@ async function main() {
 
   insertQuestion.run("sunday_boundary_q", "sunday_boundary_upload", 1, "周日边界题", now, now);
   insertQuestion.run("monday_boundary_q", "monday_boundary_upload", 1, "周一边界题", now, now);
+
+  contextDb.prepare(
+    `INSERT OR REPLACE INTO uploads
+     (upload_id, student_id, subject, subject_label, source_type, source_title, uploaded_at, storage_provider, ocr_status, status, created_at, updated_at)
+     VALUES ('upload_no_memory_test', 'student_demo', 'math', '数学', 'exercise', 'no memory test', ?, 'local', 'succeeded', 'active', ?, ?)`,
+  ).run(now, now, now);
+  insertQuestion.run("no_memory_q", "upload_no_memory_test", 1, "龘靐齉测试无关", now, now);
+  contextDb.prepare(
+    `INSERT OR REPLACE INTO question_confirmations
+     (question_id, selected, created_at, updated_at)
+     VALUES ('no_memory_q', 1, ?, ?)`,
+  ).run(now, now);
 
   // Sunday 23:00 Asia/Shanghai = 2026-09-06T15:00:00Z; must be included.
   insertBatch.run("sunday_included_batch", "2026-09-06T15:00:00.000Z", now, now);
@@ -284,7 +309,28 @@ async function main() {
   const contextQuestionIds = context.findings.map((finding) => finding.question?.question_id).filter(Boolean);
   assert(new Set(contextQuestionIds).size === contextQuestionIds.length, "weekly context should deduplicate repeated analyses");
   assert(hasUsableWeeklyData("student_demo", "math", "2026-08-31", "2026-09-06"), "weekly data should be usable");
+  const noMemoryContext = getAnalysisContext("upload_no_memory_test");
+  assert(noMemoryContext.accepted_memories.length === 0, "no relevant accepted memory should yield an empty memory list");
   contextDb.close();
+
+  await stopServer();
+  startServer({ HERMES_JOB_TIMEOUT_MS: "1200", HERMES_E5_FIXTURE_DELAY_MS: "5000" });
+  await waitForHealth();
+  const timeoutA = await jsonRequest("/api/hermes/jobs", {
+    method: "POST",
+    body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+  });
+  assert(timeoutA.status === 202, "timeout regression job A should be 202");
+  const timeoutAJob = await waitForJob(timeoutA.body.job_id, 10000);
+  assert(timeoutAJob.status === "timeout", `timeout regression job A should time out, got ${timeoutAJob.status}`);
+
+  const timeoutB = await jsonRequest("/api/hermes/jobs", {
+    method: "POST",
+    body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+  });
+  assert(timeoutB.status === 202, "timeout regression job B should be 202");
+  const timeoutBJob = await waitForJob(timeoutB.body.job_id, 10000);
+  assert(timeoutBJob.status === "timeout", `timeout regression job B should run after A and time out, got ${timeoutBJob.status}`);
 
   console.log("E5 fixture analysis/memory/report smoke passed");
 }
