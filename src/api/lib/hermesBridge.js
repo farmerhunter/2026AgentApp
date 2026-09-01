@@ -24,7 +24,7 @@ function extractJsonObject(text) {
   for (let index = 0; index < text.length; index += 1) {
     if (text[index] === "{") startCandidates.push(index);
   }
-  for (const start of startCandidates) {
+  for (const start of startCandidates.reverse()) {
     let depth = 0;
     let inString = false;
     let escaped = false;
