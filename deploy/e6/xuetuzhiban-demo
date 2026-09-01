@@ -99,6 +99,7 @@ restore() {
       rm -rf "$DATA_ROOT/uploads"
       mv "$last/uploads" "$DATA_ROOT/uploads"
     fi
+    chown -R ubuntu:ubuntu "$DATA_ROOT/sqlite" "$DATA_ROOT/uploads"
     systemctl start "$API_SERVICE"
     echo "restore failed; rolled back to last-run"
   }
@@ -112,6 +113,7 @@ restore() {
   rm -rf "$DATA_ROOT/uploads"
   mv "$staging/uploads" "$DATA_ROOT/uploads"
   rm -rf "$staging"
+  chown -R ubuntu:ubuntu "$DATA_ROOT/sqlite" "$DATA_ROOT/uploads"
 
   systemctl start "$API_SERVICE"
   if ! verify "$name"; then
