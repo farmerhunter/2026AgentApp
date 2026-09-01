@@ -138,6 +138,8 @@ function jobDto(row) {
     job_type: row.job_type,
     status: row.status,
     mode: row.mode,
+    skill_version: row.skill_version ?? null,
+    skill_sha256: row.skill_sha256 ?? null,
     result_path: row.result_path,
     created_at: row.created_at,
     started_at: row.started_at,

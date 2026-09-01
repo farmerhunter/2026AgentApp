@@ -12,6 +12,7 @@
 - Hermes profile：`studyv2`
 - API：`http://127.0.0.1:8000`，`HERMES_JOB_MODE=real`
 - E5 超时：`HERMES_E5_TIMEOUT_MS=300000`
+- Hermes 隔离 profile 源目录：`HERMES_SOURCE_PROFILE_DIR=/home/ubuntu/.hermes/profiles/studyv2`
 - OCR：`OCR_PROVIDER_MODE=real`，secret 来自 `/opt/hermes/.secrets/2026agentapp/dev/tencent-ocr.env`
 
 ## 2. Skill 版本
@@ -70,6 +71,12 @@
 - `GET /` 返回 200
 - `GET /api/health` 经 Vite proxy 返回 200，`mode=real`
 - `/app/analysis` 与 `/app/report` 由同一 SPA 提供。
+
+## 5.1 当前 head 真实分析证据
+
+- head：`cde60fd`（后续还会更新到最新 head）
+- 真实 analysis job：`job_20260901133245._351719` → `completed`
+- 实际执行 Skill SHA：`019856d21bcdf079497ab927dd08d927d1bdd3d86fac32a91a28459014088ffc`
 
 ## 6. 已验证
 
