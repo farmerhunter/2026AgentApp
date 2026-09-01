@@ -1,0 +1,159 @@
+digraph LearningSystemArchitecture {
+  graph [
+    bgcolor="#F4F7F8",
+    pad="0.22",
+    margin="0",
+    nodesep="0.34",
+    ranksep="0.82 equally",
+    splines="ortho",
+    outputorder="edgesfirst",
+    fontname="PingFang SC",
+    fontcolor="#123653",
+    labelloc="t",
+    labeljust="l",
+    label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0">
+      <TR><TD ALIGN="LEFT"><FONT FACE="PingFang SC" POINT-SIZE="34" COLOR="#123653"><B>学途智伴如何把学习材料变成可信的学习建议</B></FONT></TD></TR>
+      <TR><TD HEIGHT="8"></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#60758A">AI 负责感知与分析，学生负责关键判断，系统负责校验、保存与持续复用</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  node [shape=plain, fontname="PingFang SC", margin=0];
+  edge [
+    fontname="PingFang SC",
+    fontsize=14,
+    color="#6B7F91",
+    fontcolor="#52687C",
+    penwidth=2.2,
+    arrowsize=0.8
+  ];
+
+  student [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#123653">
+    <TR><TD WIDTH="150" HEIGHT="138" ALIGN="CENTER" VALIGN="MIDDLE">
+      <FONT FACE="PingFang SC" POINT-SIZE="26" COLOR="#FFFFFF"><B>学生</B></FONT><BR/>
+      <FONT FACE="PingFang SC" POINT-SIZE="15" COLOR="#D8E7F2">上传 · 确认</FONT><BR/>
+      <FONT FACE="PingFang SC" POINT-SIZE="15" COLOR="#D8E7F2">决定 · 查看</FONT>
+    </TD></TR>
+  </TABLE>>];
+
+  web [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#FFFFFF">
+    <TR><TD COLSPAN="2" WIDTH="342" HEIGHT="48" BGCOLOR="#123653" ALIGN="CENTER">
+      <FONT FACE="PingFang SC" POINT-SIZE="22" COLOR="#FFFFFF"><B>Web 学习工作台</B></FONT>
+    </TD></TR>
+    <TR>
+      <TD PORT="demo" WIDTH="171" HEIGHT="112" BGCOLOR="#EAF1FF" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="18" COLOR="#4169D8"><B>/demo</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="16" COLOR="#123653"><B>稳定脱敏演示</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#60758A">只读取 /data</FONT>
+      </TD>
+      <TD PORT="app" WIDTH="171" HEIGHT="112" BGCOLOR="#E9F9F7" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="18" COLOR="#159D98"><B>/app</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="16" COLOR="#123653"><B>真实学习工作台</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#60758A">只调用 /api</FONT>
+      </TD>
+    </TR>
+  </TABLE>>];
+
+  core [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#FFFFFF">
+    <TR><TD COLSPAN="2" WIDTH="382" HEIGHT="48" BGCOLOR="#6E5AE6" ALIGN="CENTER">
+      <FONT FACE="PingFang SC" POINT-SIZE="22" COLOR="#FFFFFF"><B>应用核心</B></FONT>
+    </TD></TR>
+    <TR>
+      <TD WIDTH="191" HEIGHT="98" BGCOLOR="#F1EEFF" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#4E3DBA"><B>任务与规则</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">Express API · 受控调用</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">任务编排 · 状态管理</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">结构校验 · 结果保存</FONT>
+      </TD>
+      <TD WIDTH="191" HEIGHT="98" BGCOLOR="#FFF0EB" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#E45F43"><B>人工确认质量闸门</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">确认题目与实际作答</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">选择需要分析的重点题</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">接受 / 拒绝学习记忆</FONT>
+      </TD>
+    </TR>
+  </TABLE>>];
+
+  ai [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#FFFFFF">
+    <TR><TD COLSPAN="2" WIDTH="368" HEIGHT="48" BGCOLOR="#123653" ALIGN="CENTER">
+      <FONT FACE="PingFang SC" POINT-SIZE="22" COLOR="#FFFFFF"><B>外部 AI 能力</B></FONT>
+    </TD></TR>
+    <TR>
+      <TD WIDTH="184" HEIGHT="98" BGCOLOR="#ECF8F7" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#159D98"><B>OCR 图像能力</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">切分题目区域</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">识别题干与作答</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="13" COLOR="#60758A">当前：腾讯云</FONT>
+      </TD>
+      <TD WIDTH="184" HEIGHT="98" BGCOLOR="#F1EEFF" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="13">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#6E5AE6"><B>Hermes Runtime</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">Skills · Prompt · Job runner</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">分析 · 记忆候选 · 周报</FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="13" COLOR="#60758A">当前推理模型：DeepSeek</FONT>
+      </TD>
+    </TR>
+  </TABLE>>];
+
+  { rank=same; student; web; core; ai; }
+
+  subgraph cluster_data {
+    graph [
+      label=<<FONT FACE="PingFang SC" POINT-SIZE="20" COLOR="#123653"><B>可信数据与学习结果</B></FONT>>,
+      labelloc="t",
+      labeljust="l",
+      color="#C9D9DE",
+      penwidth=1.8,
+      style="rounded,filled",
+      fillcolor="#FFFFFF",
+      margin=18
+    ];
+
+    demo_data [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#EAF1FF">
+      <TR><TD WIDTH="245" HEIGHT="88" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="14">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#4169D8"><B>脱敏演示数据</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">原创样例 · 固定结果 · 无外部依赖</FONT>
+      </TD></TR>
+    </TABLE>>];
+
+    storage [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#FFFFFF">
+      <TR>
+        <TD PORT="db" WIDTH="270" HEIGHT="88" BGCOLOR="#E9F9F7" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="14">
+          <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#159D98"><B>SQLite 结构化记录</B></FONT><BR/>
+          <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">确认题目 · findings · 记忆决定</FONT>
+        </TD>
+        <TD PORT="files" WIDTH="270" HEIGHT="88" BGCOLOR="#FFF0EB" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="14">
+          <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#E45F43"><B>私有图片与题目文件</B></FONT><BR/>
+          <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">练习图片 · 切题区域 · OCR 结果</FONT>
+        </TD>
+      </TR>
+    </TABLE>>];
+
+    outputs [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#FFF8DD">
+      <TR><TD WIDTH="340" HEIGHT="88" ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="14">
+        <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#A66A00"><B>可查看、可追溯的学习结果</B></FONT><BR/>
+        <FONT FACE="PingFang SC" POINT-SIZE="14" COLOR="#334B60">来自结构化记录与材料文件，供 Web 展示</FONT>
+      </TD></TR>
+    </TABLE>>];
+
+    { rank=same; demo_data; storage; outputs; }
+  }
+
+  student -> web [color="#159D98", penwidth=3.0];
+  web:app:e -> core:w [color="#6E5AE6", penwidth=3.2];
+  core:e -> ai:w [dir=both, arrowtail=normal, color="#6E5AE6", penwidth=3.2];
+
+  web:demo:s -> demo_data:n [label="静态读取", style=dashed, color="#4169D8", fontcolor="#4169D8", penwidth=2.5];
+  core:s -> storage:n [label="校验后保存", color="#159D98", fontcolor="#157D79", penwidth=2.8];
+  storage:e -> outputs:w [color="#D69B20", penwidth=2.5];
+
+  footer [shape=plain, label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0" BGCOLOR="#123653">
+    <TR><TD WIDTH="1300" HEIGHT="58" ALIGN="CENTER" CELLPADDING="12">
+      <FONT FACE="PingFang SC" POINT-SIZE="17" COLOR="#FFFFFF"><B>AI 不直接替学生做决定</B> ｜ 识别结果先确认，学习记忆由学生选择，证据不足时保留不确定</FONT>
+    </TD></TR>
+  </TABLE>>];
+
+  { rank=sink; footer; }
+  demo_data -> footer [style=invis];
+  storage -> footer [style=invis];
+  outputs -> footer [style=invis];
+}

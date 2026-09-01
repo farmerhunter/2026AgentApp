@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="900mm" height="1200mm" viewBox="0 0 900 1200">
+  <defs>
+    <style><![CDATA[
+      .bg { fill: #F3F7F6; }
+      .navy { fill: #102A43; }
+      .teal { fill: #16A6A0; }
+      .coral { fill: #FF7A59; }
+      .gold { fill: #F2C14E; }
+      .white { fill: #FFFFFF; }
+      .ink { fill: #183B56; }
+      .muted { fill: #61758A; }
+      .line { stroke: #D7E2E0; stroke-width: 2; }
+      .card { fill: #FFFFFF; stroke: #DCE8E6; stroke-width: 2; }
+      .shadow { filter: url(#shadow); }
+      text { font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; }
+      .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; }
+      .title { font-size: 55px; font-weight: 800; letter-spacing: 2px; }
+      .subtitle { font-size: 16px; font-weight: 500; }
+      .section { font-size: 22px; font-weight: 800; }
+      .cardtitle { font-size: 16px; font-weight: 800; }
+      .body { font-size: 13px; font-weight: 500; }
+      .small { font-size: 10.5px; font-weight: 500; }
+      .tiny { font-size: 8.5px; font-weight: 500; }
+      .number { font-size: 13px; font-weight: 800; text-anchor: middle; dominant-baseline: middle; }
+    ]]></style>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#102A43" flood-opacity="0.09"/>
+    </filter>
+    <clipPath id="clipA"><rect x="62" y="675" width="126" height="190" rx="7"/></clipPath>
+    <clipPath id="clipB"><rect x="205" y="675" width="126" height="190" rx="7"/></clipPath>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16A6A0"/>
+    </marker>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#FFFFFF" opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect class="bg" width="900" height="1200"/>
+
+  <!-- Header -->
+  <rect class="navy" width="900" height="160"/>
+  <rect width="900" height="160" fill="url(#dots)"/>
+  <circle cx="66" cy="48" r="23" class="teal"/>
+  <path d="M55 49 L64 58 L79 38" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="103" y="44" class="eyebrow" fill="#90DDD8">AI 智能体应用 · 中学生创新实践</text>
+  <text x="48" y="112" class="title" fill="#FFFFFF">学途智伴</text>
+  <text x="348" y="82" class="subtitle" fill="#FFFFFF">从我的学习问题出发，我用 Vibe Coding 与 AI 共同创造</text>
+  <text x="348" y="110" class="subtitle" fill="#FFFFFF">一个能理解学习过程的智能体。</text>
+  <rect x="745" y="31" width="108" height="36" rx="18" fill="#FF7A59"/>
+  <text x="799" y="54" class="small" fill="#FFFFFF" text-anchor="middle" font-weight="700">参展信息待补</text>
+
+  <!-- Story cards -->
+  <rect x="44" y="184" width="366" height="226" rx="18" class="card shadow"/>
+  <circle cx="75" cy="218" r="18" class="coral"/>
+  <text x="75" y="219" class="number" fill="#FFFFFF">1</text>
+  <text x="105" y="225" class="section ink">我想解决什么？</text>
+  <text x="67" y="267" class="body ink">学习中的练习、错题和分析常常分散在不同地方。</text>
+  <text x="67" y="294" class="body ink">普通 AI 可以回答眼前的一道题，却不容易看见我</text>
+  <text x="67" y="321" class="body ink">前后几次作答之间的联系。</text>
+  <rect x="64" y="345" width="326" height="48" rx="12" fill="#FFF1ED"/>
+  <text x="80" y="367" class="small" fill="#C84C31" font-weight="700">我的问题</text>
+  <text x="80" y="386" class="small ink">AI 能不能看见重复、变化和下一步？</text>
+
+  <rect x="430" y="184" width="426" height="226" rx="18" class="card shadow"/>
+  <circle cx="461" cy="218" r="18" class="teal"/>
+  <text x="461" y="219" class="number" fill="#FFFFFF">2</text>
+  <text x="491" y="225" class="section ink">我是怎样做出来的？</text>
+  <text x="453" y="262" class="small muted">VIBE CODING，不是“一次生成”，而是反复完成和检查</text>
+
+  <circle cx="466" cy="293" r="5" class="coral"/>
+  <text x="482" y="298" class="body ink">用自己的话说明目标，把作品拆成小功能</text>
+  <circle cx="466" cy="327" r="5" class="coral"/>
+  <text x="482" y="332" class="body ink">每个功能：AI 设计 → 开发 → 审核 → 修改验证</text>
+  <circle cx="466" cy="361" r="5" class="coral"/>
+  <text x="482" y="366" class="body ink">我亲自运行，用模拟练习检查功能和输出</text>
+  <rect x="676" y="377" width="157" height="22" rx="11" fill="#E3F6F4"/>
+  <text x="754" y="392" class="tiny" fill="#087E79" text-anchor="middle" font-weight="700">做项目，也是我的学习过程</text>
+
+  <!-- Workflow -->
+  <rect x="44" y="430" width="812" height="148" rx="18" class="card shadow"/>
+  <circle cx="75" cy="464" r="18" class="gold"/>
+  <text x="75" y="465" class="number navy">3</text>
+  <text x="105" y="471" class="section ink">我的作品怎样工作？</text>
+  <text x="646" y="467" class="small muted">由我确认关键步骤，不让 AI 自动替我决定</text>
+
+  <line x1="127" y1="526" x2="765" y2="526" stroke="#16A6A0" stroke-width="4" marker-end="url(#arrow)"/>
+  <g>
+    <circle cx="120" cy="526" r="25" fill="#E3F6F4" stroke="#16A6A0" stroke-width="3"/>
+    <text x="120" y="531" class="cardtitle teal" text-anchor="middle">01</text>
+    <text x="120" y="565" class="small ink" text-anchor="middle">上传练习</text>
+    <circle cx="250" cy="526" r="25" fill="#E3F6F4" stroke="#16A6A0" stroke-width="3"/>
+    <text x="250" y="531" class="cardtitle teal" text-anchor="middle">02</text>
+    <text x="250" y="565" class="small ink" text-anchor="middle">OCR 切题</text>
+    <circle cx="380" cy="526" r="25" fill="#FFF1ED" stroke="#FF7A59" stroke-width="3"/>
+    <text x="380" y="531" class="cardtitle coral" text-anchor="middle">03</text>
+    <text x="380" y="565" class="small ink" text-anchor="middle">我确认错题</text>
+    <circle cx="510" cy="526" r="25" fill="#E3F6F4" stroke="#16A6A0" stroke-width="3"/>
+    <text x="510" y="531" class="cardtitle teal" text-anchor="middle">04</text>
+    <text x="510" y="565" class="small ink" text-anchor="middle">AI 分析</text>
+    <circle cx="640" cy="526" r="25" fill="#FFF1ED" stroke="#FF7A59" stroke-width="3"/>
+    <text x="640" y="531" class="cardtitle coral" text-anchor="middle">05</text>
+    <text x="640" y="565" class="small ink" text-anchor="middle">我确认记忆</text>
+    <circle cx="770" cy="526" r="25" fill="#FFF8DA" stroke="#F2C14E" stroke-width="3"/>
+    <text x="770" y="531" class="cardtitle navy" text-anchor="middle">06</text>
+    <text x="770" y="565" class="small ink" text-anchor="middle">学习周报</text>
+  </g>
+
+  <!-- Practice evidence -->
+  <rect x="44" y="598" width="307" height="303" rx="18" class="card shadow"/>
+  <circle cx="75" cy="632" r="18" class="coral"/>
+  <text x="75" y="633" class="number" fill="#FFFFFF">4</text>
+  <text x="105" y="639" class="section ink">我怎样验证？</text>
+  <text x="64" y="665" class="small muted">两批原创模拟练习，走完真实操作流程</text>
+
+  <rect x="62" y="675" width="126" height="190" rx="7" fill="#EEF3F2" stroke="#D7E2E0" stroke-width="2"/>
+  <image x="62" y="675" width="126" height="190" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipA)"
+    xlink:href="assets/worksheet-a-v1.png"
+    href="assets/worksheet-a-v1.png"/>
+  <rect x="71" y="685" width="35" height="20" rx="10" class="navy"/>
+  <text x="88.5" y="699" class="tiny" fill="#FFFFFF" text-anchor="middle" font-weight="700">练习 A</text>
+
+  <rect x="205" y="675" width="126" height="190" rx="7" fill="#EEF3F2" stroke="#D7E2E0" stroke-width="2"/>
+  <image x="205" y="675" width="126" height="190" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipB)"
+    xlink:href="assets/worksheet-b-v1.png"
+    href="assets/worksheet-b-v1.png"/>
+  <rect x="214" y="685" width="35" height="20" rx="10" class="navy"/>
+  <text x="231.5" y="699" class="tiny" fill="#FFFFFF" text-anchor="middle" font-weight="700">练习 B</text>
+  <text x="197" y="883" class="tiny" fill="#61758A" text-anchor="middle">原创模拟练习 · 非真实学生记录</text>
+
+  <!-- Result cards -->
+  <rect x="371" y="598" width="485" height="303" rx="18" class="card shadow"/>
+  <circle cx="402" cy="632" r="18" class="teal"/>
+  <text x="402" y="633" class="number" fill="#FFFFFF">5</text>
+  <text x="432" y="639" class="section ink">作品输出了什么？</text>
+  <text x="676" y="636" class="small muted">用结果说话，不做无意义的数据堆砌</text>
+
+  <rect x="391" y="664" width="214" height="97" rx="13" fill="#E9F8F6"/>
+  <circle cx="414" cy="690" r="12" class="teal"/>
+  <path d="M407 690 l5 5 l9 -11" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <text x="435" y="695" class="cardtitle ink">发现重复问题</text>
+  <text x="408" y="723" class="small ink">把不同练习中再次出现的</text>
+  <text x="408" y="743" class="small ink">根式处理问题联系起来。</text>
+
+  <rect x="622" y="664" width="214" height="97" rx="13" fill="#FFF1ED"/>
+  <circle cx="645" cy="690" r="12" class="coral"/>
+  <path d="M638 691 h14 M645 684 v14" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <text x="666" y="695" class="cardtitle ink">看见局部变化</text>
+  <text x="639" y="723" class="small ink">看见补全的步骤，也指出</text>
+  <text x="639" y="743" class="small ink">新出现的计算错误。</text>
+
+  <rect x="391" y="778" width="214" height="97" rx="13" fill="#F1F3F7"/>
+  <circle cx="414" cy="804" r="12" fill="#61758A"/>
+  <text x="414" y="809" class="cardtitle" fill="#FFFFFF" text-anchor="middle">?</text>
+  <text x="435" y="809" class="cardtitle ink">保留“原因未知”</text>
+  <text x="408" y="837" class="small ink">只有答案、没有过程时，</text>
+  <text x="408" y="857" class="small ink">不强行猜测具体错因。</text>
+
+  <rect x="622" y="778" width="214" height="97" rx="13" fill="#FFF8DA"/>
+  <circle cx="645" cy="804" r="12" class="gold"/>
+  <path d="M640 804 l4 4 l7 -9" fill="none" stroke="#102A43" stroke-width="3" stroke-linecap="round"/>
+  <text x="666" y="809" class="cardtitle ink">形成复习建议</text>
+  <text x="639" y="837" class="small ink">把多次记录整理成周报，</text>
+  <text x="639" y="857" class="small ink">给出优先复习方向。</text>
+  <text x="613" y="893" class="tiny muted" text-anchor="middle">结果来自原创模拟练习，不代表大规模准确率或学习成绩提升。</text>
+
+  <!-- Final Gate browser captures -->
+  <rect x="44" y="922" width="812" height="160" rx="18" class="card shadow"/>
+  <text x="66" y="953" class="section ink">三个关键界面</text>
+  <text x="264" y="950" class="small teal" font-weight="700">最终 main · 原创模拟材料 · 已验收结果回放</text>
+
+  <g>
+    <image x="66" y="970" width="242" height="90" preserveAspectRatio="xMidYMid slice"
+      xlink:href="assets/screenshots/01-import-confirmation-poster.png"
+      href="assets/screenshots/01-import-confirmation-poster.png"/>
+    <rect x="66" y="1034" width="242" height="26" fill="#102A43" opacity="0.94"/>
+    <text x="187" y="1052" class="small" fill="#FFFFFF" text-anchor="middle" font-weight="700">练习导入与错题确认</text>
+    <rect x="66" y="970" width="242" height="90" rx="11" fill="none" stroke="#9BBAB6" stroke-width="2"/>
+
+    <image x="329" y="970" width="242" height="90" preserveAspectRatio="xMidYMid slice"
+      xlink:href="assets/screenshots/02-analysis-memory-poster.png"
+      href="assets/screenshots/02-analysis-memory-poster.png"/>
+    <rect x="329" y="1034" width="242" height="26" fill="#102A43" opacity="0.94"/>
+    <text x="450" y="1052" class="small" fill="#FFFFFF" text-anchor="middle" font-weight="700">AI 分析与学习记忆</text>
+    <rect x="329" y="970" width="242" height="90" rx="11" fill="none" stroke="#9BBAB6" stroke-width="2"/>
+
+    <image x="592" y="970" width="242" height="90" preserveAspectRatio="xMidYMid slice"
+      xlink:href="assets/screenshots/03-weekly-report-poster.png"
+      href="assets/screenshots/03-weekly-report-poster.png"/>
+    <rect x="592" y="1034" width="242" height="26" fill="#102A43" opacity="0.94"/>
+    <text x="713" y="1052" class="small" fill="#FFFFFF" text-anchor="middle" font-weight="700">学习周报与打印</text>
+    <rect x="592" y="970" width="242" height="90" rx="11" fill="none" stroke="#9BBAB6" stroke-width="2"/>
+  </g>
+
+  <!-- Footer / conclusion -->
+  <rect x="0" y="1104" width="900" height="96" class="navy"/>
+  <text x="45" y="1135" class="eyebrow" fill="#90DDD8">我的发现与收获</text>
+  <text x="45" y="1165" class="subtitle" fill="#FFFFFF" font-weight="700">“我不仅完成了一个 AI 学习智能体，也在做项目的过程中不断学习。”</text>
+  <text x="45" y="1187" class="tiny" fill="#BFD3E1">AI 帮我实现想法；以前的记录提供参考；每一步结果仍由我亲自检查。</text>
+  <rect x="770" y="1117" width="66" height="66" rx="8" fill="#FFFFFF"/>
+  <rect x="782" y="1129" width="42" height="42" rx="3" fill="#E1E8ED"/>
+  <path d="M788 1135 h10 v10 h-10 z M808 1135 h10 v10 h-10 z M788 1155 h10 v10 h-10 z M805 1152 h5 v5 h-5 z M814 1160 h4 v5 h-4 z" fill="#61758A"/>
+  <text x="803" y="1194" class="tiny" fill="#FFFFFF" text-anchor="middle">公开体验 · 待链接</text>
+</svg>
