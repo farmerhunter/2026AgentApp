@@ -1,0 +1,28 @@
+{
+  "experiment_id": "e5-learning-story-01",
+  "scope": "synthetic_experiment_only_not_product_database",
+  "decision_source": "User explicitly accepted the displayed A06 and A10 candidates, then requested continuation without overdesign.",
+  "source_output": "results/a/Q1/stdout.txt",
+  "source_output_sha256": "09434ce33f26e2e6f05e2f05a4baa760f384cbffb5eea03060431db6d3cae79c",
+  "known_limitation": "A06 finding overgeneralizes a radical inequality; original output retained. Acceptance permits reuse of the observed local error, not endorsement of every finding sentence or product-quality approval.",
+  "accepted_memories": [
+    {
+      "memory_id": "exp_story_memory_a06",
+      "student_id": "exp_story_student",
+      "subject": "math",
+      "status": "accepted",
+      "source_question_id": "exp_story_a06",
+      "source_batch_id": "exp_story_batch_a",
+      "statement": "在二次根式加法中把 √a＋√b 误写为 √(a＋b)，未先化为最简二次根式再合并同类二次根式。"
+    },
+    {
+      "memory_id": "exp_story_memory_a10",
+      "student_id": "exp_story_student",
+      "subject": "math",
+      "status": "accepted",
+      "source_question_id": "exp_story_a10",
+      "source_batch_id": "exp_story_batch_a",
+      "statement": "用两点求一次函数解析式时，求出斜率 k 后未代入已知点求截距 b，直接把一次函数写成正比例形式 y＝kx。"
+    }
+  ]
+}

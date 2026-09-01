@@ -1,0 +1,22 @@
+[
+  {
+    "case_id": "H3",
+    "subject": "math",
+    "question_id": "probe_h3",
+    "question_text": "已知一次函数的图象经过点 (0,2) 和 (2,6)，求这个一次函数的解析式。",
+    "student_answer_text": "y＝2x。",
+    "student_note": "",
+    "confirmed_wrong": true,
+    "accepted_memories": []
+  },
+  {
+    "case_id": "H4",
+    "subject": "math",
+    "question_id": "probe_h4",
+    "question_text": "已知一次函数的图象经过点 (0,2) 和 (2,6)，求这个一次函数的解析式。",
+    "student_answer_text": "y＝2x。",
+    "student_note": "我认为一次函数里的 b 总是0，所以算出斜率就可以了。",
+    "confirmed_wrong": true,
+    "accepted_memories": []
+  }
+]

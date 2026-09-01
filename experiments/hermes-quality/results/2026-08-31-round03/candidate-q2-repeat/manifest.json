@@ -1,0 +1,26 @@
+{
+  "mode": "real_cli",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "skill_sha256": "c68aec4223ad4690c40508f3f263442897fe11aa6286d9b7d85ebab9283c565c",
+  "cases_sha256": "973de235889fdc477156a6fcf73a7b11fff3e0cc0f5b4701a9c83fce3e015060",
+  "case_ids": [
+    "Q2"
+  ],
+  "runner_sha256": "f6bacaecc8b0660a73a1a743a4e12bb403e178857648a703d50c1fb31faec4d3",
+  "map_sha256": "609abf6fab4b153f75aee1114116e0f1f586005a5334c356cf550f1314ed3b37",
+  "map_id": "renjiao_math_grade8_v2",
+  "map_version": "1.0.0",
+  "max_jobs": 1,
+  "per_job_timeout_seconds": 180,
+  "retries": "no runner retry; Hermes api_max_retries=1; SDK behavior is not overridden",
+  "hermes_commit": "ca25dc81a1720951e867f970d6686ec02ab3371e",
+  "results": [
+    {
+      "case_id": "Q2",
+      "started_at": "2026-08-30T18:13:36Z",
+      "exit_code": 0,
+      "elapsed_seconds": 29.06
+    }
+  ]
+}

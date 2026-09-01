@@ -1,0 +1,33 @@
+{
+  "case_id": "Q1",
+  "finding": {
+    "scope": "local",
+    "finding_type": "procedure_gap",
+    "statement": "你用了 √8＋√2＝√(8＋2)＝√10，这一步相当于认为 √a＋√b＝√(a＋b)。这个等式一般不成立：根号的乘除性质是 √a·√b＝√(ab)、√a/√b＝√(a/b)，但加减时不能把被开方数直接相加。正确做法是先把 √8 化成最简二次根式：8＝4×2，所以 √8＝2√2；再合并同类二次根式：√8＋√2＝2√2＋√2＝3√2。√10 约等于 3.16，而 3√2 约等于 4.24，两者并不相等。目前只能看到一行作答，无法确定你是误记了法则还是临时套用了乘法性质，但可观察到的错误是采用了不成立的根式相加写法。",
+    "evidence_summary": "作答只给出 √8＋√2＝√(8＋2)＝√10 一行，直接对被开方数 8 和 2 做加法；未写出化简 √8＝2√2 或合并同类二次根式的步骤。",
+    "mistake_reasons": ["procedure_gap"],
+    "confidence": "high",
+    "is_recurring": false,
+    "concept_links": [
+      {
+        "concept_id": "kp_8b_ch16_radical_simplify",
+        "concept_name": "最简二次根式"
+      },
+      {
+        "concept_id": "kp_8b_ch16_radical_add_subtract",
+        "concept_name": "二次根式的加减运算"
+      }
+    ],
+    "action_candidates": [
+      {
+        "action_type": "review_concept",
+        "description": "回顾二次根式的运算性质：√a·√b＝√(ab) 只适用于乘法；对 √a＋√b 没有直接合并且被开方数相加的公式，需要先化简，再合并同类二次根式。"
+      },
+      {
+        "action_type": "practice_set",
+        "description": "先化简，再合并同类二次根式：√12＋√3（应为 3√3），√18−√8（应为 √2）。"
+      }
+    ],
+    "memory_candidates": []
+  }
+}

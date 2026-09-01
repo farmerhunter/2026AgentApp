@@ -7,11 +7,12 @@
 1. [给 David 的 V2 一页开发说明](v2/development-guide.md)：最快理解 V2 要做什么、先后顺序和 MVP 门槛。
 2. [路线图](roadmap.md)：了解版本、E1–E6 和当前交付方向。
 3. [V2 架构](v2/architecture.md)：了解双线数据流、模块职责和失败边界。
-4. [Hermes 运行与 Skill 设计](v2/hermes-runtime-and-skills.md)：了解 Hermes/DeepSeek 边界和 Skill 迭代方法。
-5. [V2 实施计划](v2/implementation-plan.md)：了解 Epic 依赖和终评 R1 约束。
-6. [架构决策记录](decisions/architecture-decisions.md)：了解需要长期保持的技术选择。
-7. [Epic 设计文档规范](epic-design-guidelines.md)：Epic 启动后判断是否需要独立设计文档。
-8. [Epic 自主交付与质量复核规范](epic-collaboration-protocol.md)：共同维护者端到端设计、实现、验证、合并、部署和收尾的轻量流程。
+4. [E5 核心能力设计：从错题分析到学习周报](v2/epics/e5-hermes-learning-analysis.md)：面向 David 和评委，解释两个关键 Skill 的价值、策略、记忆作用和设计取舍。
+5. [Hermes 运行与 Skill 设计](v2/hermes-runtime-and-skills.md)：了解 Hermes/DeepSeek 边界和 Skill 迭代方法。
+6. [V2 实施计划](v2/implementation-plan.md)：了解 Epic 依赖和终评 R1 约束。
+7. [架构决策记录](decisions/architecture-decisions.md)：了解需要长期保持的技术选择。
+8. [Epic 设计文档规范](epic-design-guidelines.md)：Epic 启动后判断是否需要独立设计文档。
+9. [Epic 自主交付与质量复核规范](epic-collaboration-protocol.md)：共同维护者端到端设计、实现、验证、合并、部署和收尾的轻量流程。
 
 ## 版本文档
 

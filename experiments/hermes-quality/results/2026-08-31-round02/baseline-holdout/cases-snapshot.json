@@ -1,0 +1,22 @@
+[
+  {
+    "case_id": "H1",
+    "subject": "math",
+    "question_id": "probe_h1",
+    "question_text": "已知一次函数 y＝2x＋1，求 x＝3 时 y 的值。",
+    "student_answer_text": "y＝2×3＋1＝6＋1＝8。",
+    "student_note": "",
+    "confirmed_wrong": true,
+    "accepted_memories": []
+  },
+  {
+    "case_id": "H2",
+    "subject": "math",
+    "question_id": "probe_h2",
+    "question_text": "使 √(x－2) 在实数范围内有意义，求 x 的取值范围。",
+    "student_answer_text": "x≤2。",
+    "student_note": "我认为被开方数必须不大于0。",
+    "confirmed_wrong": true,
+    "accepted_memories": []
+  }
+]

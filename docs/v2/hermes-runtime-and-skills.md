@@ -2,6 +2,10 @@
 
 **状态：Current design / 待 E5 验证。** 本文单独说明 Hermes 在 V2 中为什么存在、如何接入，以及如何高效迭代 Skill。
 
+面向开发者和评委的产品说明见 [E5 核心能力设计](epics/e5-hermes-learning-analysis.md)：解释两个在线 Skill 的分析策略、记忆作用和周报价值。本文保留运行边界，不重复产品论述。
+
+错因分析的质量目标、案例检查和长期迭代方法见 [Hermes 错因分析与 Finding 质量设计](hermes-analysis-quality.md)（E5-D4 已确认，待实现验证）。运行 contract 合法是基础，不等于分析质量已经合格。
+
 ## 1. Hermes 在系统里的意义
 
 Hermes 不是 DeepSeek 的别名，也不只是一次 `prompt -> model` 包装。它在 V2 中承载三类长期有价值的东西：
@@ -31,7 +35,7 @@ V2 不强行使用 Hermes ambient memory 来证明“智能”。学生记忆是
 
 两个 profile 共享仓库内 `.hermes/skills/` 的 Skill 源码，但配置、会话和运行数据彼此隔离。
 
-VPS 上现有名为 `Hermes` 的 tmux session 可以继续作为人工进入 TUI 的方便入口，但它不是产品运行依赖；session 重启或不存在不应影响 `studyv2-runtime` CLI job。
+VPS 上用户指定名为 `hermes` 的 tmux session 可以继续作为人工进入 TUI 的方便入口，但它不是产品运行依赖；session 重启或不存在不应影响 `studyv2-runtime` CLI job。
 
 ## 3. 应用接入：HermesBridge
 
@@ -74,7 +78,9 @@ API serial job executor
 
 ### `weekly-learning-report`
 
-线上使用：输入本自然周 findings、actions、记忆决定和必要知识节点；输出简短、有代表性的结构化周报。没有本周数据时不调用 Hermes。
+线上使用：输入同一学生、同一学科的本自然周 findings、对应已确认题干/学生作答/已有备注、actions、记忆决定、必要的已接受历史记忆和知识节点；输出简短、有代表性的结构化周报。应用保证 finding 与题目准确对应；不新增用户输入。没有本周可用分析数据时不调用 Hermes。
+
+本周不同题目之间有证据的共性、重复和变化，在这一次报告任务内部综合分析。现有周报正文应完整表达分析范围、主要问题、可见变化和 1–2 项下一步建议，必要时只补分段排版；重要内容不能只保留在未显示字段中。周报不产生记忆候选或自动改写已有 findings，不新增独立聚合 Job 或问答 UI。这是 E5 待实现验证的方向，不代表旧版 `weekly_report` 样例或脚本已经接通真实累积数据。
 
 V2 先保持这三个 Skill 粗粒度清晰，不拆成大量微型 Skill 或通用 Agent 工作流。
 
@@ -86,7 +92,8 @@ Skill 的质量一定需要多轮试验，开发流程应支持快迭代：
 2. 把代表性输入输出加入轻量 replay 样例。
 3. 用与产品相同的非交互 CLI 跑一遍，防止“TUI 能用、应用不能用”。
 4. 校验 JSON contract 和少量语义规则。
-5. 提交 Skill，记录 `skill_version` 或 content hash；`studyv2-runtime` 只使用这份已知版本。
+5. 按[分析质量设计](hermes-analysis-quality.md)人工检查数学、证据、判断边界、建议和教材关联；准备正式版本时回放当前 6–8 个小案例。
+6. 提交 Skill，记录 `skill_version` 或 content hash；`studyv2-runtime` 只使用这份已知版本。
 
 实验阶段修改 Skill 不要求每次先建 issue 或 commit；一旦进入产品 runtime 或用于锁定展示结果，就必须提交并记录版本。V2 不建设大型 eval 平台、A/B 系统或自动进化 Skill。
 
@@ -99,7 +106,9 @@ Skill 的质量一定需要多轮试验，开发流程应支持快迭代：
 - 最多必要的已接受学生记忆；
 - contract、语言和输出限制。
 
-Hermes 返回的 memory candidate 默认 `pending`。用户接受后才成为 SQLite 中可复用的记忆；拒绝后不再使用。V2 不做编辑、合并、去重、自动 consolidation 或长期画像推断。
+V2 只由错题分析返回 memory candidate，默认 `pending`，不是每条 finding 都必须生成候选。用户接受后才成为 SQLite 中可复用的记忆；拒绝后不作为历史记忆使用。记忆保留有来源的局部观察，接受不等于证明推断正确，也不等于执行了行动建议。V2 不做编辑、合并、去重、自动 consolidation 或长期画像推断。
+
+这里裁掉的 consolidation 指独立的自动聚合/记忆维护流程，不排除周报任务内对本周 findings 的综合分析。本周 findings 与已接受历史记忆是两种输入：前者不要求逐条先被接受成记忆；后者才是跨次/跨周复用的受控入口。多条不确定猜测不能因汇总就变成确定画像。当前能力核查见[质量设计](hermes-analysis-quality.md)。
 
 ## 7. 本地、VPS 开发与部署
 
@@ -111,7 +120,8 @@ Hermes 返回的 memory candidate 默认 `pending`。用户接受后才成为 SQ
 
 ## 8. 最小验证
 
+- 错因分析按[质量检查策略](hermes-analysis-quality.md)留下代表性案例的实际输出与人工检查结论，不能仅以 JSON 合法或模型自评代替。
 - 同一脱敏输入在 TUI 和非交互 CLI 下产生 contract 合法结果。
 - 无效 JSON、CLI 非零退出、超时和 Provider 失败都转为 `failed`，数据库无部分领域写入。
 - 第二批错题只使用 SQLite 中已接受的记忆，不受之前 TUI/CLI 会话内容影响。
-- 周报能表达一次重复错误和一次改善，且展示内容保持简洁。
+- 在两批代表性材料上，周报能依据实际作答表达一次重复问题、一次局部改善及具体建议；一般输入没有相应证据时不强行凑齐。内容在现有页面可读、可打印，不能只检查 JSON 合法。
