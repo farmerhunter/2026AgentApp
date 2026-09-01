@@ -1,7 +1,7 @@
 import { readFileSync, existsSync, mkdirSync, statSync, utimesSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import express from "express";
 import sessionsRouter from "./routes/sessions.js";
@@ -36,6 +36,7 @@ const JOB_SCRIPTS = {
 const SUBJECTS = ["chinese", "math", "english"];
 const JOB_RECONCILE_INTERVAL_MS = 1000;
 const JOB_STALE_MS = 5 * 60 * 1000;
+const JOB_TIMEOUT_MS = Number(process.env.HERMES_JOB_TIMEOUT_MS ?? 300000);
 const jobQueue = [];
 let activeJob = null;
 
@@ -248,6 +249,10 @@ function runJob(jobType, args, payload, jobId) {
     finishActive();
   });
 
+  child.on("close", () => {
+    finishActive();
+  });
+
   child.unref();
 
   checkInterval = setInterval(() => {
@@ -269,9 +274,6 @@ function runJob(jobType, args, payload, jobId) {
 
   timeoutHandle = setTimeout(() => {
     try {
-      child.kill("SIGKILL");
-    } catch {}
-    try {
       const s = readStatus(jobId);
       if (s && s.status !== "completed" && s.status !== "failed") {
         writeStatus(jobId, {
@@ -283,8 +285,35 @@ function runJob(jobType, args, payload, jobId) {
         syncJobFromStatusFile(jobId);
       }
     } catch {}
-    finishActive();
-  }, 300_000);
+    killJobTree(child).finally(finishActive);
+  }, JOB_TIMEOUT_MS);
+}
+
+function killJobTree(child) {
+  return new Promise((resolve) => {
+    if (child.pid) {
+      try {
+        if (process.platform === "win32") {
+          spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"]);
+        } else {
+          process.kill(-child.pid, "SIGKILL");
+        }
+      } catch {
+        // Process group may already be gone.
+      }
+    }
+
+    if (child.exitCode !== null || child.signalCode !== null) {
+      resolve();
+      return;
+    }
+
+    const forceTimer = setTimeout(() => resolve(), 2000);
+    child.once("close", () => {
+      clearTimeout(forceTimer);
+      resolve();
+    });
+  });
 }
 
 function drainJobQueue() {
