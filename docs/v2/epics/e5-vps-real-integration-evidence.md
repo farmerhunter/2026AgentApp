@@ -32,11 +32,12 @@
 
 ## 4. 两批文字 fixture 最终链路
 
-使用 PR #99 中 `experiments/hermes-quality/learning-story/cases-a.json` / `cases-b.json` 的 3 道错题文本，以 `student_demo` / `math` 写入独立 dev DB。
+使用 PR #99 中 `experiments/hermes-quality/two-batch-learning-fixture/batch-a.md` / `batch-b.md` 的完整 10 题文本（每批 3 道重点错题），以 `student_demo` / `math` 写入独立 dev DB。
 
 ### A 批
 
 - upload：`upload_exp_story_a`
+- 完整 10 题，已确认错题 3 道：A06、A09、A10。
 - 分析 job：`job_20260901113941._c41ad8` → `completed`
 - finding batch：`findings_20260901114148._4a0e30`
 - 生成 3 条 pending 记忆候选。
@@ -48,6 +49,7 @@
 ### B 批
 
 - upload：`upload_exp_story_b`
+- 完整 10 题，已确认错题 3 道：B06、B09、B10。
 - 分析 job：`job_20260901114214._86c6df` → `completed`
 - finding batch：`findings_20260901114435._7ed82e`
 - 复用验证：
@@ -62,7 +64,14 @@
 - 内容包含分析范围、主要问题、可见变化与限制、下一步；给出 2 条 actions。
 - 报告正文正确表达二次根式加法重复问题，以及一次函数“漏求截距”的局部变化，同时不把同题重跑当成新证据。
 
-## 5. 已验证
+## 5. VPS `/app` 前端验证
+
+- Vite dev server：`http://127.0.0.1:5173`
+- `GET /` 返回 200
+- `GET /api/health` 经 Vite proxy 返回 200，`mode=real`
+- `/app/analysis` 与 `/app/report` 由同一 SPA 提供。
+
+## 6. 已验证
 
 - 真实 Hermes/DeepSeek 错题分析
 - 真实 Hermes 周报综合
@@ -72,10 +81,8 @@
 - `/api/findings`、`/api/memories`、`/api/reports` 刷新后可读
 - 真实 OCR 上传 → 切题 → 确认 → E5 分析
 
-## 6. 已知限制
+## 7. 已知限制
 
 - 最终演示图片尚未生成，两批链路的题目/作答来自已核对文字 fixture，非 OCR 结果。
-- 每批只写入 3 道重点错题，未在 SQLite 中重建完整 10 题练习。
 - 两个 Skill 仍为 `e5-wip-0.1`，未通过独立 Final Gate。
-- VPS `/app` 前端尚未启动做浏览器打印验证。
 - 周报 job 当前按 `student_demo` / `math` 固定查询，尚未参数化。
