@@ -1,7 +1,7 @@
 import { readFileSync, existsSync, mkdirSync, statSync, utimesSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import express from "express";
 import sessionsRouter from "./routes/sessions.js";
@@ -12,6 +12,7 @@ import knowledgeMapRouter from "./routes/knowledgeMap.js";
 import uploadsRouter, { recoverOcrJobs } from "./routes/uploads.js";
 import { getDb } from "./db/init.js";
 import { runE4Migrations } from "./db/migrate-e4.js";
+import { runE5Migrations } from "./db/migrate-e5.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
@@ -20,6 +21,7 @@ const STATUS_DIR = resolve(REPO_ROOT, "runtime", "public", "job_status");
 const PUBLIC_DIR = resolve(REPO_ROOT, "runtime", "public");
 
 const PORT = process.env.HERMES_API_PORT ?? 8000;
+const HOST = process.env.HERMES_API_HOST ?? "127.0.0.1";
 let MODE = process.env.HERMES_JOB_MODE ?? "fixture";
 if (MODE === "hermes") MODE = "real";
 
@@ -27,15 +29,21 @@ const JOB_SCRIPTS = {
   textbook_summary: "run_textbook_summary.sh",
   learning_insight_update: "run_learning_insight_update.sh",
   weekly_report: "run_weekly_report.sh",
+  confirmed_mistake_analysis: "run_e5_analysis.mjs",
+  weekly_learning_report: "run_e5_weekly_report.mjs",
 };
 
 const SUBJECTS = ["chinese", "math", "english"];
 const JOB_RECONCILE_INTERVAL_MS = 1000;
 const JOB_STALE_MS = 5 * 60 * 1000;
+const JOB_TIMEOUT_MS = Number(process.env.HERMES_JOB_TIMEOUT_MS ?? 300000);
+const jobQueue = [];
+let activeJob = null;
 
 const db = getDb();
 db.defaultSafeIntegers(false);
 runE4Migrations(db);
+runE5Migrations(db);
 recoverOcrJobs();
 
 const app = express();
@@ -131,6 +139,8 @@ function jobDto(row) {
     job_type: row.job_type,
     status: row.status,
     mode: row.mode,
+    skill_version: row.skill_version ?? null,
+    skill_sha256: row.skill_sha256 ?? null,
     result_path: row.result_path,
     created_at: row.created_at,
     started_at: row.started_at,
@@ -195,18 +205,20 @@ function startJobReconciliation() {
   setInterval(reconcileJobs, JOB_RECONCILE_INTERVAL_MS);
 }
 
-function spawnJob(jobType, args, payload) {
-  const jobId = generateJobId();
+function runJob(jobType, args, payload, jobId) {
   const scriptName = JOB_SCRIPTS[jobType];
-  if (!scriptName) throw new Error(`Unknown job type: ${jobType}`);
-
-  const scriptPath = resolve(JOBS_DIR, scriptName);
+  const scriptPath = scriptName.endsWith(".mjs")
+    ? resolve(__dirname, "scripts", scriptName)
+    : resolve(JOBS_DIR, scriptName);
   const env = { ...process.env, HERMES_JOB_MODE: MODE, JOB_ID: jobId };
 
-  writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
-  insertJobDb(jobId, jobType, MODE, payload);
+  writeStatus(jobId, { job_type: jobType, status: "running", mode: MODE });
 
-  const child = spawn("bash", [scriptPath, ...args], {
+  const isNodeScript = scriptName.endsWith(".mjs") || scriptName.endsWith(".js");
+  const command = isNodeScript ? process.execPath : "bash";
+  const commandArgs = [scriptPath, ...args];
+
+  const child = spawn(command, commandArgs, {
     cwd: REPO_ROOT,
     env,
     detached: true,
@@ -214,9 +226,19 @@ function spawnJob(jobType, args, payload) {
   });
 
   let checkInterval = null;
+  let timeoutHandle = null;
+  let finished = false;
+
+  const finishActive = () => {
+    if (finished) return;
+    finished = true;
+    if (checkInterval) clearInterval(checkInterval);
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+    activeJob = null;
+    drainJobQueue();
+  };
 
   child.on("error", (err) => {
-    if (checkInterval) clearInterval(checkInterval);
     writeStatus(jobId, {
       job_type: jobType,
       status: "failed",
@@ -224,11 +246,15 @@ function spawnJob(jobType, args, payload) {
       error_message: err.message,
     });
     syncJobFromStatusFile(jobId);
+    finishActive();
+  });
+
+  child.on("close", () => {
+    finishActive();
   });
 
   child.unref();
 
-  // Poll for completion in background
   checkInterval = setInterval(() => {
     try {
       const s = readStatus(jobId);
@@ -239,16 +265,14 @@ function spawnJob(jobType, args, payload) {
         }
       }
       if (s && (s.status === "completed" || s.status === "failed")) {
-        clearInterval(checkInterval);
+        finishActive();
       }
     } catch {
       // Status file not written yet, keep polling
     }
   }, 1000);
 
-  // Timeout after 5 minutes
-  setTimeout(() => {
-    clearInterval(checkInterval);
+  timeoutHandle = setTimeout(() => {
     try {
       const s = readStatus(jobId);
       if (s && s.status !== "completed" && s.status !== "failed") {
@@ -256,13 +280,60 @@ function spawnJob(jobType, args, payload) {
           job_type: jobType,
           status: "timeout",
           mode: MODE,
-          error_message: "Job timed out after 5 minutes",
+          error_message: `Job timed out after ${JOB_TIMEOUT_MS} ms`,
         });
         syncJobFromStatusFile(jobId);
       }
     } catch {}
-  }, 300_000);
+    killJobTree(child).finally(finishActive);
+  }, JOB_TIMEOUT_MS);
+}
 
+function killJobTree(child) {
+  return new Promise((resolve) => {
+    if (child.pid) {
+      try {
+        if (process.platform === "win32") {
+          spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"]);
+        } else {
+          process.kill(-child.pid, "SIGKILL");
+        }
+      } catch {
+        // Process group may already be gone.
+      }
+    }
+
+    if (child.exitCode !== null || child.signalCode !== null) {
+      resolve();
+      return;
+    }
+
+    // Degradation guard: if the OS has not emitted close after SIGKILL/taskkill,
+    // release FIFO after a bounded grace period instead of blocking forever.
+    const killGraceMs = Number(process.env.HERMES_JOB_KILL_GRACE_MS ?? 2000);
+    const forceTimer = setTimeout(() => resolve(), killGraceMs);
+    child.once("close", () => {
+      clearTimeout(forceTimer);
+      resolve();
+    });
+  });
+}
+
+function drainJobQueue() {
+  if (activeJob || jobQueue.length === 0) return;
+  const next = jobQueue.shift();
+  activeJob = next.jobId;
+  runJob(next.jobType, next.args, next.payload, next.jobId);
+}
+
+function spawnJob(jobType, args, payload) {
+  const jobId = generateJobId();
+  if (!JOB_SCRIPTS[jobType]) throw new Error(`Unknown job type: ${jobType}`);
+
+  writeStatus(jobId, { job_type: jobType, status: "pending", mode: MODE });
+  insertJobDb(jobId, jobType, MODE, payload);
+  jobQueue.push({ jobId, jobType, args, payload });
+  drainJobQueue();
   return jobId;
 }
 
@@ -276,6 +347,13 @@ function buildArgs(jobType, body) {
       if (body.source_ids?.[0]) args.push("--upload-id", body.source_ids[0]);
       break;
     case "weekly_report":
+      if (body.week_start) args.push("--week-start", body.week_start);
+      if (body.week_end) args.push("--week-end", body.week_end);
+      break;
+    case "confirmed_mistake_analysis":
+      if (body.source_ids?.[0]) args.push("--upload-id", body.source_ids[0]);
+      break;
+    case "weekly_learning_report":
       if (body.week_start) args.push("--week-start", body.week_start);
       if (body.week_end) args.push("--week-end", body.week_end);
       break;
@@ -299,7 +377,8 @@ app.post("/api/hermes/jobs", (req, res) => {
     }
 
     const args = buildArgs(job_type, { textbook_id, source_ids, week_start, week_end });
-    if (args.length === 0) {
+    const requiresArgs = job_type !== "weekly_learning_report";
+    if (requiresArgs && args.length === 0) {
       return res.status(400).json({
         error: "missing_parameters",
         message: `Missing required parameters for ${job_type}`,
@@ -307,7 +386,9 @@ app.post("/api/hermes/jobs", (req, res) => {
           ? ["textbook_id"]
           : job_type === "learning_insight_update"
             ? ["source_ids[0]"]
-            : ["week_start", "week_end"],
+            : job_type === "confirmed_mistake_analysis"
+              ? ["source_ids[0]"]
+              : ["week_start", "week_end"],
       });
     }
 
@@ -394,8 +475,8 @@ app.use((err, req, res, next) => {
 
 // ── Start ──
 startJobReconciliation();
-app.listen(PORT, () => {
-  console.log(`Hermes API server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Hermes API server running on http://${HOST}:${PORT}`);
   console.log(`Mode: ${MODE}`);
   console.log(`Jobs: ${Object.keys(JOB_SCRIPTS).join(", ")}`);
 });

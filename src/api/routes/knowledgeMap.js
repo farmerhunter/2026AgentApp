@@ -198,3 +198,5 @@ router.get("/knowledge-map/points/:knowledge_point_id", (req, res) => {
 });
 
 export default router;
+
+export { readCurrentArtifact, flattenPoints };

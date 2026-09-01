@@ -78,6 +78,14 @@ router.get("/reports/:report_id", (req, res) => {
       });
     }
 
+    if (row.report_json) {
+      try {
+        return res.json(JSON.parse(row.report_json));
+      } catch (error) {
+        console.error("GET /api/reports/:report_id stored report JSON failed:", error);
+      }
+    }
+
     const reportUrl = row.report_json_url;
     if (!reportUrl) {
       return res.status(404).json({ error: "report_content_not_found", message: "No report file" });
