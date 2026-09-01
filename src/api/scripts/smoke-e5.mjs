@@ -102,6 +102,32 @@ async function assertSerialJobs(firstId, secondId) {
   assert(secondFinal === "completed", `second serial job should complete, got ${secondFinal}`);
 }
 
+async function assertTimeoutQueue(firstId, secondId) {
+  const deadline = Date.now() + 30000;
+  let firstFinal = null;
+  let secondFinal = null;
+  let secondStartedBeforeFirst = false;
+  while (Date.now() < deadline) {
+    const first = (await jsonRequest(`/api/hermes/jobs/${firstId}`)).body;
+    const second = (await jsonRequest(`/api/hermes/jobs/${secondId}`)).body;
+    if (second.status === "running" && firstFinal === null) {
+      secondStartedBeforeFirst = true;
+      break;
+    }
+    if (first.status === "running" && second.status === "running") {
+      secondStartedBeforeFirst = true;
+      break;
+    }
+    firstFinal = ["completed", "failed", "timeout"].includes(first.status) ? first.status : null;
+    secondFinal = ["completed", "failed", "timeout"].includes(second.status) ? second.status : null;
+    if (firstFinal && secondFinal) break;
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
+  }
+  assert(!secondStartedBeforeFirst, "second job started before first timed out");
+  assert(firstFinal === "timeout", `first timeout queue job should time out, got ${firstFinal}`);
+  assert(secondFinal === "timeout", `second timeout queue job should time out, got ${secondFinal}`);
+}
+
 function startServer(overrides = {}) {
   mkdirSync(PRIVATE_DIR, { recursive: true });
   server = spawn(process.execPath, ["server.js"], {
@@ -316,21 +342,18 @@ async function main() {
   await stopServer();
   startServer({ HERMES_JOB_TIMEOUT_MS: "1200", HERMES_E5_FIXTURE_DELAY_MS: "5000" });
   await waitForHealth();
-  const timeoutA = await jsonRequest("/api/hermes/jobs", {
-    method: "POST",
-    body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
-  });
-  assert(timeoutA.status === 202, "timeout regression job A should be 202");
-  const timeoutAJob = await waitForJob(timeoutA.body.job_id, 10000);
-  assert(timeoutAJob.status === "timeout", `timeout regression job A should time out, got ${timeoutAJob.status}`);
-
-  const timeoutB = await jsonRequest("/api/hermes/jobs", {
-    method: "POST",
-    body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
-  });
-  assert(timeoutB.status === 202, "timeout regression job B should be 202");
-  const timeoutBJob = await waitForJob(timeoutB.body.job_id, 10000);
-  assert(timeoutBJob.status === "timeout", `timeout regression job B should run after A and time out, got ${timeoutBJob.status}`);
+  const [timeoutA, timeoutB] = await Promise.all([
+    jsonRequest("/api/hermes/jobs", {
+      method: "POST",
+      body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+    }),
+    jsonRequest("/api/hermes/jobs", {
+      method: "POST",
+      body: JSON.stringify({ job_type: "confirmed_mistake_analysis", source_ids: [uploadId] }),
+    }),
+  ]);
+  assert(timeoutA.status === 202 && timeoutB.status === 202, "timeout regression job creation should be 202");
+  await assertTimeoutQueue(timeoutA.body.job_id, timeoutB.body.job_id);
 
   console.log("E5 fixture analysis/memory/report smoke passed");
 }

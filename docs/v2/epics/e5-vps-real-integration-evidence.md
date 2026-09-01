@@ -72,11 +72,25 @@
 - `GET /api/health` 经 Vite proxy 返回 200，`mode=real`
 - `/app/analysis` 与 `/app/report` 由同一 SPA 提供。
 
-## 5.1 当前 head 真实分析证据
+## 5.1 历史真实调用证据
 
-- head：`f5d32ee`
-- 真实 analysis job：`job_20260901133245._351719` → `completed`
-- 实际执行 Skill SHA：`019856d21bcdf079497ab927dd08d927d1bdd3d86fac32a91a28459014088ffc`
+- 历史真实 analysis job：`job_20260901133245._351719` → `completed`
+- 当时执行 Skill SHA：`019856d21bcdf079497ab927dd08d927d1bdd3d86fac32a91a28459014088ffc`
+- 这条 job 不是 `f5d32ee` clean head 重新执行的模型调用，而是此前 head 的真实调用记录。
+
+## 5.2 Clean exact-head readback 证据
+
+- clean worktree：`/opt/hermes/2026agentapp-private/dev/e5-clean-f5d32ee`
+- clean head：`f5d32ee`
+- readback server：`127.0.0.1:8002`，仅读取既有 DB
+- `/api/health`、`/api/findings`、`/api/reports` 均读回成功
+- 本轮没有新增模型调用。
+
+## 5.3 UI walkthrough 证据
+
+- Vite `5173` 来自旧 `e5-real` / `5660069`，代理旧 API `8000`
+- clean API `8002` 只做 readback
+- 已验证 `/app/analysis`、`/app/report`、`/app/overview`、`/app/import` 均返回 200
 
 ## 6. 已验证
 
