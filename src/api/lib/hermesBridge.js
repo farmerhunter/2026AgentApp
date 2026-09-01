@@ -111,6 +111,7 @@ export async function runHermesSkill({
     }
     copyIfExists(resolve(sourceProfileDir, "config.yaml"), resolve(jobHome, "config.yaml"));
     copyIfExists(resolve(sourceProfileDir, ".env"), resolve(jobHome, ".env"));
+    copyIfExists(resolve(sourceProfileDir, "auth.json"), resolve(jobHome, "auth.json"));
     copyIfExists(resolve(sourceProfileDir, "SOUL.md"), resolve(jobHome, "SOUL.md"));
   } else {
     return {
