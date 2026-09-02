@@ -25,7 +25,9 @@ install -m 0644 "$APP_DIR/deploy/e6/xuetuzhiban-api.service" /etc/systemd/system
 install -m 0644 "$APP_DIR/deploy/e6/nginx-xuetuzhiban.conf" /etc/nginx/snippets/xuetuzhiban.conf
 install -m 0755 "$APP_DIR/deploy/e6/fallback-demo.sh" /usr/local/sbin/xuetuzhiban-fallback
 install -m 0755 "$APP_DIR/deploy/e6/privacy-scan.sh" /usr/local/sbin/xuetuzhiban-privacy-scan
-install -m 0644 "$APP_DIR/deploy/e6/xuetuzhiban.env.example" "$PROD_ROOT/env/xuetuzhiban.env"
+if [ ! -f "$PROD_ROOT/env/xuetuzhiban.env" ]; then
+  install -m 0644 "$APP_DIR/deploy/e6/xuetuzhiban.env.example" "$PROD_ROOT/env/xuetuzhiban.env"
+fi
 systemctl daemon-reload
 nginx -t
 

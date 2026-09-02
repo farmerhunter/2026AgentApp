@@ -60,19 +60,47 @@ conn = sqlite3.connect(snapshot_db)
 uploads = conn.execute("select upload_id, source_title from uploads order by upload_id").fetchall()
 upload_counts = {u[0]: conn.execute("select count(*) from questions where upload_id=?", (u[0],)).fetchone()[0] for u in uploads}
 confirmed = conn.execute("select count(*) from question_confirmations where selected=1").fetchone()[0]
+confirmed_by_upload = {u[0]: conn.execute("select count(*) from question_confirmations c join questions q on q.question_id=c.question_id where q.upload_id=? and c.selected=1", (u[0],)).fetchone()[0] for u in uploads}
 findings = conn.execute("select count(*) from findings").fetchone()[0]
 memories = conn.execute("select count(*) from memory_decisions").fetchone()[0]
+accepted_memories = conn.execute("select count(*) from memory_decisions where status='accepted'").fetchone()[0]
 reports = conn.execute("select count(*) from weekly_reports").fetchone()[0]
 active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('queued','running','pending')").fetchone()[0]
 map_row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
+report_rows = conn.execute("select report_json from weekly_reports where report_json is not null").fetchall()
+evidence_ok = True
+for (report_json,) in report_rows:
+    parsed = json.loads(report_json)
+    links = parsed.get("evidence_links", [])
+    if not links:
+        evidence_ok = False
+        break
+    for link in links:
+        for finding_id in link.get("finding_ids", []):
+            if conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] != 1:
+                evidence_ok = False
+        for qid in link.get("question_ids", []):
+            row = conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (qid,)).fetchone()[0]
+            if row != 1:
+                evidence_ok = False
 conn.close()
 if name == "baseline-ab":
     assert len(uploads) == 2, f"baseline-ab must have exactly 2 uploads, got {len(uploads)}"
     assert confirmed == 6, f"baseline-ab must have 6 confirmed questions, got {confirmed}"
+    assert sorted(confirmed_by_upload.values()) == [3,3], f"baseline-ab must have 3 confirmed per batch, got {confirmed_by_upload}"
+    assert findings >= 6, f"baseline-ab must have at least 6 findings, got {findings}"
+    assert accepted_memories >= 2, f"baseline-ab must have at least 2 accepted memories, got {accepted_memories}"
+    assert reports >= 1, f"baseline-ab must have at least 1 report, got {reports}"
+    assert evidence_ok, "baseline-ab report evidence is missing or invalid"
     assert not any("worksheet-c" in (u[1] or "").lower() for u in uploads), "baseline-ab must not contain C"
 elif name == "showcase-abc":
     assert len(uploads) == 3, f"showcase-abc must have exactly 3 uploads, got {len(uploads)}"
     assert confirmed == 8, f"showcase-abc must have 8 confirmed questions, got {confirmed}"
+    assert sorted(confirmed_by_upload.values()) == [2,3,3], f"showcase-abc must have 2/3/3 confirmed, got {confirmed_by_upload}"
+    assert findings >= 8, f"showcase-abc must have at least 8 findings, got {findings}"
+    assert accepted_memories >= 2, f"showcase-abc must have at least 2 accepted memories, got {accepted_memories}"
+    assert reports >= 1, f"showcase-abc must have at least 1 report, got {reports}"
+    assert evidence_ok, "showcase-abc report evidence is missing or invalid"
     assert any("worksheet-c" in (u[1] or "").lower() for u in uploads), "showcase-abc must contain C"
 def sha(path):
     h=hashlib.sha256()
@@ -221,10 +249,17 @@ else:
     assert any('worksheet-c' in t.lower() for t in titles), "C worksheet missing in showcase"
 confirmed = conn.execute("select count(*) from question_confirmations where selected=1").fetchone()[0]
 assert confirmed == expected.get("confirmed_count", 6), f"expected {expected.get('confirmed_count',6)} confirmed wrong questions, got {confirmed}"
+confirmed_by_upload = {u[0]: conn.execute("select count(*) from question_confirmations c join questions q on q.question_id=c.question_id where q.upload_id=? and c.selected=1", (u[0],)).fetchone()[0] for u in uploads}
+if name == "baseline-ab":
+    assert sorted(confirmed_by_upload.values()) == [3,3], f"baseline-ab per-batch confirmation mismatch: {confirmed_by_upload}"
+elif name == "showcase-abc":
+    assert sorted(confirmed_by_upload.values()) == [2,3,3], f"showcase-abc per-batch confirmation mismatch: {confirmed_by_upload}"
 findings = conn.execute("select count(*) from findings").fetchone()[0]
 assert findings >= expected.get("min_findings", 6), f"expected at least {expected.get('min_findings',6)} findings, got {findings}"
 memories = conn.execute("select count(*) from memory_decisions").fetchone()[0]
 assert memories >= expected.get("min_memories", 3), f"expected at least {expected.get('min_memories',3)} memory decisions, got {memories}"
+accepted_memories = conn.execute("select count(*) from memory_decisions where status='accepted'").fetchone()[0]
+assert accepted_memories >= 2, f"expected at least 2 accepted memories, got {accepted_memories}"
 reports = conn.execute("select count(*) from weekly_reports").fetchone()[0]
 assert reports >= expected.get("min_reports", 1), f"expected at least {expected.get('min_reports',1)} weekly report, got {reports}"
 active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('queued','running','pending')").fetchone()[0]
@@ -263,6 +298,7 @@ assert report_rows, "expected a stored weekly report"
 for (report_json,) in report_rows:
     parsed = json.loads(report_json)
     assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
+    assert parsed.get("evidence_links"), "report evidence_links is empty"
     for link in parsed.get("evidence_links", []):
         for finding_id in link.get("finding_ids", []):
             assert conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
