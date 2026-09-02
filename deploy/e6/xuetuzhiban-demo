@@ -58,6 +58,7 @@ import hashlib, json, os, sqlite3, sys
 manifest_path, snapshot_db, name, app_dir, live_db, uploads_root = sys.argv[1:7]
 conn = sqlite3.connect(snapshot_db)
 uploads = conn.execute("select upload_id, source_title from uploads order by upload_id").fetchall()
+upload_counts = {u[0]: conn.execute("select count(*) from questions where upload_id=?", (u[0],)).fetchone()[0] for u in uploads}
 confirmed = conn.execute("select count(*) from question_confirmations where selected=1").fetchone()[0]
 findings = conn.execute("select count(*) from findings").fetchone()[0]
 memories = conn.execute("select count(*) from memory_decisions").fetchone()[0]
@@ -89,7 +90,7 @@ manifest={
     "min_reports": reports,
     "active_jobs": active_jobs,
   },
-  "uploads": [{"upload_id":u[0],"source_title":u[1]} for u in uploads],
+  "uploads": [{"upload_id":u[0],"source_title":u[1],"question_count":upload_counts[u[0]]} for u in uploads],
 }
 with open(manifest_path,'w',encoding='utf-8') as f: json.dump(manifest,f,ensure_ascii=False,indent=2)
 PY
@@ -159,6 +160,7 @@ PY
   if systemctl is-active --quiet "$API_SERVICE"; then
     systemctl stop "$API_SERVICE"
   fi
+  rm -f "$DATA_ROOT/sqlite/xuetuzhiban.db-wal" "$DATA_ROOT/sqlite/xuetuzhiban.db-shm"
 
   local staging
   staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
@@ -198,9 +200,12 @@ uploads = conn.execute("select upload_id, source_title from uploads").fetchall()
 ids = [u[0] for u in uploads]
 titles = [u[1] or '' for u in uploads]
 assert len(uploads) == expected.get("upload_count", 2), f"expected {expected.get('upload_count',2)} active uploads, got {len(uploads)}"
-assert not any('worksheet-c' in t.lower() for t in titles), "C worksheet is still active"
 assert any('worksheet-a' in t.lower() for t in titles), "A worksheet missing"
 assert any('worksheet-b' in t.lower() for t in titles), "B worksheet missing"
+if name == "baseline-ab":
+    assert not any('worksheet-c' in t.lower() for t in titles), "C worksheet is still active in baseline-ab"
+else:
+    assert any('worksheet-c' in t.lower() for t in titles), "C worksheet missing in showcase"
 confirmed = conn.execute("select count(*) from question_confirmations where selected=1").fetchone()[0]
 assert confirmed == expected.get("confirmed_count", 6), f"expected {expected.get('confirmed_count',6)} confirmed wrong questions, got {confirmed}"
 findings = conn.execute("select count(*) from findings").fetchone()[0]
@@ -213,14 +218,15 @@ active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('q
 assert active_jobs == 0, f"expected no active jobs, got {active_jobs}"
 ocr_active = conn.execute("select count(*) from ocr_jobs where is_latest=1 and status in ('queued','running')").fetchone()[0]
 assert ocr_active == 0, f"expected no active OCR jobs, got {ocr_active}"
-manifest_uploads = {u["upload_id"] for u in manifest.get("uploads", [])}
+manifest_uploads = {u["upload_id"]: u for u in manifest.get("uploads", [])}
 db_uploads = {u[0] for u in uploads}
-assert manifest_uploads == db_uploads, "manifest upload identities do not match DB"
+assert set(manifest_uploads.keys()) == db_uploads, "manifest upload identities do not match DB"
 dirs = set(os.listdir(uploads_root))
 assert dirs == db_uploads, f"orphan or missing upload dirs: db={db_uploads} dirs={dirs}"
 for uid in db_uploads:
     q = conn.execute("select question_id from questions where upload_id=?", (uid,)).fetchall()
-    assert len(q) == 10, f"expected 10 questions for {uid}, got {len(q)}"
+    expected_q = manifest_uploads[uid].get("question_count", 10)
+    assert len(q) == expected_q, f"expected {expected_q} questions for {uid}, got {len(q)}"
     for (qid,) in q:
         row = conn.execute("select count(*) from question_confirmations where question_id=? and selected=1", (qid,)).fetchone()[0]
         # Baseline: exactly three confirmed per batch; show-case adds two on C.
