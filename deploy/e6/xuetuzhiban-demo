@@ -129,14 +129,16 @@ PY
 
   local last
   last="$(snapshot_path "last-run")"
+  last_committed=0
   rollback() {
     trap - ERR
     systemctl stop "$API_SERVICE" || true
+    rm -f "$DATA_ROOT/sqlite/xuetuzhiban.db-wal" "$DATA_ROOT/sqlite/xuetuzhiban.db-shm"
     mkdir -p "$DATA_ROOT/sqlite"
-    if [[ -f "$last/xuetuzhiban.db" ]]; then
+    if [[ "$last_committed" -eq 1 && -f "$last/xuetuzhiban.db" ]]; then
       cp -f "$last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
     fi
-    if [[ -d "$last/uploads" ]]; then
+    if [[ "$last_committed" -eq 1 && -d "$last/uploads" ]]; then
       rm -rf "$DATA_ROOT/uploads"
       cp -a "$last/uploads" "$DATA_ROOT/uploads"
     fi
@@ -156,6 +158,7 @@ PY
   fi
   rm -rf "$last"
   mv "$new_last" "$last"
+  last_committed=1
 
   if systemctl is-active --quiet "$API_SERVICE"; then
     systemctl stop "$API_SERVICE"
@@ -194,6 +197,8 @@ db_path, uploads_root, manifest_path, app_dir, name = sys.argv[1:6]
 manifest = json.load(open(manifest_path, encoding='utf-8'))
 assert manifest.get("name") == name, "manifest name mismatch"
 assert manifest.get("schema_version") == "e6", "schema_version mismatch"
+current_commit = os.popen(f"git -C {app_dir} rev-parse HEAD").read().strip()
+assert manifest.get("app_commit") == current_commit, f"app_commit mismatch: manifest={manifest.get('app_commit')} current={current_commit}"
 expected = manifest.get("expected", {})
 conn = sqlite3.connect(db_path)
 uploads = conn.execute("select upload_id, source_title from uploads").fetchall()
@@ -250,6 +255,11 @@ assert report_rows, "expected a stored weekly report"
 for (report_json,) in report_rows:
     parsed = json.loads(report_json)
     assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
+    for link in parsed.get("evidence_links", []):
+        for finding_id in link.get("finding_ids", []):
+            assert conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
+        for qid in link.get("question_ids", []):
+            assert conn.execute("select count(*) from questions where question_id=?", (qid,)).fetchone()[0] == 1, f"report references missing question {qid}"
 conn.close()
 print("verify data: manifest contract satisfied")
 PY
