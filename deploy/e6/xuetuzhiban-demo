@@ -66,6 +66,14 @@ reports = conn.execute("select count(*) from weekly_reports").fetchone()[0]
 active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('queued','running','pending')").fetchone()[0]
 map_row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
 conn.close()
+if name == "baseline-ab":
+    assert len(uploads) == 2, f"baseline-ab must have exactly 2 uploads, got {len(uploads)}"
+    assert confirmed == 6, f"baseline-ab must have 6 confirmed questions, got {confirmed}"
+    assert not any("worksheet-c" in (u[1] or "").lower() for u in uploads), "baseline-ab must not contain C"
+elif name == "showcase-abc":
+    assert len(uploads) == 3, f"showcase-abc must have exactly 3 uploads, got {len(uploads)}"
+    assert confirmed == 8, f"showcase-abc must have 8 confirmed questions, got {confirmed}"
+    assert any("worksheet-c" in (u[1] or "").lower() for u in uploads), "showcase-abc must contain C"
 def sha(path):
     h=hashlib.sha256()
     with open(path,'rb') as f:
