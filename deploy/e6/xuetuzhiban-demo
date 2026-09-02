@@ -223,8 +223,13 @@ PY
 
   systemctl start "$API_SERVICE"
   verify "$name"
-  rm -rf "$last"
+  local old_last_tmp
+  old_last_tmp="$(mktemp -u "$SNAPSHOT_ROOT/.last-old.XXXXXX")"
+  if [[ -e "$last" ]]; then
+    mv "$last" "$old_last_tmp"
+  fi
   mv "$new_last" "$last"
+  rm -rf "$old_last_tmp"
   trap - ERR
 }
 
@@ -263,9 +268,14 @@ confirmed = conn.execute("select count(*) from question_confirmations where sele
 assert confirmed == expected.get("confirmed_count", 6), f"expected {expected.get('confirmed_count',6)} confirmed wrong questions, got {confirmed}"
 confirmed_by_upload = {u[0]: conn.execute("select count(*) from question_confirmations c join questions q on q.question_id=c.question_id where q.upload_id=? and c.selected=1", (u[0],)).fetchone()[0] for u in uploads}
 if name == "baseline-ab":
-    assert sorted(confirmed_by_upload.values()) == [3,3], f"baseline-ab per-batch confirmation mismatch: {confirmed_by_upload}"
+    a_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-a" in (u[1] or "").lower())
+    b_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-b" in (u[1] or "").lower())
+    assert a_conf == 3 and b_conf == 3, f"baseline-ab must have A=3/B=3, got A={a_conf} B={b_conf}"
 elif name == "showcase-abc":
-    assert sorted(confirmed_by_upload.values()) == [2,3,3], f"showcase-abc per-batch confirmation mismatch: {confirmed_by_upload}"
+    a_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-a" in (u[1] or "").lower())
+    b_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-b" in (u[1] or "").lower())
+    c_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-c" in (u[1] or "").lower())
+    assert (a_conf, b_conf, c_conf) == (3,3,2), f"showcase-abc must have A=3/B=3/C=2, got A={a_conf} B={b_conf} C={c_conf}"
 findings = conn.execute("select count(*) from findings").fetchone()[0]
 assert findings >= expected.get("min_findings", 6), f"expected at least {expected.get('min_findings',6)} findings, got {findings}"
 memories = conn.execute("select count(*) from memory_decisions").fetchone()[0]
