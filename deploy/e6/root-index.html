@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jingyun Apps</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #18243b;
+        --muted: #63708a;
+        --line: #e5eaf2;
+        --brand: #7c5cff;
+        --brand-soft: #f1edff;
+        --card: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f7f9ff 0%, #f3f7f5 50%, #fff8ec 100%);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main {
+        width: min(960px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 64px 0;
+      }
+      h1 { font-size: 28px; margin: 0 0 8px; }
+      .subtitle { color: var(--muted); margin: 0 0 36px; }
+      .app-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 12px 30px rgba(24, 36, 59, 0.06);
+      }
+      .app-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 6px;
+      }
+      .app-badge {
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 3px 9px;
+      }
+      .app-desc { color: var(--muted); margin: 0 0 18px; line-height: 1.7; }
+      .links { display: grid; gap: 12px; }
+      @media (min-width: 640px) { .links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      a.entry {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        background: #fbfcff;
+        transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+      }
+      a.entry:hover { border-color: var(--brand); background: var(--brand-soft); transform: translateY(-1px); }
+      .entry-title { font-weight: 700; margin-bottom: 4px; }
+      .entry-sub { color: var(--muted); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Jingyun Apps</h1>
+      <p class="subtitle">一个入口，浏览当前服务器上可用的应用。</p>
+
+      <section class="app-card">
+        <div class="app-name">
+          学途智伴
+          <span class="app-badge">V2</span>
+        </div>
+        <p class="app-desc">面向八年级数学学习的真实演示系统：错题识别、Hermes 分析、学习记忆与周报。</p>
+        <div class="links">
+          <a class="entry" href="/apps/xuetuzhiban/demo/">
+            <div class="entry-title">演示版</div>
+            <div class="entry-sub">静态脱敏演示，不依赖外部 OCR / Hermes。</div>
+          </a>
+          <a class="entry" href="/apps/xuetuzhiban/app/">
+            <div class="entry-title">真实运行版</div>
+            <div class="entry-sub">真实 OCR、Hermes 分析与 SQLite 数据。</div>
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -13,7 +13,7 @@ function NotFound() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/apps/xuetuzhiban">
       <Routes>
         <Route path="/" element={<Navigate to="/demo" replace />} />
         <Route path="/demo/*" element={<DemoApp />} />

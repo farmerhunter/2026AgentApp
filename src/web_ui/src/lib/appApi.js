@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_APP_API_BASE_URL ?? "/api";
+const API_BASE = import.meta.env.VITE_APP_API_BASE_URL ?? "/api/xuetuzhiban";
 
 export class ApiUnavailableError extends Error {
   constructor(message, options = {}) {
