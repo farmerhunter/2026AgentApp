@@ -6,12 +6,14 @@
 
 阶段 B 已完成：展板已绑定最终 `main@3ccefce`，三张关键界面来自最终版 Web UI 和已验收 A/B 结果的隔离回放。回放只使用原创模拟材料和仓库中已保存的 Hermes 输出，没有新增 OCR/Hermes 调用，也不把 fixture 结果当作新的模型证据。
 
-2026-09-02 收工决定：现有 v01/v02 作为今天已经完成并可追溯的历史成果保留；不在本机继续修改。阶段 A 将于下一工作日在另一台电脑上从内容结构和视觉语言重新开始，不能把现有 v01/v02 直接当作新阶段 A 的设计基线。详见 `STAGE-A-NEXT-DAY-HANDOFF.md`。
+阶段 A 已按交接要求从内容结构和视觉语言重新设计。当前候选版为 v05：以真实 Web UI、原创 A/B 练习和系统架构图组成“错题 → finding → 学习记忆 → 周报行动”的证据故事线，并补入参展信息与公开访问地址。v01/v02 保留为阶段 B 历史版本，v03/v04 为未发布的本地设计过程稿。
 
 - `poster-content-v01.md`：第一版展板文案
 - `poster-content-v02.md`：阶段 B 文案与截图说明
+- `poster-content-v05.md`：当前候选版完整文案
 - `poster-v01.svg`：阶段 A 的 900 × 1200 mm 草图
 - `poster-v02.svg`：已替换正式程序截图的阶段 B 版本
+- `poster-v05.svg`：当前 900 × 1200 mm 候选展板
 - `asset-register.md`：素材来源、知识产权与待补项登记
 - `assets/`：SVG 使用的本地素材副本，移动展板时需与 SVG 一起保留
 - `previews/`：渲染预览
@@ -56,6 +58,8 @@
 - `previews/poster-v01-a4-check.png`：900 × 1200 px 缩印检查图
 - `previews/poster-v02-preview.png`：补入程序截图后的完整比例预览
 - `previews/poster-v02-a4-check.png`：阶段 B 的 900 × 1200 px 缩印检查图
+- `previews/poster-v05-preview.png`：当前候选版完整比例预览
+- `previews/poster-v05-a4-check.png`：当前候选版 900 × 1200 px 缩印检查图
 
 阶段 B 检查确认主标题、五段主线、作品流程、四类结果和三张程序图在整板及缩小状态下仍能区分。正式印刷前仍需使用补完参展信息与二维码的版本重新校样。当前 SVG 依赖 `assets/` 中的本地图片；阶段 C 输出的 1:1 PDF 将把图片和字体固化为单文件。
 
