@@ -735,6 +735,9 @@ function ReportView() {
             ) : detail.data ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                 <h3 className="font-semibold text-ink">{detail.data.week?.title ?? detail.data.weekly_report_id}</h3>
+                <p className="mt-2 text-xs text-slate-500">
+                  最后生成：{detail.data.generated_at ?? "未知"} · 证据范围：{detail.data.evidence_links?.length ?? 0} 条
+                </p>
                 <p className="mt-2 whitespace-pre-wrap">{detail.data.analysis?.overall_summary ?? "暂无周报摘要"}</p>
                 <button
                   type="button"

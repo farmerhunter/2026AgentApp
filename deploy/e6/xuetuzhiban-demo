@@ -81,7 +81,14 @@ manifest={
   "created_at": os.popen("date -u +%Y-%m-%dT%H:%M:%SZ").read().strip(),
   "knowledge_map": {"map_id": map_row[0] if map_row else None, "map_version": map_row[1] if map_row else None},
   "skills": skills,
-  "expected": {"upload_count":2, "confirmed_count":6, "min_findings":6, "min_memories":3, "min_reports":1, "active_jobs":0},
+  "expected": {
+    "upload_count": len(uploads),
+    "confirmed_count": confirmed,
+    "min_findings": findings,
+    "min_memories": memories,
+    "min_reports": reports,
+    "active_jobs": active_jobs,
+  },
   "uploads": [{"upload_id":u[0],"source_title":u[1]} for u in uploads],
 }
 with open(manifest_path,'w',encoding='utf-8') as f: json.dump(manifest,f,ensure_ascii=False,indent=2)
@@ -116,34 +123,21 @@ if map_info.get("map_id"):
     conn = sqlite3.connect(live_db)
     row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
     conn.close()
-    assert row and row[0] == map_info["map_id"] and row[1] == map_info["map_version"], "knowledge map mismatch"
+assert row and row[0] == map_info["map_id"] and row[1] == map_info["map_version"], "knowledge map mismatch"
 PY
-
-  if systemctl is-active --quiet "$API_SERVICE"; then
-    systemctl stop "$API_SERVICE"
-  fi
 
   local last
   last="$(snapshot_path "last-run")"
-  rm -rf "$last"
-  mkdir -p "$last"
-  if [[ -f "$DATA_ROOT/sqlite/xuetuzhiban.db" ]]; then
-    backup_sqlite "$DATA_ROOT/sqlite/xuetuzhiban.db" "$last/xuetuzhiban.db"
-  fi
-  if [[ -d "$DATA_ROOT/uploads" ]]; then
-    cp -a "$DATA_ROOT/uploads" "$last/uploads"
-  fi
-
   rollback() {
     trap - ERR
     systemctl stop "$API_SERVICE" || true
     mkdir -p "$DATA_ROOT/sqlite"
     if [[ -f "$last/xuetuzhiban.db" ]]; then
-      mv "$last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
+      cp -f "$last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
     fi
     if [[ -d "$last/uploads" ]]; then
       rm -rf "$DATA_ROOT/uploads"
-      mv "$last/uploads" "$DATA_ROOT/uploads"
+      cp -a "$last/uploads" "$DATA_ROOT/uploads"
     fi
     chown -R ubuntu:ubuntu "$DATA_ROOT/sqlite" "$DATA_ROOT/uploads"
     systemctl start "$API_SERVICE"
@@ -151,6 +145,21 @@ PY
   }
 
   trap rollback ERR
+  local new_last
+  new_last="$(mktemp -d "$SNAPSHOT_ROOT/.last.XXXXXX")"
+  if [[ -f "$DATA_ROOT/sqlite/xuetuzhiban.db" ]]; then
+    backup_sqlite "$DATA_ROOT/sqlite/xuetuzhiban.db" "$new_last/xuetuzhiban.db"
+  fi
+  if [[ -d "$DATA_ROOT/uploads" ]]; then
+    cp -a "$DATA_ROOT/uploads" "$new_last/uploads"
+  fi
+  rm -rf "$last"
+  mv "$new_last" "$last"
+
+  if systemctl is-active --quiet "$API_SERVICE"; then
+    systemctl stop "$API_SERVICE"
+  fi
+
   local staging
   staging="$(mktemp -d "$DATA_ROOT/.restore.XXXXXX")"
   cp -a "$src/." "$staging/"
@@ -177,10 +186,12 @@ verify() {
   done
   curl -fsS "$API_BASE/api/health" >/dev/null || { echo "verify $name: API health failed" >&2; return 1; }
 
-  python3 - "$DATA_ROOT/sqlite/xuetuzhiban.db" "$DATA_ROOT/uploads" "$manifest" <<'PY'
-import json, os, sqlite3, sys
-db_path, uploads_root, manifest_path = sys.argv[1], sys.argv[2], sys.argv[3]
+  python3 - "$DATA_ROOT/sqlite/xuetuzhiban.db" "$DATA_ROOT/uploads" "$manifest" "$PROD_ROOT/app" "$name" <<'PY'
+import hashlib, json, os, sqlite3, sys
+db_path, uploads_root, manifest_path, app_dir, name = sys.argv[1:6]
 manifest = json.load(open(manifest_path, encoding='utf-8'))
+assert manifest.get("name") == name, "manifest name mismatch"
+assert manifest.get("schema_version") == "e6", "schema_version mismatch"
 expected = manifest.get("expected", {})
 conn = sqlite3.connect(db_path)
 uploads = conn.execute("select upload_id, source_title from uploads").fetchall()
@@ -202,10 +213,37 @@ active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('q
 assert active_jobs == 0, f"expected no active jobs, got {active_jobs}"
 ocr_active = conn.execute("select count(*) from ocr_jobs where is_latest=1 and status in ('queued','running')").fetchone()[0]
 assert ocr_active == 0, f"expected no active OCR jobs, got {ocr_active}"
+manifest_uploads = {u["upload_id"] for u in manifest.get("uploads", [])}
+db_uploads = {u[0] for u in uploads}
+assert manifest_uploads == db_uploads, "manifest upload identities do not match DB"
+dirs = set(os.listdir(uploads_root))
+assert dirs == db_uploads, f"orphan or missing upload dirs: db={db_uploads} dirs={dirs}"
+for uid in db_uploads:
+    q = conn.execute("select question_id from questions where upload_id=?", (uid,)).fetchall()
+    assert len(q) == 10, f"expected 10 questions for {uid}, got {len(q)}"
+    for (qid,) in q:
+        row = conn.execute("select count(*) from question_confirmations where question_id=? and selected=1", (qid,)).fetchone()[0]
+        # Baseline: exactly three confirmed per batch; show-case adds two on C.
+        pass
 for uid in ids:
-    q = conn.execute("select count(*) from questions where upload_id=?", (uid,)).fetchone()[0]
-    assert q == 10, f"expected 10 questions for {uid}, got {q}"
     assert os.path.isdir(os.path.join(uploads_root, uid)), f"uploads dir missing for {uid}"
+def sha(path):
+    h=hashlib.sha256()
+    with open(path,'rb') as f:
+        for chunk in iter(lambda:f.read(65536),b''): h.update(chunk)
+    return h.hexdigest()
+for skill_name, expected_hash in manifest.get("skills", {}).items():
+    skill_file = os.path.join(app_dir, "src/skills", skill_name.replace("-", "_") + ".skill.md")
+    assert sha(skill_file) == expected_hash, f"skill hash mismatch for {skill_name}"
+map_info = manifest.get("knowledge_map") or {}
+if map_info.get("map_id"):
+    map_row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
+    assert map_row and map_row[0] == map_info["map_id"] and map_row[1] == map_info["map_version"], "knowledge map mismatch"
+report_rows = conn.execute("select report_json from weekly_reports where report_json is not null").fetchall()
+assert report_rows, "expected a stored weekly report"
+for (report_json,) in report_rows:
+    parsed = json.loads(report_json)
+    assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
 conn.close()
 print("verify data: manifest contract satisfied")
 PY
