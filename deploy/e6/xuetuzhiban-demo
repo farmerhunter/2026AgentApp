@@ -76,18 +76,27 @@ for (report_json,) in report_rows:
         evidence_ok = False
         break
     for link in links:
-        for finding_id in link.get("finding_ids", []):
+        finding_ids = link.get("finding_ids", [])
+        question_ids = link.get("question_ids", [])
+        if not finding_ids or not question_ids:
+            evidence_ok = False
+            break
+        for finding_id in finding_ids:
             if conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] != 1:
                 evidence_ok = False
-        for qid in link.get("question_ids", []):
+        for qid in question_ids:
             row = conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (qid,)).fetchone()[0]
             if row != 1:
                 evidence_ok = False
+        if not evidence_ok:
+            break
 conn.close()
 if name == "baseline-ab":
     assert len(uploads) == 2, f"baseline-ab must have exactly 2 uploads, got {len(uploads)}"
     assert confirmed == 6, f"baseline-ab must have 6 confirmed questions, got {confirmed}"
-    assert sorted(confirmed_by_upload.values()) == [3,3], f"baseline-ab must have 3 confirmed per batch, got {confirmed_by_upload}"
+    a_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-a" in (u[1] or "").lower())
+    b_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-b" in (u[1] or "").lower())
+    assert a_conf == 3 and b_conf == 3, f"baseline-ab must have A=3/B=3, got A={a_conf} B={b_conf}"
     assert findings >= 6, f"baseline-ab must have at least 6 findings, got {findings}"
     assert accepted_memories >= 2, f"baseline-ab must have at least 2 accepted memories, got {accepted_memories}"
     assert reports >= 1, f"baseline-ab must have at least 1 report, got {reports}"
@@ -96,7 +105,10 @@ if name == "baseline-ab":
 elif name == "showcase-abc":
     assert len(uploads) == 3, f"showcase-abc must have exactly 3 uploads, got {len(uploads)}"
     assert confirmed == 8, f"showcase-abc must have 8 confirmed questions, got {confirmed}"
-    assert sorted(confirmed_by_upload.values()) == [2,3,3], f"showcase-abc must have 2/3/3 confirmed, got {confirmed_by_upload}"
+    a_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-a" in (u[1] or "").lower())
+    b_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-b" in (u[1] or "").lower())
+    c_conf = sum(confirmed_by_upload[u[0]] for u in uploads if "worksheet-c" in (u[1] or "").lower())
+    assert (a_conf, b_conf, c_conf) == (3,3,2), f"showcase-abc must have A=3/B=3/C=2, got A={a_conf} B={b_conf} C={c_conf}"
     assert findings >= 8, f"showcase-abc must have at least 8 findings, got {findings}"
     assert accepted_memories >= 2, f"showcase-abc must have at least 2 accepted memories, got {accepted_memories}"
     assert reports >= 1, f"showcase-abc must have at least 1 report, got {reports}"
@@ -165,18 +177,20 @@ PY
 
   local last
   last="$(snapshot_path "last-run")"
-  last_committed=0
+  switch_started=0
+  local new_last
+  new_last="$(mktemp -d "$SNAPSHOT_ROOT/.last.XXXXXX")"
   rollback() {
     trap - ERR
     systemctl stop "$API_SERVICE" || true
     rm -f "$DATA_ROOT/sqlite/xuetuzhiban.db-wal" "$DATA_ROOT/sqlite/xuetuzhiban.db-shm"
     mkdir -p "$DATA_ROOT/sqlite"
-    if [[ "$last_committed" -eq 1 && -f "$last/xuetuzhiban.db" ]]; then
-      cp -f "$last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
+    if [[ "$switch_started" -eq 1 && -f "$new_last/xuetuzhiban.db" ]]; then
+      cp -f "$new_last/xuetuzhiban.db" "$DATA_ROOT/sqlite/xuetuzhiban.db"
     fi
-    if [[ "$last_committed" -eq 1 && -d "$last/uploads" ]]; then
+    if [[ "$switch_started" -eq 1 && -d "$new_last/uploads" ]]; then
       rm -rf "$DATA_ROOT/uploads"
-      cp -a "$last/uploads" "$DATA_ROOT/uploads"
+      cp -a "$new_last/uploads" "$DATA_ROOT/uploads"
     fi
     chown -R ubuntu:ubuntu "$DATA_ROOT/sqlite" "$DATA_ROOT/uploads"
     systemctl start "$API_SERVICE"
@@ -184,18 +198,14 @@ PY
   }
 
   trap rollback ERR
-  local new_last
-  new_last="$(mktemp -d "$SNAPSHOT_ROOT/.last.XXXXXX")"
   if [[ -f "$DATA_ROOT/sqlite/xuetuzhiban.db" ]]; then
     backup_sqlite "$DATA_ROOT/sqlite/xuetuzhiban.db" "$new_last/xuetuzhiban.db"
   fi
   if [[ -d "$DATA_ROOT/uploads" ]]; then
     cp -a "$DATA_ROOT/uploads" "$new_last/uploads"
   fi
-  rm -rf "$last"
-  mv "$new_last" "$last"
-  last_committed=1
 
+  switch_started=1
   if systemctl is-active --quiet "$API_SERVICE"; then
     systemctl stop "$API_SERVICE"
   fi
@@ -213,6 +223,8 @@ PY
 
   systemctl start "$API_SERVICE"
   verify "$name"
+  rm -rf "$last"
+  mv "$new_last" "$last"
   trap - ERR
 }
 
@@ -300,10 +312,13 @@ for (report_json,) in report_rows:
     assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
     assert parsed.get("evidence_links"), "report evidence_links is empty"
     for link in parsed.get("evidence_links", []):
-        for finding_id in link.get("finding_ids", []):
+        finding_ids = link.get("finding_ids", [])
+        question_ids = link.get("question_ids", [])
+        assert finding_ids and question_ids, "evidence link must contain finding_ids and question_ids"
+        for finding_id in finding_ids:
             assert conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
-        for qid in link.get("question_ids", []):
-            assert conn.execute("select count(*) from questions where question_id=?", (qid,)).fetchone()[0] == 1, f"report references missing question {qid}"
+        for qid in question_ids:
+            assert conn.execute("select count(*) from question_confirmations where question_id=? and selected=1", (qid,)).fetchone()[0] == 1, f"report references unconfirmed or missing question {qid}"
 conn.close()
 print("verify data: manifest contract satisfied")
 PY
