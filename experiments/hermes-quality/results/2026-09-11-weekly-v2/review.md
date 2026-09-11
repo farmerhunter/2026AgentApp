@@ -69,6 +69,14 @@
 
 三次周报的可读正文与逐项对比见 `three-run-comparison.md`。
 
+## 终评候选快照与恢复演练
+
+选择第三次生成作为终评候选周报。在独立目录中用更新后的 `xuetuzhiban-demo` 创建 `showcase-abc` 快照；manifest 固定 3 份练习、8 道已确认错题、Skill 2.0 SHA-256 和周报正文 SHA-256 `e915a6e8a29d5b5a0810e099358ece4740aee89f50ff7adce9c03cd853668db9`。候选包仅保存在 VPS 私有目录，文件为 `/opt/hermes/2026agentapp-private/final-snapshots/showcase-abc-weekly-v2-53a6dfd.tar.gz`，包 SHA-256 为 `2e3da7b1dd6f5ec12447f46a550b54826c4fef70dc8029e9022b2aa06078794a`，目录权限 700、文件权限 600。
+
+恢复演练使用独立数据根、独立临时 systemd service 和 API 8019。先验证正常快照，再给隔离数据库中的周报 JSON 追加空白，使内容 hash 变化；`verify showcase-abc` 按预期以 `approved report hash mismatch` 拒绝。随后执行 `restore showcase-abc`，再次验证通过，API 返回的仍是第三次 2.0 周报；历史 `baseline-ab` 1.0 快照也通过新版 verifier。临时 service 已停止并移除。
+
+首次演练上传到 VPS 的临时 operator 版本遗漏了隔离 service/base 参数，因此 restore 短暂停止并重启了正式 API service；正式数据根始终指向独立演练目录，未替换正式数据库、uploads、Nginx 或网页文件。发现后补充 fail-closed 保护：非正式数据根缺少独立 service/base 时立即退出。正式 API 已核对为 active，仍显示原 baseline A/B 历史周报。正式 `showcase-abc` 快照继续保持旧版，需在 PR 合并并获准部署后用最终提交重新生成，不能直接把候选包冒充已上线快照。
+
 ## 可复核 hash
 
 - A/B 通过版原始 stdout：`9c12c4fa21ea2b1d2f9dc7a5500b3a5a7f4b7a88535a166aae6b5e53e37b35ab`
