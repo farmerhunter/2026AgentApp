@@ -317,7 +317,7 @@ async function main() {
 
   const { getDb } = await import("../db/init.js");
   const { getAnalysisContext, getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
-  const { validateWeeklyReportOutput } = await import("../lib/e5Store.js");
+  const { compactWeeklyReportCopy, validateWeeklyReportOutput } = await import("../lib/e5Store.js");
   const { extractJsonObject } = await import("../lib/hermesBridge.js");
 
   const noisyHermesOutput = [
@@ -454,6 +454,36 @@ async function main() {
   assert(normalizedReport.report_scope.confirmed_question_count === 1, "normalized report should use trusted scope");
   assert(normalizedReport.evidence_details.length === 1, "normalized report should attach used evidence details");
 
+  const verboseCopyOutput = {
+    ...baseOutput,
+    overview: {
+      headline: "负号处理与二次根式合并是本周重点，已有进步仍有残留",
+      summary: "本周先核对有直接步骤支持的问题，再把已经出现变化的步骤单独说明，后面的重复解释应由服务端在完整分句处收短。",
+    },
+    key_insights: [{
+      ...baseOutput.key_insights[0],
+      title: "二次根式加法已会先化简，但合并系数出错",
+      summary: "作答已经先化简为 4√3+5√3，这个关键算式和数字必须原样保留，后面的重复说明可以省略以保证版面紧凑。",
+      why_it_matters: "这一步已有直接变化，后续只需检查合并系数是否正确，不需要再次复述全部题目。",
+      limitation: "当前只观察到一道后续题目，不能据此断定所有二次根式题都已经稳定掌握。",
+    }],
+  };
+  const compactedCopy = compactWeeklyReportCopy(verboseCopyOutput);
+  assert(compactedCopy.overview.headline === "负号处理与二次根式合并是本周重点", "headline should compact at a clause boundary");
+  assert(compactedCopy.key_insights[0].title === "二次根式加法已会先化简", "insight title should compact at a clause boundary");
+  assert(compactedCopy.key_insights[0].summary.includes("4√3+5√3"), "copy compaction must preserve retained math expressions");
+  assert(compactedCopy.key_insights[0].evidence_refs[0] === "E1", "copy compaction must preserve evidence references");
+  const compactedReport = validateWeeklyReportOutput(verboseCopyOutput, context);
+  assert(
+    [
+      compactedReport.key_insights[0].title,
+      compactedReport.key_insights[0].summary,
+      compactedReport.key_insights[0].why_it_matters,
+      compactedReport.key_insights[0].limitation,
+    ].join("").length <= 160,
+    "verbose but separable report copy should compact below the visible limit",
+  );
+
   const comparisonContext = {
     ...context,
     report_scope: {
@@ -545,6 +575,16 @@ async function main() {
     () => validateWeeklyReportOutput({
       ...baseOutput,
       overview: { ...baseOutput.overview, summary: `不应暴露 ${context.evidence_catalog[0].finding_id}` },
+    }, context),
+    "internal identifier",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      overview: {
+        ...baseOutput.overview,
+        summary: `前半句内容足够长并会在这里结束，后半句仍然不应暴露 ${context.evidence_catalog[0].finding_id}`,
+      },
     }, context),
     "internal identifier",
   );

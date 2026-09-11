@@ -34,6 +34,82 @@ const WEEKLY_INSIGHT_TYPES = new Set([
   "insufficient_evidence",
 ]);
 
+const WEEKLY_COPY_TARGETS = {
+  overviewHeadline: 20,
+  overviewSummary: 75,
+  insightTitle: 14,
+  insightSummary: 65,
+  insightWhy: 26,
+  insightLimitation: 26,
+  watchTitle: 14,
+  watchSummary: 60,
+  watchLimitation: 26,
+  actionTitle: 14,
+  actionStep: 22,
+  actionSuccess: 26,
+  actionReason: 20,
+};
+
+function compactAtClauseBoundary(value, maxLength) {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim();
+  if (normalized.length <= maxLength) return normalized;
+
+  let boundary = -1;
+  for (let index = 0; index < maxLength; index += 1) {
+    if (/[，。！？；：、,.!?;:]/.test(normalized[index])) boundary = index;
+  }
+  if (boundary < 3) return normalized;
+
+  return normalized
+    .slice(0, boundary + 1)
+    .replace(/[，；：、,;:]\s*$/, "")
+    .trim();
+}
+
+export function compactWeeklyReportCopy(output) {
+  if (!output || typeof output !== "object") return output;
+  const compact = compactAtClauseBoundary;
+  return {
+    ...output,
+    overview: output.overview && typeof output.overview === "object"
+      ? {
+          ...output.overview,
+          headline: compact(output.overview.headline, WEEKLY_COPY_TARGETS.overviewHeadline),
+          summary: compact(output.overview.summary, WEEKLY_COPY_TARGETS.overviewSummary),
+        }
+      : output.overview,
+    key_insights: asArray(output.key_insights).map((insight) =>
+      insight && typeof insight === "object"
+        ? {
+            ...insight,
+            title: compact(insight.title, WEEKLY_COPY_TARGETS.insightTitle),
+            summary: compact(insight.summary, WEEKLY_COPY_TARGETS.insightSummary),
+            why_it_matters: compact(insight.why_it_matters, WEEKLY_COPY_TARGETS.insightWhy),
+            limitation: compact(insight.limitation, WEEKLY_COPY_TARGETS.insightLimitation),
+          }
+        : insight),
+    watch_item: output.watch_item && typeof output.watch_item === "object"
+      ? {
+          ...output.watch_item,
+          title: compact(output.watch_item.title, WEEKLY_COPY_TARGETS.watchTitle),
+          summary: compact(output.watch_item.summary, WEEKLY_COPY_TARGETS.watchSummary),
+          limitation: compact(output.watch_item.limitation, WEEKLY_COPY_TARGETS.watchLimitation),
+        }
+      : output.watch_item,
+    next_actions: asArray(output.next_actions).map((action) =>
+      action && typeof action === "object"
+        ? {
+            ...action,
+            title: compact(action.title, WEEKLY_COPY_TARGETS.actionTitle),
+            steps: asArray(action.steps).map((step) => compact(step, WEEKLY_COPY_TARGETS.actionStep)),
+            success_check: compact(action.success_check, WEEKLY_COPY_TARGETS.actionSuccess),
+            reason: compact(action.reason, WEEKLY_COPY_TARGETS.actionReason),
+          }
+        : action),
+  };
+}
+
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -322,15 +398,33 @@ export function validateWeeklyReportOutput(output, context) {
     );
   };
 
-  assert(output.overview && typeof output.overview === "object", "weekly report overview is required");
+  const rawPublicCopies = [
+    output.overview?.headline,
+    output.overview?.summary,
+    ...asArray(output.key_insights).flatMap((item) =>
+      item && typeof item === "object"
+        ? [item.title, item.summary, item.why_it_matters, item.limitation]
+        : []),
+    ...(output.watch_item && typeof output.watch_item === "object"
+      ? [output.watch_item.title, output.watch_item.summary, output.watch_item.limitation]
+      : []),
+    ...asArray(output.next_actions).flatMap((item) =>
+      item && typeof item === "object"
+        ? [item.title, ...asArray(item.steps), item.success_check, item.reason]
+        : []),
+  ].filter((value) => typeof value === "string");
+  rawPublicCopies.forEach((value, index) => assertPublicCopy(value, `weekly report raw copy ${index}`));
+  const compactedOutput = compactWeeklyReportCopy(output);
+
+  assert(compactedOutput.overview && typeof compactedOutput.overview === "object", "weekly report overview is required");
   const overview = {
-    headline: text(output.overview.headline, "weekly report overview.headline", 30),
-    summary: text(output.overview.summary, "weekly report overview.summary", 120),
+    headline: text(compactedOutput.overview.headline, "weekly report overview.headline", 30),
+    summary: text(compactedOutput.overview.summary, "weekly report overview.summary", 120),
   };
   assertPublicCopy(overview.headline, "weekly report overview.headline");
   assertPublicCopy(overview.summary, "weekly report overview.summary");
 
-  const rawInsights = asArray(output.key_insights);
+  const rawInsights = asArray(compactedOutput.key_insights);
   assert(rawInsights.length >= 1 && rawInsights.length <= 3, "weekly report key_insights must contain 1-3 items");
   const keyInsights = rawInsights.map((insight, index) => {
     assert(insight && typeof insight === "object", "weekly report key_insights entries must be objects");
@@ -372,13 +466,13 @@ export function validateWeeklyReportOutput(output, context) {
   assert(new Set(insightCopies).size === insightCopies.length, "weekly report insights must not duplicate each other");
 
   let watchItem = null;
-  if (output.watch_item != null) {
-    assert(output.watch_item && typeof output.watch_item === "object", "weekly report watch_item must be an object or null");
+  if (compactedOutput.watch_item != null) {
+    assert(compactedOutput.watch_item && typeof compactedOutput.watch_item === "object", "weekly report watch_item must be an object or null");
     watchItem = {
-      title: text(output.watch_item.title, "weekly report watch_item.title", 18),
-      summary: text(output.watch_item.summary, "weekly report watch_item.summary", 100),
-      limitation: text(output.watch_item.limitation, "weekly report watch_item.limitation", 80),
-      evidence_refs: evidenceRefs(output.watch_item.evidence_refs, "weekly report watch_item.evidence_refs"),
+      title: text(compactedOutput.watch_item.title, "weekly report watch_item.title", 18),
+      summary: text(compactedOutput.watch_item.summary, "weekly report watch_item.summary", 100),
+      limitation: text(compactedOutput.watch_item.limitation, "weekly report watch_item.limitation", 80),
+      evidence_refs: evidenceRefs(compactedOutput.watch_item.evidence_refs, "weekly report watch_item.evidence_refs"),
     };
     assertPublicCopy(watchItem.title, "weekly report watch_item.title");
     assertPublicCopy(watchItem.summary, "weekly report watch_item.summary");
@@ -387,7 +481,7 @@ export function validateWeeklyReportOutput(output, context) {
     assert(watchCopyLength <= 140, "weekly report watch_item visible copy must contain at most 140 characters");
   }
 
-  const rawActions = asArray(output.next_actions);
+  const rawActions = asArray(compactedOutput.next_actions);
   assert(rawActions.length >= 1 && rawActions.length <= 2, "weekly report next_actions must contain 1-2 items");
   const insightEvidenceRefs = new Set([
     ...keyInsights.flatMap((item) => item.evidence_refs),

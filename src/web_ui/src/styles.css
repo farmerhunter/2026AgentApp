@@ -88,4 +88,9 @@ button {
   .report-print details > div {
     display: none !important;
   }
+
+  .report-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

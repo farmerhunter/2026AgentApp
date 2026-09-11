@@ -693,7 +693,7 @@ function EvidenceDisclosure({ evidenceRefs = [], evidenceDetails = [] }) {
   return (
     <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 text-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-slate-600">
-        <span>依据：{evidence.map((item) => item.display_name).join("、")}</span>
+        <span className="min-w-0 break-words">依据：{evidence.map((item) => item.display_name).join("、")}</span>
         <span className="shrink-0 font-semibold text-aurora print:hidden">查看依据</span>
       </summary>
       <div className="space-y-3 border-t border-slate-200 p-3 print:hidden">
@@ -727,7 +727,7 @@ function StructuredReport({ report }) {
   const evidenceDetails = report.evidence_details ?? [];
 
   return (
-    <article className="report-print rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm sm:p-7">
+    <article className="report-print min-w-0 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm sm:p-7">
       <header className="border-b border-slate-100 pb-5">
         <p className="text-xs font-semibold tracking-wide text-aurora">数学学习周报</p>
         <h3 className="mt-1 text-xl font-bold text-ink">{report.week?.title ?? report.weekly_report_id}</h3>
@@ -757,7 +757,7 @@ function StructuredReport({ report }) {
           {insights.map((insight, index) => {
             const presentation = insightPresentation[insight.type] ?? insightPresentation.needs_attention;
             return (
-              <article key={`${insight.type}-${index}`} className="rounded-2xl border border-slate-200 p-4">
+              <article key={`${insight.type}-${index}`} className="report-card rounded-2xl border border-slate-200 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <h5 className="font-bold text-ink">{index + 1}. {insight.title}</h5>
                   <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold ${presentation.className}`}>
@@ -779,7 +779,7 @@ function StructuredReport({ report }) {
       </section>
 
       {report.watch_item ? (
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <section className="report-card mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-semibold text-slate-500">仍需观察</p>
           <h4 className="mt-1 font-bold text-ink">{report.watch_item.title}</h4>
           <p className="mt-2 leading-7">{report.watch_item.summary}</p>
@@ -792,7 +792,7 @@ function StructuredReport({ report }) {
         <h4 className="text-base font-bold text-ink">下周只做这几件事</h4>
         <ol className="mt-3 space-y-3">
           {actions.map((action, index) => (
-            <li key={`${action.title}-${index}`} className="rounded-2xl border border-aurora/20 bg-aurora/5 p-4">
+            <li key={`${action.title}-${index}`} className="report-card rounded-2xl border border-aurora/20 bg-aurora/5 p-4">
               <div className="flex gap-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-aurora text-xs font-bold text-white">
                   {index + 1}
@@ -918,20 +918,20 @@ function ReportView() {
       </section>
       {reports.data?.reports?.length > 0 ? (
         <div className="report-layout grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="app-chrome space-y-2">
+          <div className="app-chrome min-w-0 space-y-2">
             {reports.data.reports.map((report) => (
               <button
                 key={report.weekly_report_id}
                 type="button"
                 onClick={() => setSelectedReportId(report.weekly_report_id)}
                 className={[
-                  "w-full rounded-xl border px-3 py-2 text-left text-sm",
+                  "min-w-0 w-full rounded-xl border px-3 py-2 text-left text-sm",
                   report.weekly_report_id === selectedId
                     ? "border-aurora/40 bg-aurora/10"
                     : "border-slate-200 bg-white hover:border-aurora/25",
                 ].join(" ")}
               >
-                <span className="font-semibold">{report.title}</span>
+                <span className="block break-words font-semibold">{report.title}</span>
                 <span className="block text-xs text-slate-500">
                   {report.week_start ?? "日期未知"} 至 {report.week_end ?? "日期未知"}
                 </span>
@@ -939,7 +939,7 @@ function ReportView() {
               </button>
             ))}
           </div>
-          <div>
+          <div className="min-w-0">
             {detail.isLoading ? (
               <LoadingState label="正在读取周报详情..." />
             ) : detail.error ? (
