@@ -10,6 +10,15 @@ SNAPSHOT_ROOT="$PROD_ROOT/snapshots"
 API_SERVICE="xuetuzhiban-api.service"
 API_BASE="http://127.0.0.1:8001"
 
+if [[ "$PROD_ROOT" != "/opt/hermes/2026agentapp-prod" ]]; then
+  [[ -n "${XUETUZHIBAN_API_SERVICE:-}" && -n "${XUETUZHIBAN_API_BASE:-}" ]] || {
+    echo "xuetuzhiban-demo: alternate data root requires alternate API service and base" >&2
+    exit 1
+  }
+fi
+API_SERVICE="${XUETUZHIBAN_API_SERVICE:-$API_SERVICE}"
+API_BASE="${XUETUZHIBAN_API_BASE:-$API_BASE}"
+
 die() {
   echo "xuetuzhiban-demo: $*" >&2
   exit 1
@@ -67,29 +76,49 @@ accepted_memories = conn.execute("select count(*) from memory_decisions where st
 reports = conn.execute("select count(*) from weekly_reports").fetchone()[0]
 active_jobs = conn.execute("select count(*) from hermes_jobs where status in ('queued','running','pending')").fetchone()[0]
 map_row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
-report_rows = conn.execute("select report_json from weekly_reports where report_json is not null").fetchall()
+report_rows = conn.execute("select weekly_report_id, report_json from weekly_reports where report_json is not null order by updated_at desc").fetchall()
 evidence_ok = True
-for (report_json,) in report_rows:
+for report_id, report_json in report_rows:
     parsed = json.loads(report_json)
-    links = parsed.get("evidence_links", [])
-    if not links:
-        evidence_ok = False
-        break
-    for link in links:
-        finding_ids = link.get("finding_ids", [])
-        question_ids = link.get("question_ids", [])
-        if not finding_ids or not question_ids:
+    if parsed.get("contract") == "weekly_learning_report" and parsed.get("contract_version") == "2.0":
+        details = parsed.get("evidence_details", [])
+        detail_by_ref = {item.get("evidence_ref"): item for item in details if item.get("evidence_ref")}
+        sections = list(parsed.get("key_insights", [])) + list(parsed.get("next_actions", []))
+        if parsed.get("watch_item"):
+            sections.append(parsed["watch_item"])
+        refs = [ref for section in sections for ref in section.get("evidence_refs", [])]
+        if not detail_by_ref or not refs or any(ref not in detail_by_ref for ref in refs):
             evidence_ok = False
             break
-        for finding_id in finding_ids:
-            if conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] != 1:
+        for ref in set(refs):
+            detail = detail_by_ref[ref]
+            finding_id = detail.get("finding_id")
+            question_id = detail.get("question_id")
+            if not finding_id or conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] != 1:
                 evidence_ok = False
-        for qid in question_ids:
-            row = conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (qid,)).fetchone()[0]
+            row = conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (question_id,)).fetchone()[0]
             if row != 1:
                 evidence_ok = False
-        if not evidence_ok:
+    else:
+        links = parsed.get("evidence_links", [])
+        if not links:
+            evidence_ok = False
             break
+        for link in links:
+            finding_ids = link.get("finding_ids", [])
+            question_ids = link.get("question_ids", [])
+            if not finding_ids or not question_ids:
+                evidence_ok = False
+                break
+            for finding_id in finding_ids:
+                if conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] != 1:
+                    evidence_ok = False
+            for qid in question_ids:
+                row = conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (qid,)).fetchone()[0]
+                if row != 1:
+                    evidence_ok = False
+            if not evidence_ok:
+                break
 conn.close()
 if name == "baseline-ab":
     assert len(uploads) == 2, f"baseline-ab must have exactly 2 uploads, got {len(uploads)}"
@@ -123,9 +152,25 @@ skills={
   "confirmed_mistake_analysis": sha(os.path.join(app_dir,'src/skills/confirmed_mistake_analysis.skill.md')),
   "weekly_learning_report": sha(os.path.join(app_dir,'src/skills/weekly_learning_report.skill.md')),
 }
+def app_revision():
+    revision = os.popen(f"git -C {app_dir} rev-parse HEAD 2>/dev/null").read().strip()
+    revision_file = os.path.join(os.path.dirname(app_dir), "app-commit.txt")
+    if not revision and os.path.isfile(revision_file):
+        revision = open(revision_file, encoding="utf-8").read().strip()
+    return revision or "unknown"
+approved_report = None
+if report_rows:
+    report_id, report_json = report_rows[0]
+    parsed = json.loads(report_json)
+    approved_report = {
+      "weekly_report_id": report_id,
+      "contract": parsed.get("contract"),
+      "contract_version": parsed.get("contract_version"),
+      "report_sha256": hashlib.sha256(report_json.encode("utf-8")).hexdigest(),
+    }
 manifest={
   "name": name,
-  "app_commit": os.popen(f"git -C {app_dir} rev-parse HEAD").read().strip() or "unknown",
+  "app_commit": app_revision(),
   "schema_version": "e6",
   "created_at": os.popen("date -u +%Y-%m-%dT%H:%M:%SZ").read().strip(),
   "knowledge_map": {"map_id": map_row[0] if map_row else None, "map_version": map_row[1] if map_row else None},
@@ -139,6 +184,7 @@ manifest={
     "active_jobs": active_jobs,
   },
   "uploads": [{"upload_id":u[0],"source_title":u[1],"question_count":upload_counts[u[0]]} for u in uploads],
+  "approved_report": approved_report,
 }
 with open(manifest_path,'w',encoding='utf-8') as f: json.dump(manifest,f,ensure_ascii=False,indent=2)
 PY
@@ -250,7 +296,11 @@ db_path, uploads_root, manifest_path, app_dir, name = sys.argv[1:6]
 manifest = json.load(open(manifest_path, encoding='utf-8'))
 assert manifest.get("name") == name, "manifest name mismatch"
 assert manifest.get("schema_version") == "e6", "schema_version mismatch"
-current_commit = os.popen(f"git -C {app_dir} rev-parse HEAD").read().strip()
+current_commit = os.popen(f"git -C {app_dir} rev-parse HEAD 2>/dev/null").read().strip()
+if not current_commit:
+    revision_file = os.path.join(os.path.dirname(app_dir), "app-commit.txt")
+    if os.path.isfile(revision_file):
+        current_commit = open(revision_file, encoding="utf-8").read().strip()
 assert manifest.get("app_commit") == current_commit, f"app_commit mismatch: manifest={manifest.get('app_commit')} current={current_commit}"
 expected = manifest.get("expected", {})
 conn = sqlite3.connect(db_path)
@@ -315,20 +365,46 @@ map_info = manifest.get("knowledge_map") or {}
 if map_info.get("map_id"):
     map_row = conn.execute("select map_id, map_version from knowledge_map_registry where status='current' order by updated_at desc limit 1").fetchone()
     assert map_row and map_row[0] == map_info["map_id"] and map_row[1] == map_info["map_version"], "knowledge map mismatch"
-report_rows = conn.execute("select report_json from weekly_reports where report_json is not null").fetchall()
+report_rows = conn.execute("select weekly_report_id, report_json from weekly_reports where report_json is not null order by updated_at desc").fetchall()
 assert report_rows, "expected a stored weekly report"
-for (report_json,) in report_rows:
+for report_id, report_json in report_rows:
     parsed = json.loads(report_json)
-    assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
-    assert parsed.get("evidence_links"), "report evidence_links is empty"
-    for link in parsed.get("evidence_links", []):
-        finding_ids = link.get("finding_ids", [])
-        question_ids = link.get("question_ids", [])
-        assert finding_ids and question_ids, "evidence link must contain finding_ids and question_ids"
-        for finding_id in finding_ids:
-            assert conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
-        for qid in question_ids:
-            assert conn.execute("select count(*) from question_confirmations where question_id=? and selected=1", (qid,)).fetchone()[0] == 1, f"report references unconfirmed or missing question {qid}"
+    if parsed.get("contract") == "weekly_learning_report" and parsed.get("contract_version") == "2.0":
+        assert parsed.get("overview", {}).get("headline"), "2.0 report overview is missing"
+        details = parsed.get("evidence_details", [])
+        detail_by_ref = {item.get("evidence_ref"): item for item in details if item.get("evidence_ref")}
+        sections = list(parsed.get("key_insights", [])) + list(parsed.get("next_actions", []))
+        if parsed.get("watch_item"):
+            sections.append(parsed["watch_item"])
+        refs = [ref for section in sections for ref in section.get("evidence_refs", [])]
+        assert detail_by_ref and refs, "2.0 report evidence is empty"
+        assert all(ref in detail_by_ref for ref in refs), "2.0 report references missing evidence details"
+        for ref in set(refs):
+            detail = detail_by_ref[ref]
+            finding_id = detail.get("finding_id")
+            question_id = detail.get("question_id")
+            assert finding_id and conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
+            assert question_id and conn.execute("select count(*) from questions q join question_confirmations c on c.question_id=q.question_id where q.question_id=? and c.selected=1", (question_id,)).fetchone()[0] == 1, f"report references unconfirmed or missing question {question_id}"
+    else:
+        assert isinstance(parsed.get("analysis"), dict) and parsed["analysis"].get("overall_summary"), "report missing analysis summary"
+        assert parsed.get("evidence_links"), "report evidence_links is empty"
+        for link in parsed.get("evidence_links", []):
+            finding_ids = link.get("finding_ids", [])
+            question_ids = link.get("question_ids", [])
+            assert finding_ids and question_ids, "evidence link must contain finding_ids and question_ids"
+            for finding_id in finding_ids:
+                assert conn.execute("select count(*) from findings where finding_id=?", (finding_id,)).fetchone()[0] == 1, f"report references missing finding {finding_id}"
+            for qid in question_ids:
+                assert conn.execute("select count(*) from question_confirmations where question_id=? and selected=1", (qid,)).fetchone()[0] == 1, f"report references unconfirmed or missing question {qid}"
+approved = manifest.get("approved_report")
+if approved:
+    row = conn.execute("select report_json from weekly_reports where weekly_report_id=?", (approved.get("weekly_report_id"),)).fetchone()
+    assert row, "approved report is missing"
+    approved_json = row[0]
+    approved_parsed = json.loads(approved_json)
+    assert approved_parsed.get("contract") == approved.get("contract"), "approved report contract mismatch"
+    assert approved_parsed.get("contract_version") == approved.get("contract_version"), "approved report contract version mismatch"
+    assert hashlib.sha256(approved_json.encode("utf-8")).hexdigest() == approved.get("report_sha256"), "approved report hash mismatch"
 conn.close()
 print("verify data: manifest contract satisfied")
 PY

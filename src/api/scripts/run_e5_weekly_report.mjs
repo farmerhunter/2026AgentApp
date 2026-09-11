@@ -28,36 +28,33 @@ const SKILL_NAME = "weekly-learning-report";
 const SKILL_PATH = resolve(REPO_ROOT, "src", "skills", "weekly_learning_report.skill.md");
 
 function fixtureWeeklyReport(context) {
-  const questionIds = context.findings
-    .map((finding) => finding.question?.question_id)
-    .filter(Boolean);
-  const findingIds = context.findings.map((finding) => finding.finding_id);
+  const firstEvidence = context.evidence_catalog[0];
 
   return {
     contract: "weekly_learning_report",
-    contract_version: "1.0",
-    week: {
-      start: context.week_start,
-      end: context.week_end,
-      title: `${context.week_start} 至 ${context.week_end} 学习周报`,
+    contract_version: "2.0",
+    overview: {
+      headline: "本周学习记录已整理",
+      summary: "当前为本地测试模式，重点验证新版周报的结构、证据关联、保存和页面展示是否完整。",
     },
-    analysis: {
-      overall_summary:
-        "分析范围：本周已确认错题。主要问题：fixture 仅用于验证周报保存、展示与打印链路，不代表真实 Hermes 结论。可见变化与限制：当前没有真实 Skill 输出证据。下一步：接入真实 Hermes 后重新生成。",
-    },
-    evidence_links: [
+    key_insights: [
       {
-        claim: "本地 fixture 周报占位。",
-        question_ids: questionIds,
-        finding_ids: findingIds,
-        memory_ids: [],
+        type: "needs_attention",
+        title: "核对本周错题分析",
+        summary: "测试数据已经形成可追溯的错题分析，真实学习结论需要在正式 Hermes 模式下重新生成。",
+        why_it_matters: "先确认数据和页面链路可靠，再进行真实内容验收。",
+        limitation: "测试模式不代表真实模型结论。",
+        evidence_refs: [firstEvidence.evidence_ref],
       },
     ],
-    actions: [
+    watch_item: null,
+    next_actions: [
       {
-        description: "接入真实 Hermes Skill 后重新生成本周报告。",
+        title: "生成真实学习周报",
+        steps: ["切换到正式 Hermes 模式", "重新生成并核对重点结论"],
+        success_check: "确认结论能够追溯到本周实际题目。",
         reason: "当前为本地 fixture 测试结果。",
-        question_ids: questionIds,
+        evidence_refs: [firstEvidence.evidence_ref],
       },
     ],
   };
@@ -90,7 +87,7 @@ async function main() {
     if (!hasUsableWeeklyData("student_demo", "math", weekStart, weekEnd)) {
       const output = {
         contract: "weekly_learning_report",
-        contract_version: "1.0",
+        contract_version: "2.0",
         status: "no_data",
         week_start: weekStart,
         week_end: weekEnd,
@@ -125,6 +122,7 @@ async function main() {
             skillPath: SKILL_PATH,
             request: context,
             timeoutMs: Number(process.env.HERMES_E5_TIMEOUT_MS ?? 180_000),
+            extraArgs: ["--reasoning", "low"],
           })
         : { ok: true, result: fixtureWeeklyReport(context), skill_sha256: null };
 
@@ -138,7 +136,7 @@ async function main() {
     const normalized = validateWeeklyReportOutput(raw.result, context);
     const saved = saveWeeklyReport(normalized, context, {
       generated_by: "weekly-learning-report",
-      skill_version: "e5-wip-0.1",
+      skill_version: "2.0",
       skill_sha256: raw.skill_sha256,
     });
 
@@ -157,7 +155,7 @@ async function main() {
       mode,
       resultPath,
       outputJson: output,
-      skillVersion: "e5-wip-0.1",
+      skillVersion: "2.0",
       skillSha256: raw.skill_sha256,
     });
   } catch (error) {

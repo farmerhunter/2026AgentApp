@@ -58,6 +58,8 @@ sudo xuetuzhiban-demo verify baseline-ab
 - restore 前保存 `last-run`，只停 API service，不碰 Nginx/Chatbox/3000。
 - 不调用 OCR/Hermes。
 - fail-closed：路径越界、active job、manifest 不匹配时停止。
+- 快照 manifest 同时支持历史周报与 `weekly_learning_report` 2.0；新版快照固定已验收周报的 contract、版本和正文 SHA-256，恢复后必须逐项一致。
+- 使用非正式数据根做演练时，必须同时显式指定独立 API service 和 API base；否则 operator 立即退出，避免测试误停正式服务。
 
 ## 6. 验收循环
 

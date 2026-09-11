@@ -31,8 +31,71 @@ select {
   font: inherit;
 }
 
-button {
+button,
+.app-interactive,
+summary,
+input[type="file"]::file-selector-button {
   cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease,
+    filter 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover,
+  .app-interactive:hover,
+  summary:hover,
+  input[type="file"]::file-selector-button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+button:not(:disabled):active,
+.app-interactive:active,
+summary:active,
+input[type="file"]::file-selector-button:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(0.96);
+  transition-duration: 80ms;
+}
+
+button:focus-visible,
+.app-interactive:focus-visible,
+summary:focus-visible,
+input[type="file"]:focus-visible {
+  outline: 3px solid rgba(15, 159, 143, 0.24);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .app-interactive,
+  summary,
+  input[type="file"]::file-selector-button {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+  }
+
+  button:not(:disabled):hover,
+  button:not(:disabled):active,
+  .app-interactive:hover,
+  .app-interactive:active,
+  summary:hover,
+  summary:active,
+  input[type="file"]::file-selector-button:hover,
+  input[type="file"]::file-selector-button:active {
+    transform: none;
+  }
 }
 
 .aurora-panel {
@@ -61,5 +124,41 @@ button {
 @media (max-width: 900px) {
   .workspace-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  :root,
+  body {
+    background: #fff;
+  }
+
+  .app-chrome {
+    display: none !important;
+  }
+
+  .app-main-grid,
+  .report-layout {
+    display: block !important;
+  }
+
+  .report-print {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .report-print details > div {
+    display: none !important;
+  }
+
+  .report-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-section-heading {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 }

@@ -146,7 +146,7 @@ export async function pollHermesJob(jobId, { onUpdate, timeoutMs = 300000 } = {}
     const status = await fetchHermesJob(jobId);
     onUpdate?.(status);
     if (status.status === "completed") return status;
-    if (status.status === "failed" || status.status === "timeout") return null;
+    if (status.status === "failed" || status.status === "timeout") return status;
     await new Promise((resolve) => setTimeout(resolve, 1500));
   }
   return null;

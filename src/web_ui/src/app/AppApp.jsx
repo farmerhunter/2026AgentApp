@@ -16,6 +16,7 @@ import {
   fetchReport,
   createHermesJob,
   pollHermesJob,
+  fetchHermesJobResult,
   saveMemories,
 } from "../lib/appApi.js";
 import FindingCard from "../components/FindingCard.jsx";
@@ -23,7 +24,7 @@ import useAsyncData from "../lib/useAsyncData.js";
 
 const appNav = [
   { to: "/app/overview", label: "本周概览", description: "当前学习状态与最近材料" },
-  { to: "/app/import", label: "练习导入与确认", description: "上传图片并确认错题" },
+  { to: "/app/import", label: "练习导入与确认", description: "上传图片并确认错题/重点题" },
   { to: "/app/analysis", label: "分析与记忆", description: "查看发现并决定记忆" },
   { to: "/app/report", label: "周报与打印", description: "查看和打印本周报告" },
 ];
@@ -31,7 +32,7 @@ const appNav = [
 function AppLayout() {
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#f7fbff_0%,#eef8f5_46%,#fff8eb_100%)] text-ink">
-      <header className="border-b border-white/70 bg-white/78 px-4 py-4 shadow-sm backdrop-blur-xl sm:px-6">
+      <header className="app-chrome border-b border-white/70 bg-white/78 px-4 py-4 shadow-sm backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold text-aurora">真实能力主线</p>
@@ -44,8 +45,8 @@ function AppLayout() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:py-8">
-        <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-6 lg:h-fit">
+        <div className="app-main-grid grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <aside className="app-chrome lg:sticky lg:top-6 lg:h-fit">
             <nav className="grid grid-cols-2 gap-2 lg:grid-cols-1">
               {appNav.map((item) => (
                 <NavLink
@@ -53,7 +54,7 @@ function AppLayout() {
                   to={item.to}
                   className={({ isActive }) =>
                     [
-                      "rounded-xl border px-4 py-3 transition",
+                      "app-interactive rounded-xl border px-4 py-3 transition",
                       isActive
                         ? "border-aurora/40 bg-aurora/10 text-aurora"
                         : "border-slate-200/70 bg-white/80 text-slate-600 hover:border-aurora/25 hover:bg-aurora/5",
@@ -128,7 +129,8 @@ function ImportView() {
   const [selectedQuestionIds, setSelectedQuestionIds] = useState(new Set());
   const [notes, setNotes] = useState({});
   const [answerOverrides, setAnswerOverrides] = useState({});
-  const selectedIdValue = selectedId ?? sessions.data?.sessions?.[0]?.upload_id ?? null;
+  const [showHistory, setShowHistory] = useState(false);
+  const selectedIdValue = selectedId;
   const split = useAsyncData(
     () => (selectedIdValue ? fetchSessionSplit(selectedIdValue) : Promise.resolve(null)),
     [selectedIdValue, reloadKey],
@@ -199,6 +201,8 @@ function ImportView() {
   async function handleFileChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setSelectedId(null);
+    setShowHistory(false);
     setUploadState("uploading");
     setUploadError(null);
     try {
@@ -284,18 +288,23 @@ function ImportView() {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">练习导入与确认</h2>
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <label className="block text-sm font-semibold text-ink">上传一张练习或试卷图片</label>
+      <div className="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-semibold text-aurora">从一张练习开始</p>
+        <h3 className="mt-1 text-lg font-bold text-ink">上传练习或试卷图片</h3>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          上传后系统会自动识别并切分题目，完成后再请你勾选需要关注的错题或重点题。
+        </p>
         <input
           type="file"
           accept="image/jpeg,image/png"
           onChange={handleFileChange}
           disabled={uploadState === "uploading" || uploadState === "polling" || uploadState === "saving"}
-          className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-aurora/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-aurora"
+          className="mt-4 block w-full rounded-xl border border-dashed border-aurora/30 bg-aurora/5 p-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-aurora file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
         />
-        {uploadState === "uploading" || uploadState === "polling" ? (
-          <LoadingState label="正在上传并处理 OCR..." />
-        ) : null}
+        <div aria-live="polite">
+          {uploadState === "uploading" ? <LoadingState label="正在上传图片..." /> : null}
+          {uploadState === "polling" ? <LoadingState label="正在识别并切分题目..." /> : null}
+        </div>
         {uploadState === "failed" ? (
           ocrState?.upload_id ? (
             <ErrorState error={uploadError} label="上传或 OCR 失败" onRetry={handleRetry} />
@@ -306,11 +315,24 @@ function ImportView() {
         {uploadState === "ready" && uploadError ? (
           <ErrorState error={uploadError} label="保存失败" onRetry={handleSaveConfirmation} />
         ) : null}
-        {uploadState === "saved" ? <SavedState label="错题确认已保存。" /> : null}
+        {uploadState === "saved" ? <SavedState label="错题/重点题已保存。" /> : null}
+        {sessions.data?.sessions?.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setShowHistory((current) => !current)}
+            className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-aurora/30 hover:text-aurora"
+          >
+            {showHistory ? "收起历史导入" : `查看历史导入（${sessions.data.sessions.length}）`}
+          </button>
+        ) : null}
       </div>
-      {sessions.data?.sessions?.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="space-y-2">
+      {(showHistory || selectedIdValue) && (
+        <div className={[
+          "grid gap-4",
+          showHistory ? "lg:grid-cols-[260px_minmax(0,1fr)]" : "grid-cols-1",
+        ].join(" ")}>
+          {showHistory ? <div className="space-y-2">
+            <p className="px-1 text-sm font-semibold text-ink">历史导入</p>
             {sessions.data.sessions.map((session) => (
               <button
                 key={session.upload_id}
@@ -327,8 +349,8 @@ function ImportView() {
                 <span className="block truncate text-xs text-slate-500">{session.source_title}</span>
               </button>
             ))}
-          </div>
-          <div>
+          </div> : null}
+          <div className="min-w-0">
             {split.isLoading || confirmation.isLoading ? (
               <LoadingState label="正在读取切题和确认结果..." />
             ) : split.error || confirmation.error ? (
@@ -346,7 +368,7 @@ function ImportView() {
                 )}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-ink">请勾选错题</p>
+                    <p className="text-sm font-semibold text-ink">请勾选错题/重点题</p>
                     <span className="rounded-full bg-aurora/10 px-3 py-1 text-sm font-medium text-aurora">
                       已选 {selectedQuestionIds.size}/10
                     </span>
@@ -407,7 +429,7 @@ function ImportView() {
                   disabled={selectedQuestionIds.size === 0 || selectedQuestionIds.size > 10 || uploadState === "saving"}
                   className="rounded-xl bg-aurora px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  保存错题确认
+                  保存错题/重点题
                 </button>
               </div>
             ) : (
@@ -416,7 +438,9 @@ function ImportView() {
           </div>
         </div>
       )}
-      {sessions.data?.sessions?.length === 0 && <EmptyState label="暂无练习批次。" />}
+      {sessions.data?.sessions?.length === 0 && uploadState === "idle" ? (
+        <p className="text-sm text-slate-500">目前还没有历史导入，上传第一张练习即可开始。</p>
+      ) : null}
     </div>
   );
 }
@@ -652,10 +676,203 @@ function AnalysisView() {
   );
 }
 
+const insightPresentation = {
+  recurring: {
+    label: "重复出现",
+    className: "border-rose-200 bg-rose-50 text-rose-700",
+  },
+  improving: {
+    label: "有变化",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  needs_attention: {
+    label: "需要关注",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  insufficient_evidence: {
+    label: "证据不足",
+    className: "border-slate-200 bg-slate-100 text-slate-600",
+  },
+};
+
+function formatReportTime(value) {
+  if (!value) return "未知";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function EvidenceDisclosure({ evidenceRefs = [], evidenceDetails = [] }) {
+  const evidenceByRef = new Map(evidenceDetails.map((item) => [item.evidence_ref, item]));
+  const evidence = evidenceRefs.map((ref) => evidenceByRef.get(ref)).filter(Boolean);
+  if (evidence.length === 0) return null;
+
+  return (
+    <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 text-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-slate-600">
+        <span className="min-w-0 break-words">依据：{evidence.map((item) => item.display_name).join("、")}</span>
+        <span className="shrink-0 font-semibold text-aurora print:hidden">查看依据</span>
+      </summary>
+      <div className="space-y-3 border-t border-slate-200 p-3 print:hidden">
+        {evidence.map((item) => (
+          <article key={item.evidence_ref} className="rounded-lg bg-white p-3">
+            <p className="font-semibold text-ink">{item.display_name}</p>
+            {item.question_text ? (
+              <p className="mt-2 leading-6 text-slate-600">
+                <span className="font-medium text-slate-700">题目：</span>{item.question_text}
+              </p>
+            ) : null}
+            <p className="mt-1 leading-6 text-slate-600">
+              <span className="font-medium text-slate-700">作答：</span>{item.student_answer_text || "未识别到完整作答"}
+            </p>
+            {item.evidence_summary || item.finding_statement ? (
+              <p className="mt-1 leading-6 text-slate-600">
+                <span className="font-medium text-slate-700">观察：</span>{item.evidence_summary || item.finding_statement}
+              </p>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function StructuredReport({ report }) {
+  const scope = report.report_scope ?? {};
+  const insights = report.key_insights ?? [];
+  const actions = report.next_actions ?? [];
+  const evidenceDetails = report.evidence_details ?? [];
+
+  return (
+    <article className="report-print min-w-0 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm sm:p-7">
+      <header className="border-b border-slate-100 pb-5">
+        <p className="text-xs font-semibold tracking-wide text-aurora">数学学习周报</p>
+        <h3 className="mt-1 text-xl font-bold text-ink">{report.week?.title ?? report.weekly_report_id}</h3>
+        <p className="mt-2 text-xs text-slate-500">最后生成：{formatReportTime(report.generated_at)}</p>
+      </header>
+
+      <section className="mt-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">本周依据</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="rounded-full bg-slate-100 px-3 py-1.5">{scope.upload_count ?? 0} 份练习</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1.5">{scope.confirmed_question_count ?? 0} 道已确认错题</span>
+          {(scope.topics ?? []).map((topic) => (
+            <span key={topic} className="rounded-full bg-aurora/10 px-3 py-1.5 text-aurora">{topic}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl bg-[linear-gradient(135deg,#ecfdf8_0%,#f5f3ff_100%)] p-5">
+        <p className="text-xs font-semibold text-aurora">本周总览</p>
+        <h4 className="mt-1 text-lg font-bold text-ink">{report.overview?.headline}</h4>
+        <p className="mt-2 leading-7">{report.overview?.summary}</p>
+      </section>
+
+      <section className="mt-7">
+        <h4 className="text-base font-bold text-ink">本周最值得关注</h4>
+        <div className="mt-3 grid gap-4 xl:grid-cols-2">
+          {insights.map((insight, index) => {
+            const presentation = insightPresentation[insight.type] ?? insightPresentation.needs_attention;
+            return (
+              <article key={`${insight.type}-${index}`} className="report-card rounded-2xl border border-slate-200 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h5 className="font-bold text-ink">{index + 1}. {insight.title}</h5>
+                  <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold ${presentation.className}`}>
+                    {presentation.label}
+                  </span>
+                </div>
+                <p className="mt-3 leading-7">{insight.summary}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">{insight.why_it_matters}</p>
+                {insight.limitation ? (
+                  <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">
+                    判断边界：{insight.limitation}
+                  </p>
+                ) : null}
+                <EvidenceDisclosure evidenceRefs={insight.evidence_refs} evidenceDetails={evidenceDetails} />
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {report.watch_item ? (
+        <section className="report-card mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold text-slate-500">仍需观察</p>
+          <h4 className="mt-1 font-bold text-ink">{report.watch_item.title}</h4>
+          <p className="mt-2 leading-7">{report.watch_item.summary}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">判断边界：{report.watch_item.limitation}</p>
+          <EvidenceDisclosure evidenceRefs={report.watch_item.evidence_refs} evidenceDetails={evidenceDetails} />
+        </section>
+      ) : null}
+
+      <section className="mt-7">
+        <h4 className="report-section-heading text-base font-bold text-ink">下周只做这几件事</h4>
+        <ol className="mt-3 space-y-3">
+          {actions.map((action, index) => (
+            <li key={`${action.title}-${index}`} className="report-card rounded-2xl border border-aurora/20 bg-aurora/5 p-4">
+              <div className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-aurora text-xs font-bold text-white">
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <h5 className="font-bold text-ink">{action.title}</h5>
+                  <ul className="mt-2 space-y-1 text-sm leading-6">
+                    {action.steps.map((step) => <li key={step}>• {step}</li>)}
+                  </ul>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">完成检查：{action.success_check}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">优先原因：{action.reason}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <footer className="mt-6 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500">
+        {report.report_note}
+      </footer>
+
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="app-chrome mt-5 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white"
+      >
+        打印周报
+      </button>
+    </article>
+  );
+}
+
+function LegacyReport({ report }) {
+  return (
+    <article className="report-print rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
+      <h3 className="font-semibold text-ink">{report.week?.title ?? report.weekly_report_id}</h3>
+      <p className="mt-2 text-xs text-slate-500">
+        最后生成：{formatReportTime(report.generated_at)} · 历史格式周报
+      </p>
+      <p className="mt-2 whitespace-pre-wrap">{report.analysis?.overall_summary ?? "暂无周报摘要"}</p>
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="app-chrome mt-4 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white"
+      >
+        打印周报
+      </button>
+    </article>
+  );
+}
+
 function ReportView() {
   const [reloadKey, setReloadKey] = useState(0);
   const [jobStatus, setJobStatus] = useState("idle");
   const [jobError, setJobError] = useState(null);
+  const [jobNotice, setJobNotice] = useState("");
   const reports = useAsyncData(() => fetchReports(), [reloadKey]);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const selectedId = selectedReportId ?? reports.data?.reports?.[0]?.weekly_report_id ?? null;
@@ -668,6 +885,7 @@ function ReportView() {
     if (jobStatus === "pending" || jobStatus === "running") return;
     setJobStatus("pending");
     setJobError(null);
+    setJobNotice("");
     try {
       const created = await createHermesJob({ job_type: "weekly_learning_report" });
       setJobStatus("running");
@@ -678,7 +896,15 @@ function ReportView() {
       if (!final || final.status !== "completed") {
         throw new Error(final?.error_message ?? "周报任务未完成");
       }
+      const result = await fetchHermesJobResult(created.job_id);
+      if (result?.status === "no_data") {
+        setJobStatus("no_data");
+        setJobNotice(result.message ?? "本自然周暂无可用分析数据，已保存的历史周报仍可继续查看。");
+        return;
+      }
       setJobStatus("completed");
+      setJobNotice("新周报已保存；其他周期的历史周报仍然保留。");
+      if (result?.weekly_report_id) setSelectedReportId(result.weekly_report_id);
       setReloadKey((key) => key + 1);
     } catch (error) {
       setJobStatus("failed");
@@ -692,7 +918,7 @@ function ReportView() {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">周报与打印</h2>
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="app-chrome rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm font-semibold text-ink">生成本自然周学习周报</p>
           <button
@@ -704,49 +930,49 @@ function ReportView() {
             {jobStatus === "pending" ? "提交中..." : jobStatus === "running" ? "生成中..." : "生成周报"}
           </button>
           {jobStatus === "completed" && <SavedState label="周报已保存" />}
+          {jobStatus === "no_data" && (
+            <span className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{jobNotice}</span>
+          )}
           {jobStatus === "failed" && jobError && <ErrorState error={jobError} label="周报生成失败" onRetry={handleGenerate} />}
         </div>
+        <p className="mt-3 text-xs leading-5 text-slate-500">
+          生成操作只汇总服务器当前自然周的分析记录；以前保存的 A/B 等历史周报会按周期保留，并可在下方继续选择查看。
+        </p>
       </section>
       {reports.data?.reports?.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="space-y-2">
+        <div className="report-layout grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <div className="app-chrome min-w-0 space-y-2">
             {reports.data.reports.map((report) => (
               <button
                 key={report.weekly_report_id}
                 type="button"
                 onClick={() => setSelectedReportId(report.weekly_report_id)}
                 className={[
-                  "w-full rounded-xl border px-3 py-2 text-left text-sm",
+                  "min-w-0 w-full rounded-xl border px-3 py-2 text-left text-sm",
                   report.weekly_report_id === selectedId
                     ? "border-aurora/40 bg-aurora/10"
                     : "border-slate-200 bg-white hover:border-aurora/25",
                 ].join(" ")}
               >
-                <span className="font-semibold">{report.title}</span>
+                <span className="block break-words font-semibold">{report.title}</span>
+                <span className="block text-xs text-slate-500">
+                  {report.week_start ?? "日期未知"} 至 {report.week_end ?? "日期未知"}
+                </span>
                 <span className="block truncate text-xs text-slate-500">{report.summary}</span>
               </button>
             ))}
           </div>
-          <div>
+          <div className="min-w-0">
             {detail.isLoading ? (
               <LoadingState label="正在读取周报详情..." />
             ) : detail.error ? (
               <ErrorState error={detail.error} label="周报详情读取失败" onRetry={() => setReloadKey((k) => k + 1)} />
             ) : detail.data ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
-                <h3 className="font-semibold text-ink">{detail.data.week?.title ?? detail.data.weekly_report_id}</h3>
-                <p className="mt-2 text-xs text-slate-500">
-                  最后生成：{detail.data.generated_at ?? "未知"} · 证据范围：{detail.data.evidence_links?.length ?? 0} 条
-                </p>
-                <p className="mt-2 whitespace-pre-wrap">{detail.data.analysis?.overall_summary ?? "暂无周报摘要"}</p>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="mt-4 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white"
-                >
-                  打印周报
-                </button>
-              </div>
+              detail.data.contract_version === "2.0" && detail.data.overview ? (
+                <StructuredReport report={detail.data} />
+              ) : (
+                <LegacyReport report={detail.data} />
+              )
             ) : (
               <EmptyState label="请选择一份周报" />
             )}

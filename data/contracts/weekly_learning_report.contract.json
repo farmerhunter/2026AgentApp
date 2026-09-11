@@ -1,0 +1,90 @@
+{
+  "contract": "weekly_learning_report",
+  "contract_version": "2.0",
+  "week": {
+    "start": "2026-08-31",
+    "end": "2026-09-06",
+    "title": "2026-08-31 至 2026-09-06 学习周报"
+  },
+  "student": {
+    "student_id": "student_demo"
+  },
+  "subject": "math",
+  "subject_label": "数学",
+  "report_scope": {
+    "week_start": "2026-08-31",
+    "week_end": "2026-09-06",
+    "upload_count": 2,
+    "confirmed_question_count": 6,
+    "topics": [
+      "二次根式",
+      "一次函数"
+    ]
+  },
+  "overview": {
+    "headline": "先稳定根式加法，再保持函数步骤",
+    "summary": "根式相加的同类错误在两份练习中重复出现；一次函数求解析式时，完整求出截距这一步已有可见变化。"
+  },
+  "key_insights": [
+    {
+      "type": "recurring",
+      "title": "根式加法重复出错",
+      "summary": "两次练习中都直接合并了根号内的数，没有先化简并识别同类根式。",
+      "why_it_matters": "相同处理方式在不同题目中再次出现，应优先复习。",
+      "limitation": null,
+      "evidence_refs": [
+        "E1",
+        "E4"
+      ]
+    },
+    {
+      "type": "improving",
+      "title": "求截距步骤有变化",
+      "summary": "后一次已经能够完整求出斜率和截距，但随后的负数计算仍然有误。",
+      "why_it_matters": "可以保留已经做对的步骤，再单独检查后续运算。",
+      "limitation": "这里只能确认具体步骤发生变化，不能据此判断整个知识点已经掌握。",
+      "evidence_refs": [
+        "E3",
+        "E6"
+      ]
+    }
+  ],
+  "watch_item": {
+    "title": "负号来源仍不确定",
+    "summary": "其中一道题只有最终答案，现有信息不足以判断负号在哪一步出现。",
+    "limitation": "缺少学生的中间计算过程。",
+    "evidence_refs": [
+      "E5"
+    ]
+  },
+  "next_actions": [
+    {
+      "title": "重做两道根式加法题",
+      "steps": [
+        "先把每个根式化简",
+        "找出同类根式",
+        "最后合并系数"
+      ],
+      "success_check": "检查过程中是否仍然直接相加被开方数。",
+      "reason": "相同错误在本周两份练习中重复出现。",
+      "evidence_refs": [
+        "E1",
+        "E4"
+      ]
+    }
+  ],
+  "evidence_details": [
+    {
+      "evidence_ref": "E1",
+      "display_name": "A卷 · 第6题",
+      "question_id": "question_internal_id",
+      "finding_id": "finding_internal_id",
+      "question_text": "题目原文由服务端附加",
+      "student_answer_text": "学生作答由服务端附加",
+      "note": null,
+      "finding_statement": "本题分析由服务端附加",
+      "evidence_summary": "证据摘要由服务端附加"
+    }
+  ],
+  "report_note": "本报告只根据本周上传并确认的错题生成，不代表整份试卷成绩。"
+}
