@@ -24,7 +24,7 @@ import useAsyncData from "../lib/useAsyncData.js";
 
 const appNav = [
   { to: "/app/overview", label: "本周概览", description: "当前学习状态与最近材料" },
-  { to: "/app/import", label: "练习导入与确认", description: "上传图片并确认错题" },
+  { to: "/app/import", label: "练习导入与确认", description: "上传图片并确认错题/重点题" },
   { to: "/app/analysis", label: "分析与记忆", description: "查看发现并决定记忆" },
   { to: "/app/report", label: "周报与打印", description: "查看和打印本周报告" },
 ];
@@ -54,7 +54,7 @@ function AppLayout() {
                   to={item.to}
                   className={({ isActive }) =>
                     [
-                      "rounded-xl border px-4 py-3 transition",
+                      "app-interactive rounded-xl border px-4 py-3 transition",
                       isActive
                         ? "border-aurora/40 bg-aurora/10 text-aurora"
                         : "border-slate-200/70 bg-white/80 text-slate-600 hover:border-aurora/25 hover:bg-aurora/5",
@@ -129,7 +129,8 @@ function ImportView() {
   const [selectedQuestionIds, setSelectedQuestionIds] = useState(new Set());
   const [notes, setNotes] = useState({});
   const [answerOverrides, setAnswerOverrides] = useState({});
-  const selectedIdValue = selectedId ?? sessions.data?.sessions?.[0]?.upload_id ?? null;
+  const [showHistory, setShowHistory] = useState(false);
+  const selectedIdValue = selectedId;
   const split = useAsyncData(
     () => (selectedIdValue ? fetchSessionSplit(selectedIdValue) : Promise.resolve(null)),
     [selectedIdValue, reloadKey],
@@ -200,6 +201,8 @@ function ImportView() {
   async function handleFileChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setSelectedId(null);
+    setShowHistory(false);
     setUploadState("uploading");
     setUploadError(null);
     try {
@@ -285,18 +288,23 @@ function ImportView() {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-ink">练习导入与确认</h2>
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <label className="block text-sm font-semibold text-ink">上传一张练习或试卷图片</label>
+      <div className="rounded-2xl border border-white/80 bg-white/90 p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-semibold text-aurora">从一张练习开始</p>
+        <h3 className="mt-1 text-lg font-bold text-ink">上传练习或试卷图片</h3>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          上传后系统会自动识别并切分题目，完成后再请你勾选需要关注的错题或重点题。
+        </p>
         <input
           type="file"
           accept="image/jpeg,image/png"
           onChange={handleFileChange}
           disabled={uploadState === "uploading" || uploadState === "polling" || uploadState === "saving"}
-          className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-aurora/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-aurora"
+          className="mt-4 block w-full rounded-xl border border-dashed border-aurora/30 bg-aurora/5 p-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-aurora file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
         />
-        {uploadState === "uploading" || uploadState === "polling" ? (
-          <LoadingState label="正在上传并处理 OCR..." />
-        ) : null}
+        <div aria-live="polite">
+          {uploadState === "uploading" ? <LoadingState label="正在上传图片..." /> : null}
+          {uploadState === "polling" ? <LoadingState label="正在识别并切分题目..." /> : null}
+        </div>
         {uploadState === "failed" ? (
           ocrState?.upload_id ? (
             <ErrorState error={uploadError} label="上传或 OCR 失败" onRetry={handleRetry} />
@@ -307,11 +315,24 @@ function ImportView() {
         {uploadState === "ready" && uploadError ? (
           <ErrorState error={uploadError} label="保存失败" onRetry={handleSaveConfirmation} />
         ) : null}
-        {uploadState === "saved" ? <SavedState label="错题确认已保存。" /> : null}
+        {uploadState === "saved" ? <SavedState label="错题/重点题已保存。" /> : null}
+        {sessions.data?.sessions?.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setShowHistory((current) => !current)}
+            className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:border-aurora/30 hover:text-aurora"
+          >
+            {showHistory ? "收起历史导入" : `查看历史导入（${sessions.data.sessions.length}）`}
+          </button>
+        ) : null}
       </div>
-      {sessions.data?.sessions?.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="space-y-2">
+      {(showHistory || selectedIdValue) && (
+        <div className={[
+          "grid gap-4",
+          showHistory ? "lg:grid-cols-[260px_minmax(0,1fr)]" : "grid-cols-1",
+        ].join(" ")}>
+          {showHistory ? <div className="space-y-2">
+            <p className="px-1 text-sm font-semibold text-ink">历史导入</p>
             {sessions.data.sessions.map((session) => (
               <button
                 key={session.upload_id}
@@ -328,8 +349,8 @@ function ImportView() {
                 <span className="block truncate text-xs text-slate-500">{session.source_title}</span>
               </button>
             ))}
-          </div>
-          <div>
+          </div> : null}
+          <div className="min-w-0">
             {split.isLoading || confirmation.isLoading ? (
               <LoadingState label="正在读取切题和确认结果..." />
             ) : split.error || confirmation.error ? (
@@ -347,7 +368,7 @@ function ImportView() {
                 )}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-ink">请勾选错题</p>
+                    <p className="text-sm font-semibold text-ink">请勾选错题/重点题</p>
                     <span className="rounded-full bg-aurora/10 px-3 py-1 text-sm font-medium text-aurora">
                       已选 {selectedQuestionIds.size}/10
                     </span>
@@ -408,7 +429,7 @@ function ImportView() {
                   disabled={selectedQuestionIds.size === 0 || selectedQuestionIds.size > 10 || uploadState === "saving"}
                   className="rounded-xl bg-aurora px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  保存错题确认
+                  保存错题/重点题
                 </button>
               </div>
             ) : (
@@ -417,7 +438,9 @@ function ImportView() {
           </div>
         </div>
       )}
-      {sessions.data?.sessions?.length === 0 && <EmptyState label="暂无练习批次。" />}
+      {sessions.data?.sessions?.length === 0 && uploadState === "idle" ? (
+        <p className="text-sm text-slate-500">目前还没有历史导入，上传第一张练习即可开始。</p>
+      ) : null}
     </div>
   );
 }
