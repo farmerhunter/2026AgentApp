@@ -1,11 +1,15 @@
 # Hermes 错因分析与 Finding 质量设计
 
-**Status：Proposed（E5-D4 原则已确认；三轮实验已完成，两个修订候选均未整体采用，正式能力尚待验证）**  
+**Status：Current design（单题实验结论保留；周报 2.0 已完成本地工程验收，真实 Hermes 内容验收待完成）**
 **Epic：E5 / [#13](https://github.com/farmerhunter/2026AgentApp/issues/13)**  
 **Owner：设计由 Jinghu 与 AI 助手共同维护；David 可独立实现和迭代，Final Gate 保持独立复核。**  
-**Updated：2026-08-31**
+**Updated：2026-09-11**
 
 后续执行更新：[两批学习故事首轮](../../experiments/hermes-quality/learning-story/review.md)已完成 A 批 → 两条用户接受记忆 → B 批 → 周报（共 3 次真实调用）。[周报原文](../../experiments/hermes-quality/learning-story/weekly-report.md)在本组输入上区分了重复问题、局部变化和证据不足，但错题计数口径、学生向用语、一般化措辞仍有问题。用户要求不陷入过度设计，本轮不重跑 A、不改 Skill 或追加调用；保留旧基线和新原始结果，不宣称产品链路或发布质量已通过。
+
+2026-09-11 工程更新：`weekly-learning-report` 已升级到 2.0。应用从 SQLite 组装权威范围和逐题证据目录，Hermes 输出少量重点和行动，服务端在保存前执行结构与语义校验，页面按“总览 → 重点 → 行动”展示并默认折叠题目详情。fixture、API smoke、旧报告兼容、前端构建和浏览器交互已通过；由于本地未配置 Hermes CLI/Provider，这些结果只证明工程链路，不证明新版 AI 内容质量。真实 A/B/C 调用与人工内容复核仍是发布前验收项。
+
+同日已在 VPS 私有目录补做[真实周报 2.0 有界回放](../../experiments/hermes-quality/results/2026-09-11-weekly-v2/review.md)：A/B 输出通过程序和人工检查；A/B/C 能识别负数加法重复与根式方法变化，但一版有错误的“唯一”范围断言，另一版篇幅超限，均未达到完整 Final Gate。失败结果没有写入生产数据库；#115 继续进行。
 
 ## 1. 给 David 的一分钟说明
 
@@ -32,14 +36,14 @@ E5 最重要的不是“模型返回了 JSON”，而是学生看完分析后，
 
 | 层次 | 当前状态 |
 | --- | --- |
-| findings、记忆接受/拒绝、周报索引与读取 | E1 已有 SQLite/API 基础；保存数据不等于完成共性推理 |
+| findings、记忆接受/拒绝、周报索引与读取 | SQLite/API 已接通；旧版 1.0 报告继续可读 |
 | 旧版周报聚合说明和样例 | `src/skills/weekly_report.skill.md` 有聚合方法，`data/sample_outputs/insight_consolidations/` 有预制结果；不是 V2 实测能力 |
-| 后续错题使用已接受记忆、本周多条 findings 综合分析 | 既有 E5 设计方向，真实上下文组装、Skill 接入、持久化和效果尚待实现验证 |
+| 本周多条 findings 综合分析 | 2.0 上下文、Skill、保存校验和页面已完成本地工程验证；真实 Hermes A/B/C 内容效果待验收 |
 | 自动合并记忆、独立 consolidation 流程、长期画像 | V2 明确延后，不为本次补充重新引入 |
 
-关键代码证据：[`run_weekly_report.sh`](../../src/agent/jobs/run_weekly_report.sh)的 fixture 分支复制预制周报/聚合结果，real 分支也仍读取 `data/sample_outputs/learning_findings` 和固定样例记忆；它不是从产品数据库累积真实学习记录的 V2 路径。[报告 API](../../src/api/routes/reports.js)读取已存索引和静态报告文件；当前 `/app` 报告页展示 `analysis.overall_summary`。E4 最新分支中的上述 runner、Skill、findings/reports API 与主线相同。
+历史代码证据：[`run_weekly_report.sh`](../../src/agent/jobs/run_weekly_report.sh)的 fixture 分支复制预制周报/聚合结果，real 分支也读取固定样例；它仍不是产品数据库驱动的 V2 路径。当前产品路径由 `src/api/lib/e5Context.js` 组装本周上下文，`src/api/lib/e5Store.js` 校验并保存，`src/api/scripts/run_e5_weekly_report.mjs` 执行 `weekly_learning_report`。报告 API 读取 SQLite 中保存的完整 JSON；`/app/report` 展示 2.0 结构，同时兼容旧报告的 `analysis.overall_summary`。
 
-最小落点是既有 `weekly-learning-report`：在同一次周报任务中综合本周不同题目的 findings、对应已确认题干/学生作答/已有备注、已有 actions、记忆决定、必要的已接受历史记忆和知识节点。应用保证题目与 finding 的来源关联，避免只依据模型标签叠加推断。现有周报正文表达分析范围、主要问题、可见变化和 1–2 项具体建议，不新增问答界面、Job、服务或长期画像表。当前周 findings 不需要先作为记忆被接受才能进入本周报告；跨周只有限复用显式提供的已接受记忆，不等于自动遍历全部历史。记忆候选只从错题分析产生，周报不新增候选或自动修改旧 findings。具体上下文筛选与真实验收仍是 E5 后续设计/实现工作。
+产品落点是既有 `weekly-learning-report`：在同一次周报任务中综合本周不同题目的 findings、对应已确认题干/学生作答/已有备注、已有 actions、记忆决定、必要的已接受历史记忆和知识节点。应用保证题目与 finding 的来源关联，并生成稳定的 `evidence_ref`，避免只依据模型标签叠加推断。模型只写总览、少量重点、观察项和具体行动；日期与计数由应用填写，题目细节由应用按引用附加。当前周 findings 不需要先作为记忆被接受才能进入本周报告；跨周只有限复用显式提供的已接受记忆。记忆候选只从错题分析产生，周报不新增候选或自动修改旧 findings。
 
 共性不能靠错误标签计数冒充：同一题重跑不是新证据，多条 unknown 不会自动变成确定错因；只输入错题时，“后来没再出现”也不能证明改善。展示改为 2 批、每批 10 题的仿真练习，每批约 3 道重点错题，形成约 6 条 findings，最多 2 条已接受记忆。用不同题目的实际步骤检查重复和局部变化；正确题只用于还原完整练习，不增加自动判分。普通输入缺少证据时，不为凑齐展示内容强行总结。
 

@@ -162,8 +162,12 @@ export function getAnalysisContext(uploadId, studentId = DEFAULT_STUDENT_ID) {
 function questionSourceForFinding(uploadId, questionId) {
   const q = db
     .prepare(
-      `SELECT question_id, question_index, question_text, student_answer_text, question_type
-       FROM questions WHERE upload_id = ? AND question_id = ?`,
+      `SELECT q.question_id, q.question_index, q.question_text,
+              q.student_answer_text, q.question_type,
+              u.source_title, u.captured_at, u.uploaded_at
+       FROM questions q
+       LEFT JOIN uploads u ON u.upload_id = q.upload_id
+       WHERE q.upload_id = ? AND q.question_id = ?`,
     )
     .get(uploadId, questionId);
   if (!q) return null;
@@ -176,6 +180,9 @@ function questionSourceForFinding(uploadId, questionId) {
   return {
     question_id: q.question_id,
     question_index: q.question_index ?? null,
+    source_title: q.source_title ?? null,
+    display_name: `${q.source_title?.trim() || "练习"}${q.question_index != null ? ` · 第${q.question_index}题` : " · 题目"}`,
+    captured_at: q.captured_at ?? q.uploaded_at ?? null,
     question_text: q.question_text ?? "",
     student_answer_text: q.student_answer_text ?? null,
     question_type: q.question_type ?? null,
@@ -229,6 +236,14 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
       subject_label: null,
       week_start: weekStart,
       week_end: weekEnd,
+      report_scope: {
+        week_start: weekStart,
+        week_end: weekEnd,
+        upload_count: 0,
+        confirmed_question_count: 0,
+        topics: [],
+      },
+      evidence_catalog: [],
       findings: [],
       accepted_memories: acceptedMemoriesFor(studentId, subject, []),
       knowledge_map: compactKnowledgePoints(),
@@ -282,9 +297,12 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
   }
 
   const selectedFindingIds = new Set(rows.map((row) => row.finding_id));
-  const findings = rows.map((row) => ({
+  const findings = rows.map((row, index) => ({
+    evidence_ref: `E${index + 1}`,
     finding_id: row.finding_id,
     finding_batch_id: row.finding_batch_id,
+    question_id: row.question_id,
+    upload_id: row.upload_id,
     generated_at: row.generated_at,
     question: questionSourceForFinding(row.upload_id, row.question_id),
     scope: row.scope,
@@ -300,6 +318,43 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
     memory_decisions: (memoryByFinding.get(row.finding_id) ?? []).filter(() => selectedFindingIds.has(row.finding_id)),
   }));
 
+  const topics = [];
+  const topicSet = new Set();
+  const addTopic = (value) => {
+    const topic = String(value ?? "").trim();
+    if (!topic || topicSet.has(topic) || topics.length >= 4) return;
+    topicSet.add(topic);
+    topics.push(topic);
+  };
+  for (const finding of findings) {
+    addTopic(finding.question?.knowledge_point);
+    for (const link of finding.concept_links) {
+      addTopic(link.concept_name);
+    }
+  }
+
+  const reportScope = {
+    week_start: weekStart,
+    week_end: weekEnd,
+    upload_count: new Set(findings.map((finding) => finding.upload_id).filter(Boolean)).size,
+    confirmed_question_count: findings.length,
+    topics,
+  };
+  const evidenceCatalog = findings.map((finding) => ({
+    evidence_ref: finding.evidence_ref,
+    display_name: finding.question?.display_name ?? "练习题目",
+    upload_id: finding.upload_id,
+    generated_at: finding.generated_at,
+    question_id: finding.question?.question_id ?? finding.question_id,
+    finding_id: finding.finding_id,
+    question_text: finding.question?.question_text ?? "",
+    student_answer_text: finding.question?.student_answer_text ?? null,
+    note: finding.question?.note ?? null,
+    finding_statement: finding.statement,
+    evidence_summary: finding.evidence_summary,
+    confidence: finding.confidence,
+  }));
+
   return {
     job: "weekly_learning_report",
     student_id: studentId,
@@ -307,6 +362,8 @@ export function getWeeklyContext({ studentId = DEFAULT_STUDENT_ID, subject = "ma
     subject_label: subjectLabel,
     week_start: weekStart,
     week_end: weekEnd,
+    report_scope: reportScope,
+    evidence_catalog: evidenceCatalog,
     findings,
     accepted_memories: acceptedMemoriesFor(
       studentId,

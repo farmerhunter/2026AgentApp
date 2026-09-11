@@ -1,6 +1,6 @@
 # E5 实施映射（Implementation Map）
 
-**状态：E5 工程分支实施说明。** 对应 Epic [#13](https://github.com/farmerhunter/2026AgentApp/issues/13)，核心设计与质量边界见 PR #99 中的 `docs/v2/epics/e5-hermes-learning-analysis.md`、`docs/v2/hermes-runtime-and-skills.md` 和 `docs/v2/hermes-analysis-quality.md`。
+**状态：E5 工程分支实施说明；周报 2.0 于 2026-09-11 完成本地工程验收，待真实 Hermes 内容验收。** 对应 Epic [#13](https://github.com/farmerhunter/2026AgentApp/issues/13)，核心设计与质量边界见 PR #99 中的 `docs/v2/epics/e5-hermes-learning-analysis.md`、`docs/v2/hermes-runtime-and-skills.md` 和 `docs/v2/hermes-analysis-quality.md`。
 
 ## 1. 旧 job 与新 Skill 的关系
 
@@ -61,14 +61,35 @@
 ```json
 {
   "contract": "weekly_learning_report",
-  "contract_version": "1.0",
-  "analysis": {
-    "overall_summary": "分析范围 / 主要问题 / 可见变化与限制 / 下一步"
+  "contract_version": "2.0",
+  "overview": {
+    "headline": "本周最重要的一句话",
+    "summary": "重点问题和可见变化"
   },
-  "evidence_links": [],
-  "actions": []
+  "key_insights": [
+    {
+      "type": "recurring",
+      "title": "短标题",
+      "summary": "有依据的结论",
+      "why_it_matters": "为什么值得优先关注",
+      "limitation": null,
+      "evidence_refs": ["E1", "E4"]
+    }
+  ],
+  "watch_item": null,
+  "next_actions": [
+    {
+      "title": "具体行动",
+      "steps": ["第一步", "第二步"],
+      "success_check": "怎样检查是否完成",
+      "reason": "为什么优先做",
+      "evidence_refs": ["E1", "E4"]
+    }
+  ]
 }
 ```
+
+`report_scope` 与 `evidence_catalog` 由应用从数据库生成。Hermes 不重算日期和数量，只引用证据编号；服务端校验后附加 `report_scope`、`evidence_details` 和固定报告说明，再把完整 2.0 JSON 存入 `weekly_reports.report_json`。
 
 ## 5. 数据表与迁移
 
@@ -83,11 +104,11 @@
 ## 6. 页面消费者
 
 - `/app/analysis`：选择已确认错题批次 → 触发 `confirmed_mistake_analysis` → 轮询 → 展示 findings；对待确认记忆做接受/拒绝。
-- `/app/report`：触发 `weekly_learning_report` → 轮询 → 展示 `analysis.overall_summary` 并支持打印。
+- `/app/report`：触发 `weekly_learning_report` → 轮询 → 先展示范围、总览、1–3 个重点和 1–2 个行动；证据题目默认折叠并按重点展开；支持打印。旧版报告继续读取 `analysis.overall_summary`。
 
 ## 7. 失败状态与测试入口
 
 - HermesBridge 分离 stdout/stderr，解析唯一 JSON；非零退出、超时、无效 JSON 都转 `failed`，不写部分领域数据。
 - 分析校验要求每题至多一条主 finding，并覆盖全部已确认错题；非空知识 ID 必须存在于当前 E3 地图。
-- 周报无可用数据时不调用 Hermes，返回 `no_data`；重新生成失败保留上一次成功报告。
+- 周报校验要求 2.0 结构、数量与权威上下文一致、证据引用存在、重复/改善结论达到不同题目和时间条件、行动依据已经展示，并限制文案长度与内部 ID 泄漏。无可用数据时不调用 Hermes，返回 `no_data`；重新生成失败保留上一次成功报告。
 - 测试：`cd src/api && npm run smoke:e5`（用项目配套 Node 22）。

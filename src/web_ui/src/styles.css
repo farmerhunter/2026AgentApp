@@ -63,3 +63,29 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+@media print {
+  :root,
+  body {
+    background: #fff;
+  }
+
+  .app-chrome {
+    display: none !important;
+  }
+
+  .app-main-grid,
+  .report-layout {
+    display: block !important;
+  }
+
+  .report-print {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .report-print details > div {
+    display: none !important;
+  }
+}

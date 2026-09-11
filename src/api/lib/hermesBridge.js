@@ -18,7 +18,7 @@ function sha256File(path) {
   return createHash("sha256").update(readFileSync(path, "utf-8")).digest("hex");
 }
 
-function extractJsonObject(text) {
+export function extractJsonObject(text) {
   if (!text) return null;
   const startCandidates = [];
   for (let index = 0; index < text.length; index += 1) {
@@ -59,10 +59,13 @@ function extractJsonObject(text) {
       }
     }
   }
+  const findLast = (predicate) => [...parsed].reverse().find(predicate);
   return (
-    parsed.find((value) => Array.isArray(value.findings)) ??
-    parsed.find((value) => value.analysis && typeof value.analysis === "object") ??
-    parsed[0] ??
+    findLast((value) =>
+      value.contract === "confirmed_mistake_analysis" || value.contract === "weekly_learning_report") ??
+    findLast((value) => Array.isArray(value.findings)) ??
+    findLast((value) => value.analysis && typeof value.analysis === "object") ??
+    parsed.at(-1) ??
     null
   );
 }
@@ -78,6 +81,7 @@ export async function runHermesSkill({
   request,
   timeoutMs = 180_000,
   env = process.env,
+  extraArgs = null,
 }) {
   if (!existsSync(skillPath)) {
     return {
@@ -136,7 +140,10 @@ export async function runHermesSkill({
   writeFileSync(stderrPath, "", "utf-8");
 
   const bin = env.HERMES_BIN ?? "hermes";
-  const extraArgs = env.HERMES_BRIDGE_EXTRA_ARGS?.split(/\s+/).filter(Boolean) ?? [];
+  const configuredExtraArgs = env.HERMES_BRIDGE_EXTRA_ARGS?.split(/\s+/).filter(Boolean) ?? [];
+  const effectiveExtraArgs = extraArgs == null
+    ? configuredExtraArgs
+    : [...configuredExtraArgs, ...extraArgs];
   const args = [
     "chat",
     "--query-file",
@@ -146,7 +153,7 @@ export async function runHermesSkill({
     "--quiet",
     "--max-turns",
     "1",
-    ...extraArgs,
+    ...effectiveExtraArgs,
   ];
 
   const childEnv = {

@@ -20,6 +20,19 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function assertThrows(fn, expectedMessage) {
+  try {
+    fn();
+  } catch (error) {
+    assert(
+      String(error.message).includes(expectedMessage),
+      `expected error containing "${expectedMessage}", got "${error.message}"`,
+    );
+    return;
+  }
+  throw new Error(`expected function to throw "${expectedMessage}"`);
+}
+
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, {
     cwd,
@@ -257,10 +270,79 @@ async function main() {
   assert(reports.body.reports.length > 0, "weekly report should be indexed");
   const reportDetail = await jsonRequest(`/api/reports/${reports.body.reports[0].weekly_report_id}`);
   assert(reportDetail.status === 200, "weekly report detail should be 200");
-  assert(reportDetail.body.analysis?.overall_summary, "weekly report should contain overall_summary");
+  assert(reportDetail.body.contract_version === "2.0", "new weekly report should use contract 2.0");
+  assert(reportDetail.body.overview?.headline, "weekly report should contain an overview headline");
+  assert(reportDetail.body.key_insights?.length >= 1, "weekly report should contain at least one key insight");
+  assert(reportDetail.body.next_actions?.length >= 1, "weekly report should contain at least one next action");
+  assert(reportDetail.body.report_scope?.upload_count === 1, "weekly report upload count should come from context");
+  assert(
+    reportDetail.body.report_scope?.confirmed_question_count === questionIds.length,
+    "weekly report confirmed question count should come from deduplicated context",
+  );
+  const firstReportEvidenceRef = reportDetail.body.key_insights[0].evidence_refs[0];
+  assert(
+    reportDetail.body.evidence_details.some((item) => item.evidence_ref === firstReportEvidenceRef),
+    "weekly report should attach details for referenced evidence",
+  );
+
+  const legacyReport = reports.body.reports.find(
+    (item) => item.weekly_report_id !== reports.body.reports[0].weekly_report_id,
+  );
+  assert(legacyReport, "seeded legacy weekly report should remain indexed");
+  const legacyDetail = await jsonRequest(`/api/reports/${legacyReport.weekly_report_id}`);
+  assert(legacyDetail.status === 200, "legacy weekly report should remain readable");
+  assert(legacyDetail.body.analysis?.overall_summary, "legacy weekly report should preserve its summary");
+
+  const savedReportIds = reports.body.reports.map((item) => item.weekly_report_id);
+  const emptyFutureReport = await jsonRequest("/api/hermes/jobs", {
+    method: "POST",
+    body: JSON.stringify({
+      job_type: "weekly_learning_report",
+      week_start: "2099-01-05",
+      week_end: "2099-01-11",
+    }),
+  });
+  assert(emptyFutureReport.status === 202, "empty future week report creation should be 202");
+  const emptyFutureJob = await waitForJob(emptyFutureReport.body.job_id);
+  assert(emptyFutureJob.status === "completed", "empty future week job should complete without calling Hermes");
+  const emptyFutureResult = await jsonRequest(`/api/hermes/jobs/${emptyFutureReport.body.job_id}/result`);
+  assert(emptyFutureResult.body.status === "no_data", "empty future week should return an explicit no_data result");
+  assert(emptyFutureResult.body.contract_version === "2.0", "empty future week should use the current report contract version");
+  const reportsAfterEmptyWeek = await jsonRequest("/api/reports");
+  assert(
+    savedReportIds.every((reportId) =>
+      reportsAfterEmptyWeek.body.reports.some((item) => item.weekly_report_id === reportId)),
+    "generating an empty later week must preserve previously saved reports",
+  );
 
   const { getDb } = await import("../db/init.js");
   const { getAnalysisContext, getWeeklyContext, hasUsableWeeklyData } = await import("../lib/e5Context.js");
+  const { validateWeeklyReportOutput } = await import("../lib/e5Store.js");
+  const { extractJsonObject } = await import("../lib/hermesBridge.js");
+
+  const noisyHermesOutput = [
+    "I will draft an overview first: {\"headline\":\"draft\",\"summary\":\"draft\"}",
+    JSON.stringify({
+      contract: "weekly_learning_report",
+      contract_version: "2.0",
+      overview: { headline: "contract draft", summary: "contract draft" },
+      key_insights: [],
+      watch_item: null,
+      next_actions: [],
+    }),
+    JSON.stringify({
+      contract: "weekly_learning_report",
+      contract_version: "2.0",
+      overview: { headline: "final", summary: "final" },
+      key_insights: [],
+      watch_item: null,
+      next_actions: [],
+    }),
+  ].join("\n");
+  assert(
+    extractJsonObject(noisyHermesOutput)?.overview?.headline === "final",
+    "Hermes bridge should select the final complete contract object after noisy analysis text",
+  );
   const contextDb = getDb();
   const now = new Date().toISOString();
   const insertQuestion = contextDb.prepare(
@@ -334,6 +416,160 @@ async function main() {
   );
   const contextQuestionIds = context.findings.map((finding) => finding.question?.question_id).filter(Boolean);
   assert(new Set(contextQuestionIds).size === contextQuestionIds.length, "weekly context should deduplicate repeated analyses");
+  assert(context.report_scope.confirmed_question_count === 1, "weekly report scope should count deduplicated questions");
+  assert(context.report_scope.upload_count === 1, "weekly report scope should count source uploads");
+  assert(context.evidence_catalog.length === 1, "weekly context should provide one evidence catalog entry");
+  assert(context.evidence_catalog[0].display_name, "weekly evidence should have a user-readable display name");
+
+  const baseOutput = {
+    contract: "weekly_learning_report",
+    contract_version: "2.0",
+    overview: {
+      headline: "本周记录需要继续核对",
+      summary: "现有证据可以支持一个局部观察，更多学习结论仍需结合后续作答确认。",
+    },
+    key_insights: [
+      {
+        type: "needs_attention",
+        title: "检查当前解题过程",
+        summary: "当前题目已经形成一条有来源的分析，适合作为后续复习和比较的起点。",
+        why_it_matters: "保留完整步骤有助于下一次准确比较。",
+        limitation: null,
+        evidence_refs: ["E1"],
+      },
+    ],
+    watch_item: null,
+    next_actions: [
+      {
+        title: "重看当前题目",
+        steps: ["核对题目和作答", "写下关键计算步骤"],
+        success_check: "确认每一步都能够从原题和作答中找到。",
+        reason: "当前只有一条可用证据，需要先保证过程完整。",
+        evidence_refs: ["E1"],
+      },
+    ],
+  };
+  const normalizedReport = validateWeeklyReportOutput(baseOutput, context);
+  assert(normalizedReport.contract_version === "2.0", "valid report should normalize to contract 2.0");
+  assert(normalizedReport.report_scope.confirmed_question_count === 1, "normalized report should use trusted scope");
+  assert(normalizedReport.evidence_details.length === 1, "normalized report should attach used evidence details");
+
+  const comparisonContext = {
+    ...context,
+    report_scope: {
+      ...context.report_scope,
+      upload_count: 2,
+      confirmed_question_count: 2,
+    },
+    evidence_catalog: [
+      context.evidence_catalog[0],
+      {
+        ...context.evidence_catalog[0],
+        evidence_ref: "E2",
+        upload_id: "comparison_upload",
+        question_id: "comparison_question",
+        finding_id: "comparison_finding",
+        display_name: "后续练习 · 第1题",
+        generated_at: "2026-09-06T15:30:00.000Z",
+      },
+    ],
+  };
+  const improvingOutput = {
+    ...baseOutput,
+    key_insights: [
+      {
+        ...baseOutput.key_insights[0],
+        type: "improving",
+        title: "具体步骤有所变化",
+        summary: "后一次作答已经补全此前缺少的步骤，但其他计算仍需继续核对。",
+        limitation: "这里只能确认这个步骤发生变化。",
+        evidence_refs: ["E1", "E2"],
+      },
+    ],
+  };
+  assert(
+    validateWeeklyReportOutput(improvingOutput, comparisonContext).key_insights[0].type === "improving",
+    "improving insight should pass with two time-ordered questions",
+  );
+
+  const storedBeforeInvalid = contextDb
+    .prepare("SELECT report_json FROM weekly_reports WHERE weekly_report_id = ?")
+    .get(reports.body.reports[0].weekly_report_id)?.report_json;
+  assert(storedBeforeInvalid, "saved weekly report JSON should exist before invalid validation");
+
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      key_insights: [{ ...baseOutput.key_insights[0], evidence_refs: ["missing"] }],
+    }, context),
+    "unknown evidence",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      key_insights: [{ ...baseOutput.key_insights[0], type: "recurring" }],
+    }, context),
+    "at least 2 different questions",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      key_insights: [{
+        ...baseOutput.key_insights[0],
+        type: "insufficient_evidence",
+        limitation: null,
+      }],
+    }, context),
+    "must explain its limitation",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      next_actions: [{ ...baseOutput.next_actions[0], evidence_refs: ["E2"] }],
+    }, comparisonContext),
+    "displayed insight or watch item",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      key_insights: [
+        baseOutput.key_insights[0],
+        { ...baseOutput.key_insights[0], title: "第二项" },
+        { ...baseOutput.key_insights[0], title: "第三项" },
+        { ...baseOutput.key_insights[0], title: "第四项" },
+      ],
+    }, context),
+    "1-3 items",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      overview: { ...baseOutput.overview, summary: `不应暴露 ${context.evidence_catalog[0].finding_id}` },
+    }, context),
+    "internal identifier",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      overview: { ...baseOutput.overview, summary: "长".repeat(121) },
+    }, context),
+    "at most 120 characters",
+  );
+  assertThrows(
+    () => validateWeeklyReportOutput({
+      ...baseOutput,
+      next_actions: [{
+        ...baseOutput.next_actions[0],
+        steps: ["步骤".repeat(30), "步骤".repeat(30), "步骤".repeat(30)],
+      }],
+    }, context),
+    "at most 140 characters",
+  );
+
+  const storedAfterInvalid = contextDb
+    .prepare("SELECT report_json FROM weekly_reports WHERE weekly_report_id = ?")
+    .get(reports.body.reports[0].weekly_report_id)?.report_json;
+  assert(storedAfterInvalid === storedBeforeInvalid, "invalid weekly output must not replace the saved report");
   assert(hasUsableWeeklyData("student_demo", "math", "2026-08-31", "2026-09-06"), "weekly data should be usable");
   const noMemoryContext = getAnalysisContext("upload_no_memory_test");
   assert(noMemoryContext.accepted_memories.length === 0, "no relevant accepted memory should yield an empty memory list");
