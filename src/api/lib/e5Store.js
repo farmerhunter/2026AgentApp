@@ -36,13 +36,13 @@ const WEEKLY_INSIGHT_TYPES = new Set([
 
 const WEEKLY_COPY_TARGETS = {
   overviewHeadline: 20,
-  overviewSummary: 75,
+  overviewSummary: 90,
   insightTitle: 14,
-  insightSummary: 65,
+  insightSummary: 85,
   insightWhy: 26,
   insightLimitation: 26,
   watchTitle: 14,
-  watchSummary: 60,
+  watchSummary: 75,
   watchLimitation: 26,
   actionTitle: 14,
   actionStep: 22,
@@ -50,20 +50,21 @@ const WEEKLY_COPY_TARGETS = {
   actionReason: 20,
 };
 
-function compactAtClauseBoundary(value, maxLength) {
+function compactAtClauseBoundary(value, maxLength, { allowSoftBoundary = false } = {}) {
   if (typeof value !== "string") return value;
   const normalized = value.trim();
   if (normalized.length <= maxLength) return normalized;
 
   let boundary = -1;
   for (let index = 0; index < maxLength; index += 1) {
-    if (/[，。！？；：、,.!?;:]/.test(normalized[index])) boundary = index;
+    if (/[。！？；.!?;]/.test(normalized[index])) boundary = index;
+    if (allowSoftBoundary && /[，：,:]/.test(normalized[index])) boundary = index;
   }
   if (boundary < 3) return normalized;
 
   return normalized
     .slice(0, boundary + 1)
-    .replace(/[，；：、,;:]\s*$/, "")
+    .replace(/[，；：,;:]\s*$/, "")
     .trim();
 }
 
@@ -75,7 +76,7 @@ export function compactWeeklyReportCopy(output) {
     overview: output.overview && typeof output.overview === "object"
       ? {
           ...output.overview,
-          headline: compact(output.overview.headline, WEEKLY_COPY_TARGETS.overviewHeadline),
+          headline: compact(output.overview.headline, WEEKLY_COPY_TARGETS.overviewHeadline, { allowSoftBoundary: true }),
           summary: compact(output.overview.summary, WEEKLY_COPY_TARGETS.overviewSummary),
         }
       : output.overview,
@@ -83,7 +84,7 @@ export function compactWeeklyReportCopy(output) {
       insight && typeof insight === "object"
         ? {
             ...insight,
-            title: compact(insight.title, WEEKLY_COPY_TARGETS.insightTitle),
+            title: compact(insight.title, WEEKLY_COPY_TARGETS.insightTitle, { allowSoftBoundary: true }),
             summary: compact(insight.summary, WEEKLY_COPY_TARGETS.insightSummary),
             why_it_matters: compact(insight.why_it_matters, WEEKLY_COPY_TARGETS.insightWhy),
             limitation: compact(insight.limitation, WEEKLY_COPY_TARGETS.insightLimitation),
@@ -92,7 +93,7 @@ export function compactWeeklyReportCopy(output) {
     watch_item: output.watch_item && typeof output.watch_item === "object"
       ? {
           ...output.watch_item,
-          title: compact(output.watch_item.title, WEEKLY_COPY_TARGETS.watchTitle),
+          title: compact(output.watch_item.title, WEEKLY_COPY_TARGETS.watchTitle, { allowSoftBoundary: true }),
           summary: compact(output.watch_item.summary, WEEKLY_COPY_TARGETS.watchSummary),
           limitation: compact(output.watch_item.limitation, WEEKLY_COPY_TARGETS.watchLimitation),
         }
@@ -101,7 +102,7 @@ export function compactWeeklyReportCopy(output) {
       action && typeof action === "object"
         ? {
             ...action,
-            title: compact(action.title, WEEKLY_COPY_TARGETS.actionTitle),
+            title: compact(action.title, WEEKLY_COPY_TARGETS.actionTitle, { allowSoftBoundary: true }),
             steps: asArray(action.steps).map((step) => compact(step, WEEKLY_COPY_TARGETS.actionStep)),
             success_check: compact(action.success_check, WEEKLY_COPY_TARGETS.actionSuccess),
             reason: compact(action.reason, WEEKLY_COPY_TARGETS.actionReason),

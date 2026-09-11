@@ -789,7 +789,7 @@ function StructuredReport({ report }) {
       ) : null}
 
       <section className="mt-7">
-        <h4 className="text-base font-bold text-ink">下周只做这几件事</h4>
+        <h4 className="report-section-heading text-base font-bold text-ink">下周只做这几件事</h4>
         <ol className="mt-3 space-y-3">
           {actions.map((action, index) => (
             <li key={`${action.title}-${index}`} className="report-card rounded-2xl border border-aurora/20 bg-aurora/5 p-4">

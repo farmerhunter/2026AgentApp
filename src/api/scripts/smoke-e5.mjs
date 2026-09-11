@@ -472,6 +472,18 @@ async function main() {
   assert(compactedCopy.overview.headline === "负号处理与二次根式合并是本周重点", "headline should compact at a clause boundary");
   assert(compactedCopy.key_insights[0].title === "二次根式加法已会先化简", "insight title should compact at a clause boundary");
   assert(compactedCopy.key_insights[0].summary.includes("4√3+5√3"), "copy compaction must preserve retained math expressions");
+  const enumeratedMathOutput = {
+    ...baseOutput,
+    key_insights: [{
+      ...baseOutput.key_insights[0],
+      summary: "两道题均先化简；本周后期已经能先化成 4√3、5√3 并继续合并同类项，这组并列算式不能从顿号中间截断；后面的重复说明可以省略。",
+    }],
+  };
+  const compactedEnumeratedMath = compactWeeklyReportCopy(enumeratedMathOutput);
+  assert(
+    !compactedEnumeratedMath.key_insights[0].summary.endsWith("4√3"),
+    "copy compaction must not split an enumeration at a Chinese enumeration comma",
+  );
   assert(compactedCopy.key_insights[0].evidence_refs[0] === "E1", "copy compaction must preserve evidence references");
   const compactedReport = validateWeeklyReportOutput(verboseCopyOutput, context);
   assert(

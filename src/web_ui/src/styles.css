@@ -93,4 +93,9 @@ button {
     break-inside: avoid;
     page-break-inside: avoid;
   }
+
+  .report-section-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
 }
