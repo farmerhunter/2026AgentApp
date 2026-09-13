@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const appBasePath = process.env.VITE_APP_BASE_PATH ?? "/apps/xuetuzhiban";
+
 export default defineConfig({
   plugins: [react()],
-  base: "/apps/xuetuzhiban/",
+  base: `${appBasePath}/`,
   server: {
     proxy: {
       "/api/xuetuzhiban": {

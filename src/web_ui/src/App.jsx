@@ -3,6 +3,8 @@ import DemoApp from "./demo/DemoApp.jsx";
 import AppApp from "./app/AppApp.jsx";
 import { ErrorState } from "./components/DataState.jsx";
 
+const APP_BASE_PATH = import.meta.env.VITE_APP_BASE_PATH ?? "/apps/xuetuzhiban";
+
 function NotFound() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
@@ -13,7 +15,7 @@ function NotFound() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/apps/xuetuzhiban">
+    <BrowserRouter basename={APP_BASE_PATH}>
       <Routes>
         <Route path="/" element={<Navigate to="/demo" replace />} />
         <Route path="/demo/*" element={<DemoApp />} />
