@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# P0 #118: common.sh refuses before inputs or execution, including fixture mode.
 # run_learning_insight_update — generate local findings and focus question records from upload evidence
 #
 # Usage:

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# P0 #118: common.sh refuses before inputs or execution, including fixture mode.
 # run_textbook_summary — generate textbook_content_summary from textbook sample data
 #
 # Usage:

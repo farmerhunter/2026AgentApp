@@ -1,5 +1,3 @@
-const API_BASE = import.meta.env.VITE_APP_API_BASE_URL ?? "/api/xuetuzhiban";
-
 export class ApiUnavailableError extends Error {
   constructor(message, options = {}) {
     super(message);
@@ -8,39 +6,10 @@ export class ApiUnavailableError extends Error {
   }
 }
 
-async function apiFetch(path, options = {}) {
-  let response;
-  try {
-    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
-    response = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      headers: {
-        ...(isFormData ? {} : { "Content-Type": "application/json" }),
-        ...(options.headers ?? {}),
-      },
-    });
-  } catch (err) {
-    throw new ApiUnavailableError(`API unavailable: ${err.message}`);
-  }
-
-  const text = await response.text();
-  let body = null;
-  if (text) {
-    try {
-      body = JSON.parse(text);
-    } catch {
-      body = text;
-    }
-  }
-
-  if (!response.ok) {
-    const message = body?.message ?? body?.error ?? `API error: ${response.status}`;
-    const error = new ApiUnavailableError(message, { status: response.status });
-    error.body = body;
-    throw error;
-  }
-
-  return body;
+async function apiFetch() {
+  const error = new ApiUnavailableError("真实功能已暂停，请使用公开演示。", { status: 503 });
+  error.code = "p0_protected_disabled";
+  throw error;
 }
 
 export function fetchSessions(params = {}) {

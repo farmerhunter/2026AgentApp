@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# P0 #118: common.sh refuses before inputs or execution, including fixture mode.
 # run_weekly_report — generate weekly report from findings, memory, and materials
 #
 # Usage:

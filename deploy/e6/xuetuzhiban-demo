@@ -193,6 +193,7 @@ PY
 }
 
 restore() {
+  die "p0_protected_disabled: restore cannot restart real services during protection"
   local name="$1"
   assert_name "$name"
   local src
