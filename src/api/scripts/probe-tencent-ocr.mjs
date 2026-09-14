@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Minimal real QuestionSplitOCR signed probe.
+ * P0 #118: disabled before private input or credential access.
+ * Historical real QuestionSplitOCR signed probe; commands below now refuse.
  *
  * Usage:
  *   node scripts/probe-tencent-ocr.mjs --image <path> --use-new-model false --out <sanitized-output.json>
@@ -10,6 +11,7 @@
  * secret values or complete response body.
  */
 
+import { rejectRealExecution } from "../lib/p0Protection.js";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { callTencentQuestionSplitOcr } from "../lib/ocrAdapter.js";
@@ -25,6 +27,7 @@ function fail(message) {
 }
 
 async function main() {
+  rejectRealExecution();
   const imagePath = arg("--image");
   const useNewModel = arg("--use-new-model", "false") === "true";
   const outPath = arg("--out");

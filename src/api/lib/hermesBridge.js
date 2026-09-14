@@ -1,3 +1,4 @@
+import { rejectRealExecution } from "./p0Protection.js";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -83,6 +84,7 @@ export async function runHermesSkill({
   env = process.env,
   extraArgs = null,
 }) {
+  rejectRealExecution();
   if (!existsSync(skillPath)) {
     return {
       ok: false,

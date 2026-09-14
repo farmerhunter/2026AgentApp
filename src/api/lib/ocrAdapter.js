@@ -1,3 +1,5 @@
+import { rejectRealExecution } from "./p0Protection.js";
+
 const FIXTURE_RAW = {
   RequestId: "fixture-request-id",
   UseNewModel: false,
@@ -149,6 +151,7 @@ export function normalizeOcrResult(raw, imageMeta = {}) {
 }
 
 export async function callTencentQuestionSplitOcr(buffer, { useNewModel = false, meta = {} } = {}) {
+  rejectRealExecution();
   const secretId = process.env.TENCENTCLOUD_SECRET_ID;
   const secretKey = process.env.TENCENTCLOUD_SECRET_KEY;
   const region = process.env.TENCENTCLOUD_REGION ?? "ap-guangzhou";

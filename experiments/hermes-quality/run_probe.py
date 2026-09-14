@@ -1,7 +1,7 @@
 """Bounded VPS experiment: real Hermes CLI, synthetic inputs, no product writes.
 
-Use the installed Hermes venv Python. Without --run this only checks config,
-skill loading and credential availability. Never prints or copies credentials.
+P0 #118 disables this entry before profile or credential access, including
+checks without --run. Restoration requires an approved code release.
 """
 
 import argparse
@@ -25,6 +25,7 @@ def save(path, value):
 
 
 def main():
+    raise SystemExit("p0_protected_disabled")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--hermes-source", required=True, type=Path)
     parser.add_argument("--source-profile", required=True, type=Path)

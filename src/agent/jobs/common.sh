@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+echo "p0_protected_disabled" >&2
+exit 1
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 DATA_DIR="$REPO_ROOT/data"
 SKILLS_DIR="$REPO_ROOT/src/skills"
@@ -141,6 +144,8 @@ json.dump(data, sys.stdout, ensure_ascii=False, indent=2)
 
 # Real mode: call hermes CLI with skill + prompt + context
 run_hermes() {
+  echo "p0_protected_disabled" >&2
+  return 1
   local skill_file="$1"
   local prompt_file="$2"
   local context_json="$3"

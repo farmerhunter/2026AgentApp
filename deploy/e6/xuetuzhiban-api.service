@@ -1,5 +1,5 @@
 [Unit]
-Description=XueTuZhiBan V2 API
+Description=XueTuZhiBan P0 disabled API
 After=network.target
 
 [Service]
@@ -7,8 +7,7 @@ Type=simple
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/opt/hermes/2026agentapp-prod/app/src/api
-EnvironmentFile=/opt/hermes/2026agentapp-prod/env/xuetuzhiban.env
-EnvironmentFile=-/opt/hermes/.secrets/2026agentapp/dev/tencent-ocr.env
+Environment=HERMES_API_PORT=8001
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=3

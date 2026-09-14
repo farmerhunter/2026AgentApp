@@ -1,5 +1,7 @@
 # E5 单题质量实验
 
+> P0 #118 暂停版本：`run_probe.py` 在读取 profile/凭据前直接拒绝，包括不加 `--run` 的 preflight。以下执行描述保留为历史；真实实验恢复需要另行批准代码 release。纯离线结果 checker 不受影响。
+
 状态：实验资产，不是正式 E5 Skill、API contract 或验收通过证据。
 
 最新：[两批学习故事首轮](learning-story/review.md)已完成 A 批、两条用户接受记忆、B 批和周报（共 3 次真实调用）。[周报原文](learning-story/weekly-report.md)能区分重复问题、局部变化与证据不足；仍有错题数量口径、实验术语和一般化措辞问题。本轮不重跑 A、不改提示词、不再追加调用；未覆盖下面旧基线，不宣称正式 Skill 质量验收或产品链路通过。

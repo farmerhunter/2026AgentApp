@@ -1,5 +1,13 @@
 # 更新日志（Changelog）
 
+## 2026-09-14 — #118 P0 公开演示保留、真实功能暂停候选
+
+- API bootstrap 不再加载业务/DB；全业务返回 503，loopback health 仅表示停用进程存活。暂停 UI 包含已有结果查看/打印影响，公开 demo 保留。
+- 覆盖 `src/api/lib` OCR/Hermes、`src/api/scripts` E5/probe、`src/agent/jobs`、实验真实入口；真实执行前拒绝且不支持 env 解锁。两个 E5 CLI 的历史实现可从 Git 恢复，当前不允许直接 fixture runner 写业务数据。
+- 更新 `deploy/e6` 的拒绝模板、无 provider 环境文件 unit、禁用旧 deploy/restore、明确停用 fallback；更新现有 E6 部署/演示及架构文档，准备需授权的定向激活与安全撤回。
+- 本地边界测试验证并发业务拒绝、重启不恢复队列、全部入口真实调用/私有读取 spy 为 0、合成数据不变与前端无重试；另执行 Web build、demo 数据及 Node/shell/Python 语法检查。
+- 尚未部署或 main merge，生产/测试实际配置与 Linux/Nginx/systemd 证据待授权核验；旧在途/未知费用未核对。A 是临时止损，未关闭 Epic，不代表后续安全恢复真实能力已完成。
+
 记录每个开发会话的主要改动，让团队成员（尤其不直接参与编码的人）快速了解"今天改了什么"。
 
 ## 记录规范
