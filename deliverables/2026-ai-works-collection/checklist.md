@@ -6,17 +6,24 @@
 
 | 必交项 | 当前状态 | 现有材料与查看路径 | 提交前要核对/完成 |
 | --- | --- | --- | --- |
-| 1. 作品信息登记表（附件 1） | 模板已有，待填写和核对 | 本机 `C:\Users\David\coding\2026AgentApp\人工智能作品征集\附件1作品信息登记表.docx` | 作品名、类别、作者顺序、学校及指导教师与报名系统一致；由老师核对填写和上传方式。 |
-| 2. 开发与应用说明（PDF） | **技术文档有多个候选，待作者判断最新版本；尚未验收为本次 PDF** | [GitHub main 技术文档 Word](https://github.com/farmerhunter/2026AgentApp/blob/main/deliverables/docs/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3.docx)、[同版 Markdown](https://github.com/farmerhunter/2026AgentApp/blob/main/deliverables/docs/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3.md)；VPS `/opt/hermes/2026agentapp-prod/app/deliverables/docs/技术文档.docx`（与 main Word SHA-256 相同：`f6b3ecac...b87`）；[未合并 PR #103 的修订版](https://github.com/farmerhunter/2026AgentApp/pull/103/files)；VPS 旧目录 `/opt/hermes/2026AgentApp/deliverables/docs/技术文档.docx`（SHA-256：`2f6b5ddf...f3f`） | 作者先选基准版本。逐项核对作品基本信息（名称、类型、场景、创新点，**该部分不超过 500 字**）、开发流程图或关键代码截图、安装/打开/使用步骤、实际调用的 API/模型；删除过时、规划中或旧比赛的表述；导出 PDF 并逐页检查。 |
-| 3. 演示视频（MP4） | **终评真实运行视频在已查范围内未定位，待提供具体路径；不得据此认定不存在** | GitHub `main` 的 `media/demo_videos/` 和 `deliverables/video_assets/` 只有占位文件；VPS 上对应目录也只有占位文件。已查 `/opt/hermes`、`/home/ubuntu`、`/var/www`、`/mnt`、`/srv`、`/tmp`、`/root` 中常见视频格式，未找到本项目实录。本机 `C:\Users\David\coding\2026AgentApp\2026AgentApp\deliverables\video_bg\out\` 有背景动画，**不能当作真实运行实录**。 | 找到终评实录原文件后，只做合规检查：MP4、16:9、≤5 分钟、≤200 MB；清楚显示运行环境、核心功能和一次完整任务流程；真实运行，不剪辑加速；画面无作者姓名、学校、人物正面及隐私信息。若原片不符合，再确定补录或修改方案。 |
+| 1. 作品信息登记表（附件 1） | **最终版 Word 已上传 GitHub；平台接收状态待老师确认** | [已完成的登记表](https://github.com/farmerhunter/2026AgentApp/blob/main/deliverables/2026-ai-works-collection/%E6%9C%9D%E9%98%B3%E5%8C%BA-%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E5%A4%A7%E5%AD%A6%E9%99%84%E5%B1%9E%E4%B8%AD%E5%AD%A6%E6%9C%9D%E9%98%B3%E5%AD%A6%E6%A0%A1-%E5%88%98%E6%99%93%E4%BA%AC-%E4%BD%9C%E5%93%81%E4%BF%A1%E6%81%AF%E7%99%BB%E8%AE%B0%E8%A1%A8.docx) | 学校平台收件状态由信息老师确认。 |
+| 2. 开发与应用说明（PDF） | **正式版已完成内容与版式验收，并上传 GitHub；平台接收状态待老师确认** | [提交版 PDF](https://github.com/farmerhunter/2026AgentApp/blob/main/deliverables/2026-ai-works-collection/%E6%9C%9D%E9%98%B3%E5%8C%BA-%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E5%A4%A7%E5%AD%A6%E9%99%84%E5%B1%9E%E4%B8%AD%E5%AD%A6%E6%9C%9D%E9%98%B3%E5%AD%A6%E6%A0%A1-%E5%88%98%E6%99%93%E4%BA%AC-%E5%BC%80%E5%8F%91%E4%B8%8E%E5%BA%94%E7%94%A8%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.pdf) | 作品基本信息 253 字；含开发流程图、打开与使用步骤及 OCR／Hermes／DeepSeek 调用说明。全 7 页已逐页检查，未沿用旧截图。 |
+| 3. 演示视频（MP4） | **此前约 2 分钟的真实运行实录仍未定位；视频制作待启动** | GitHub 各分支、发布附件及 issue 评论未见视频文件或附件链接；2026-09-18 重新登录 VPS，检索常用项目与存储目录，只见 Hermes 自带示例视频。桌面及微信缓存的几段候选经关键帧核对均与学途智伴无关；仓库 `deliverables/video_bg/out/` 只有背景动画。 | 找到原片后核验 MP4、16:9、≤5 分钟、≤200 MB、真实运行和完整任务流程；画面不得出现作者姓名、学校、人物正面或隐私信息。若原片无法定位或不合格，再录制本次提交视频。 |
 | 4. 配套资源：智能体链接与对话示例文档 | 真实工作台已通过服务器 IP 访问；正式链接待确定；示例文档待定位/整理 | [当前真实工作台](http://49.233.203.222/apps/xuetuzhiban/app/overview) 可显示 A/B 已保存结果；`jingyun.group` 于 2026-09-18 跳转备案拦截页，不能作为当前提交链接。旧比赛的 [作品链接任务 #19](https://github.com/farmerhunter/2026AgentApp/issues/19) 仅供参考。 | 保证评审结束前可访问。以真实操作/对话记录制作脱敏示例：用户输入或操作、智能体回应、结果核查；不虚构聊天界面。请老师核对最终提交方式。 |
 | 5. 原创声明与授权书（附件 2） | 模板已有，待填写、手写签名、送交 | 本机 `C:\Users\David\coding\2026AgentApp\人工智能作品征集\附件2原创声明与授权书.docx` | 学生手写签名；送初一 7 班教室旁信息办公室的王老师。指导教师签名/扫描上传由老师确认。签名件不要传 GitHub。 |
+
+## 开发与应用说明 PDF 验收记录
+
+- [提交版 PDF](https://github.com/farmerhunter/2026AgentApp/blob/main/deliverables/2026-ai-works-collection/%E6%9C%9D%E9%98%B3%E5%8C%BA-%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E5%A4%A7%E5%AD%A6%E9%99%84%E5%B1%9E%E4%B8%AD%E5%AD%A6%E6%9C%9D%E9%98%B3%E5%AD%A6%E6%A0%A1-%E5%88%98%E6%99%93%E4%BA%AC-%E5%BC%80%E5%8F%91%E4%B8%8E%E5%BA%94%E7%94%A8%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.pdf)：A4、7 页、282,511 字节，SHA-256 `952f10237664a8845789d7a289fced6840e03612b1c71bfd3ca0f020a1ee679e`。
+- 作品基本信息 253 字，低于 500 字；已包含开发流程图、网页打开与操作步骤、QuestionSplitOCR 接口和经 Hermes 调用 DeepSeek 的说明。
+- 已逐页检查图表、换行、页码与中文字符；字体嵌入，PDF 可检索且无脚本、附件或自动执行动作。标题、页眉、文件名中的工作稿标记已移除。
+- 本项只表示文档准备与 GitHub 归档完成；学校平台实际收件仍待老师确认。
 
 ## 本次统一验收
 
 - [ ] 所有正式文件按 `朝阳区-中国人民大学附属中学朝阳学校-作者-XXX（对应文件名）` 命名；作者姓名仅放报名/交付文件名，**不得出现在视频画面中**。
-- [ ] 作者确认技术文档以哪一版为准，并指出需保留或修改的内容；正式 PDF 反映最终运行版本。通知未规定 PDF 大小、页数、DPI 或压缩比；内部制作目标为文字可检索、图文清晰、文件不超过 10 MB，上传前核对平台实际提示。200 MB 仅为视频上限。
-- [ ] 旧 A/B 仿真截图不用于新 PDF；从当前工作台重新截取导入与确认、分析与记忆、周报页面，并标明截图日期和已有结果来源。
+- [x] 开发与应用说明 PDF 已按本次通知验收，采用当前实际能力口径；作品基本信息 253 字，全文可检索、排版清晰，文件小于 10 MB。200 MB 仅为视频上限。
+- [x] 正式 PDF 使用矢量架构图和开发流程图，没有使用旧 A/B 截图；视频如展示界面，以当前真实工作台为准。
 - [ ] 找到现成终评实录，记录准确路径、时长、分辨率、大小及是否满足每条视频要求。
 - [ ] 已验证的 IP 入口在评审期保持可访问；修复或替换被备案页拦截的域名链接。
 - [ ] 五类材料交老师前逐件核对；不以旧比赛的“2 分钟视频”或旧声明替代本次要求。
